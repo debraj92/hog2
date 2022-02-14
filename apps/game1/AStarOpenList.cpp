@@ -101,7 +101,7 @@ bool AStarOpenList::isPresent(node_& n) {
 
 bool AStarOpenList::updateIfBetterPath(node_& n, float gvalue) {
     auto t = openList.find(n);
-    if (gvalue <= t->g) {
+    if (gvalue < t->g) {
         n.computeF(gvalue, t->h);
         n.heap_idx = t->heap_idx;
         fscoreHeap[t->heap_idx] = n;
