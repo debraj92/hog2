@@ -42,13 +42,11 @@ public:
         return false;
     }
 
-    node_(int x, int y) : x(x), y(y){}
+    node_(int x, int y) : x(x), y(y), heap_idx(-1) {}
 
     void computeF(float g=0, float h=0, float r=0);
 
     float getFScore();
-
-    vector<node_> children;
 };
 
 

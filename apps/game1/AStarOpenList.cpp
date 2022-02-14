@@ -2,6 +2,7 @@
 // Created by Debraj Ray on 2022-02-13.
 //
 
+#include <iostream>
 #include "AStarOpenList.h"
 
 float AStarOpenList::leftChild(int parentIndex) {
@@ -51,28 +52,39 @@ void AStarOpenList::swim(int k) {
 }
 
 void AStarOpenList::insert(node_& node) {
+    node.heap_idx = size;
     fscoreHeap.push_back(node);
+    openList.insert(node);
     size++;
     swim(size-1);
-    openList.insert(node);
-    node.heap_idx = size;
 }
 
 void AStarOpenList::exchange(int idx1, int idx2) {
+    if (idx1 == idx2) {
+        return;
+    }
     node_ temp = fscoreHeap[idx1];
     fscoreHeap[idx1] = fscoreHeap[idx2];
     fscoreHeap[idx2] = temp;
 
     fscoreHeap[idx1].heap_idx = idx1;
     fscoreHeap[idx2].heap_idx = idx2;
+
+    openList.erase(fscoreHeap[idx1]);
+    openList.insert(fscoreHeap[idx1]);
+
+    openList.erase(fscoreHeap[idx2]);
+    openList.insert(fscoreHeap[idx2]);
 }
 
 node_ AStarOpenList::removeMinimum() {
-    node_ fscore = fscoreHeap[0];
-    fscoreHeap.erase(fscoreHeap.begin());
-    openList.erase(fscore);
+    exchange(0, size-1);
+    node_ fscore_deleted = fscoreHeap[size-1];
+    fscoreHeap.pop_back();
     size--;
-    return fscore;
+    sink(0);
+    openList.erase(fscore_deleted);
+    return fscore_deleted;
 }
 
 float AStarOpenList::peekMinimum() {
@@ -89,12 +101,13 @@ bool AStarOpenList::isPresent(node_& n) {
 
 bool AStarOpenList::updateIfBetterPath(node_& n, float gvalue) {
     auto t = openList.find(n);
-    if (gvalue < t->g) {
+    if (gvalue <= t->g) {
         n.computeF(gvalue, t->h);
+        n.heap_idx = t->heap_idx;
         fscoreHeap[t->heap_idx] = n;
-        swim(t->heap_idx);
         openList.erase(n);
         openList.insert(n);
+        swim(t->heap_idx);
         return true;
     }
     return false;

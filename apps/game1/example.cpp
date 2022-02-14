@@ -25,5 +25,5 @@ int main() {
     GameEnv gameEnv;
     gameEnv.train(1);
 
-    test1();
+    //test1();
 }
