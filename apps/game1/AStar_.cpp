@@ -35,9 +35,11 @@ bool AStar_::findPathToDestination() {
         for (pair<int, int> node_pair : childNodes) {
             node_ temp(node_pair.first, node_pair.second);
             if(closedList.find(temp) !=  closedList.end()) {
+                // Don't expand already expanded nodes
                 continue;
             }
             if(!openList.isPresent(temp)) {
+                // insert (parent: next closest node and child: reachable node)
                 childParent.insert(make_pair(temp, nextNode));
                 temp.computeF(nextNode.g + 1, findShortestDistance(node_pair, destination));
                 openList.insert(temp);
