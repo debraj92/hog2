@@ -1,5 +1,0 @@
-if(EXISTS "/Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test/ExampleTests[1]_tests.cmake")
-  include("/Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test/ExampleTests[1]_tests.cmake")
-else()
-  add_test(ExampleTests_NOT_BUILT ExampleTests_NOT_BUILT)
-endif()
