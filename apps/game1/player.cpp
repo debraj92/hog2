@@ -3,11 +3,12 @@
 //
 
 #include "player.h"
+
+#include <memory>
 #include "gameSimulation.h"
 #include "plot/pbPlots.hpp"
 #include "plot/supportLib.hpp"
 #include "enemyLocator.h"
-#include "gameSimulation.h"
 
 void player::takeDamage(int points) {
     life_left -= points;
@@ -15,15 +16,15 @@ void player::takeDamage(int points) {
 
 
 void player::locateTrajectoryAndDirection(observation &ob) {
+    cout<<"locateTrajectoryAndDirection "<<endl;
     int row, col;
     for (int i=1; i<=VISION_RADIUS; i++) {
         row = current_x - i;
         if (row > 0) {
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col > 0 && col < GRID_SPAN - 1) {
-                    pair<int, int> trajectory_vertex = std::make_pair(row, col);
-                    if(fp.all_vertices.find(trajectory_vertex) != fp.all_vertices.end()) {
-                        ob.direction = fp.all_vertices.find(trajectory_vertex)->second;
+                    if (fp->isOnTrack(row, col)) {
+                        ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 1;
                     }
                 }
@@ -33,9 +34,8 @@ void player::locateTrajectoryAndDirection(observation &ob) {
         if (row < GRID_SPAN - 1) {
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col > 0 && col < GRID_SPAN - 1) {
-                    pair<int, int> trajectory_vertex = std::make_pair(row, col);
-                    if(fp.all_vertices.find(trajectory_vertex) != fp.all_vertices.end()) {
-                        ob.direction = fp.all_vertices.find(trajectory_vertex)->second;
+                    if (fp->isOnTrack(row, col)) {
+                        ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 2;
                     }
                 }
@@ -45,9 +45,8 @@ void player::locateTrajectoryAndDirection(observation &ob) {
         if (col > 0) {
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row > 0 && row < GRID_SPAN - 1) {
-                    pair<int, int> trajectory_vertex = std::make_pair(row, col);
-                    if(fp.all_vertices.find(trajectory_vertex) != fp.all_vertices.end()) {
-                        ob.direction = fp.all_vertices.find(trajectory_vertex)->second;
+                    if (fp->isOnTrack(row, col)) {
+                        ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 3;
                     }
                 }
@@ -57,9 +56,8 @@ void player::locateTrajectoryAndDirection(observation &ob) {
         if (col < GRID_SPAN - 1) {
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row > 0 && row < GRID_SPAN - 1) {
-                    pair<int, int> trajectory_vertex = std::make_pair(row, col);
-                    if(fp.all_vertices.find(trajectory_vertex) != fp.all_vertices.end()) {
-                        ob.direction = fp.all_vertices.find(trajectory_vertex)->second;
+                    if (fp->isOnTrack(row, col)) {
+                        ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 4;
                     }
                 }
@@ -129,28 +127,30 @@ observation player::createObservation(std::vector<std::vector<int>> &grid, std::
 }
 
 void player::reset(std::vector<std::vector<int>> &grid) {
+    // TODO: current_x and current_y can be anywhere in the map
     current_x = 0;
     current_y = 0;
     life_left = 10;
-    fp.reset();
 }
 
 int player::getDirection() {
-    return fp.all_vertices.find(make_pair(current_x, current_y))->second;
+    return fp->pathDirection(current_x, current_y);
 }
 
-void player::findPathToDestination() {
-    fp.findPathToDestination();
+void player::findPathToDestination(std::vector<std::vector<int>> &grid, int src_x, int src_y, int dst_x, int dst_y) {
+    cout<<"Find path to destination"<<endl;
+    fp = std::make_unique<findPath>(grid, src_x, src_y, dst_x, dst_y);
+    fp->findPathToDestination();
 }
 
 void player::follow() {
-    fp.calculateNextPosition(current_x, current_y);
-    current_x = fp.getNext_x();
-    current_y = fp.getNext_y();
+    fp->calculateNextPosition(current_x, current_y);
+    current_x = fp->getNext_x();
+    current_y = fp->getNext_y();
 }
 
 bool player::isOnTrack() {
-    return fp.all_vertices.find(make_pair(current_x, current_y)) != fp.all_vertices.end();
+    return fp->isOnTrack(current_x, current_y);
 }
 
 void player::evaluateActionQValues(int reward, observation &next_observation, int current_action, std::vector<std::vector<int>> &grid) {

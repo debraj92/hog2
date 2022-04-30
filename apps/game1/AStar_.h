@@ -28,6 +28,10 @@ class AStar_ {
 
     bool isDestinationFound(node_ node);
 
+    void finalizeNodeLinks();
+
+    void reverseNodeLinks();
+
 public:
 
     AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) : grid(grid) {
@@ -38,6 +42,10 @@ public:
     bool findPathToDestination();
 
     int countTotalNodesInOptimalPath(node_& current);
+
+    node_ getNextNode(node_& current);
+
+    bool isOnPath(node_& current);
 
 };
 

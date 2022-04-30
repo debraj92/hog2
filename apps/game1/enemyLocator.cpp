@@ -5,6 +5,9 @@
 #include "enemyLocator.h"
 #include "gameConstants.h"
 #include <cmath>
+#include <iostream>
+
+using namespace std;
 
 void enemyLocator::init() {
     l1[SE] = 1 / sqrt(2);
@@ -14,6 +17,7 @@ void enemyLocator::init() {
 }
 
 void enemyLocator::locateEnemy(int player_x, int player_y, int direction, int enemy_x, int enemy_y) {
+    cout<<"locate enemy direction"<<direction<<endl;
     double det = calculateDeterminant(direction);
     int diff1 = enemy_x - player_x;
     int diff2 = enemy_y - player_y;
@@ -38,10 +42,12 @@ void enemyLocator::computeCosine() {
 }
 
 double enemyLocator::getEnemyDistance() {
+    cout<<"getEnemyDistance"<<endl;
     return round_values(enemy_distance);
 }
 
 double enemyLocator::getEnemyCosine() {
+    cout<<"getEnemyCosine"<<endl;
     return round_values(enemy_cosine);
 }
 

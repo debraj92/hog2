@@ -7,7 +7,7 @@
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {
     cout<<"gameSimulation::learnToPlay"<<endl;
     populateEnemies(grid, enemies);
-    player1->findPathToDestination();
+    player1->findPathToDestination(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     grid[player1->current_x][player1->current_y] = 19;
     player1->ontrack = true;
     observation ob = player1->createObservation(grid, enemies);

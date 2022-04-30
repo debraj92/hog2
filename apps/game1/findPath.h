@@ -10,6 +10,7 @@
 #include <set>
 #include <map>
 #include "gameConstants.h"
+#include "AStar_.h"
 
 using namespace std;
 
@@ -19,20 +20,18 @@ class findPath {
     int current_y;
     int next_x;
     int next_y;
+    AStar_ aStar;
 
     int destination_x;
     int destination_y;
 
     vector<std::pair<int, int>> path;
-    int pointer = 0;
 
 public:
 
-    std::map<std::pair<int, int>, int> all_vertices;
-
-    findPath(int x, int y, int dest_x, int dest_y){
-        current_x = x;
-        current_y = y;
+    findPath(std::vector<std::vector<int>> &grid, int src_x, int src_y, int dest_x, int dest_y) : aStar(grid, src_x, src_y, dest_x, dest_y){
+        current_x = src_x;
+        current_y = src_y;
         destination_x = dest_x;
         destination_y = dest_y;
     }
@@ -40,8 +39,8 @@ public:
     void calculateNextPosition(int x, int y);
     int getNext_x();
     int getNext_y();
-    void updateCurrentCoordinates(int x, int y);
-    void reset();
+    bool isOnTrack(int current_x, int current_y);
+    int pathDirection(int current_x, int current_y);
 };
 
 

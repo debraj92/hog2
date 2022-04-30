@@ -26,12 +26,16 @@ void AStarOpenList::sink(int k) {
             if(fscoreHeap[minChildIdx].getFScore() < fscoreHeap[k].getFScore()){
                 exchange(minChildIdx, k);
                 k = minChildIdx;
+            } else {
+                // already a heap
+                break;
             }
         } else {
             if (leftChild(k) < fscoreHeap[k].getFScore()) {
                 exchange(leftChildIdx, k);
                 k = leftChildIdx;
             } else {
+                // already a heap
                 break;
             }
         }
@@ -70,6 +74,7 @@ void AStarOpenList::exchange(int idx1, int idx2) {
     fscoreHeap[idx1].heap_idx = idx1;
     fscoreHeap[idx2].heap_idx = idx2;
 
+    // insert updated heap values to open list
     openList.erase(fscoreHeap[idx1]);
     openList.insert(fscoreHeap[idx1]);
 

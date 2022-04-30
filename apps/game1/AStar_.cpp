@@ -27,7 +27,9 @@ bool AStar_::findPathToDestination() {
         node_ nextNode = openList.removeMinimum();
         closedList.insert(nextNode);
         if(isDestinationFound(nextNode)) {
+            finalizeNodeLinks();
             std::cout <<"Number of nodes to destination "<<countTotalNodesInOptimalPath(nextNode)<<endl;
+            reverseNodeLinks();
             return true;
         }
         vector<pair<int, int>> childNodes;
@@ -113,3 +115,36 @@ int AStar_::countTotalNodesInOptimalPath(node_& current) {
     }
     return count+1;
 }
+
+node_ AStar_::getNextNode(node_& current) {
+    return childParent.find(current)->second;
+}
+
+bool AStar_::isOnPath(node_& current) {
+    return childParent.find(current) != childParent.end();
+}
+
+void AStar_::finalizeNodeLinks() {
+    auto childParentIterator = childParent.begin();
+    while(childParentIterator != childParent.end()) {
+        node_ node = childParentIterator->first;
+        if(closedList.find(node) == closedList.end()) {
+            childParentIterator++;
+            childParent.erase(node);
+        } else {
+            childParentIterator++;
+        }
+    }
+}
+
+void AStar_::reverseNodeLinks() {
+    auto childParentIterator = childParent.begin();
+    unordered_map<node_, node_, node_::node_Hash> temp_childParent;
+    while(childParentIterator != childParent.end()) {
+        temp_childParent.insert(make_pair(childParentIterator->second, childParentIterator->first));
+        childParentIterator++;
+    }
+    childParent = temp_childParent;
+}
+
+

@@ -3,23 +3,28 @@
 //
 
 #include "findPath.h"
+#include "AStar_.h"
+#include <iostream>
+
+using namespace std;
 
 void findPath::findPathToDestination() {
-    // TODO
-    for(int i=0; i<GRID_SPAN; i++) {
-        pair<int, int> vertex = make_pair(i,i);
-        path.push_back(vertex);
-        all_vertices.insert(make_pair(vertex,SE));
-    }
+    aStar.findPathToDestination();
 }
 
 void findPath::calculateNextPosition(int x, int y) {
-    // TODO: check if x and y are part of path
-    current_x = x;
-    current_y = y;
-    pointer++;
-    next_x = path[pointer].first;
-    next_y = path[pointer].second;
+    node_ current(x,y);
+    if (isOnTrack(x, y)) {
+        node_ next = aStar.getNextNode(current);
+        next_x = next.x;
+        next_y = next.y;
+    } else {
+        // stuck
+        cout<<"Unit Not on path, will get stuck"<<endl;
+        next_x = x;
+        next_y = y;
+    }
+
 }
 
 int findPath::getNext_x() {
@@ -30,13 +35,44 @@ int findPath::getNext_y() {
     return next_y;
 }
 
-void findPath::updateCurrentCoordinates(int x, int y) {
-    current_x = x;
-    current_y = y;
+bool findPath::isOnTrack(int current_x, int current_y) {
+    node_ current(current_x, current_y);
+    return aStar.isOnPath(current);
 }
 
-void findPath::reset() {
-    path.clear();
-    all_vertices.clear();
-    pointer = 0;
+int findPath::pathDirection(int x, int y) {
+    node_ current(x,y);
+    if (isOnTrack(x, y)) {
+        node_ next = aStar.getNextNode(current);
+        cout<<"pathDirection current "<<x<<", "<<y<<endl;
+        cout<<"pathDirection next "<<next.x<<", "<<next.y<<endl;
+        int x_plus = x+1;
+        int x_minus = x-1;
+        int y_plus = y+1;
+        int y_minus = y-1;
+        if (x_plus == next.x && y_plus == next.y) {
+            return SE;
+        } else if (x_plus == next.x && y == next.y) {
+            return E;
+        } else if (x_plus == next.x && y_minus == next.y) {
+            return NE;
+        } else if (x == next.x && y_minus == next.y) {
+            return N;
+        } else if (x_minus == next.x && y_minus == next.y) {
+            return NW;
+        } else if (x_minus == next.x && y == next.y) {
+            return W;
+        } else if (x_minus == next.x && y_plus == next.y) {
+            return SW;
+        } else if (x == next.x && y_plus == next.y) {
+            return S;
+        }
+        // TODO: Error
+        cout<<"Invalid next move"<<endl;
+        return -1;
+    } else {
+        // TODO: Error Handling
+        cout<<"Unit not on track, cannot find direction"<<endl;
+    }
+    return -1;
 }

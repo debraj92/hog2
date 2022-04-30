@@ -1,0 +1,4 @@
+/Users/debrajray/MyComputer/anaconda/anaconda3/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/Users/debrajray/MyComputer/anaconda/anaconda3/lib/python3.8/site-packages/torch -G "CodeBlocks - Unix Makefiles" /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test

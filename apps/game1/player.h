@@ -15,7 +15,7 @@
 
 class player : public rl_control {
 
-    findPath fp;
+    unique_ptr<findPath> fp;
 
     //state cur_state;
     void locateTrajectoryAndDirection(observation& ob);
@@ -24,12 +24,16 @@ class player : public rl_control {
 public:
     int current_x;
     int current_y;
+    int destination_x;
+    int destination_y;
     int life_left;
     bool ontrack;
 
-    player(int x, int y, int life, int dest_x, int dest_y) : fp(x,y,dest_x,dest_y) {
+    player(int x, int y, int life, int dest_x, int dest_y) {
         current_x = x;
         current_y = y;
+        destination_x = dest_x;
+        destination_y = dest_y;
         life_left = life;
         ontrack = true;
     }
@@ -42,7 +46,7 @@ public:
 
     int getDirection();
 
-    void findPathToDestination();
+    void findPathToDestination(std::vector<std::vector<int>> &grid, int src_x, int src_y, int dst_x, int dst_y);
 
     void follow();
 

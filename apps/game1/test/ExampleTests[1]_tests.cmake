@@ -1,0 +1,7 @@
+add_test( AStarFindPathDiagonal.BasicAssertions /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test/ExampleTests [==[--gtest_filter=AStarFindPathDiagonal.BasicAssertions]==] --gtest_also_run_disabled_tests)
+set_tests_properties( AStarFindPathDiagonal.BasicAssertions PROPERTIES WORKING_DIRECTORY /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test( AStarFindPathVertical.BasicAssertions /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test/ExampleTests [==[--gtest_filter=AStarFindPathVertical.BasicAssertions]==] --gtest_also_run_disabled_tests)
+set_tests_properties( AStarFindPathVertical.BasicAssertions PROPERTIES WORKING_DIRECTORY /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test( AStarFindPathNE.BasicAssertions /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test/ExampleTests [==[--gtest_filter=AStarFindPathNE.BasicAssertions]==] --gtest_also_run_disabled_tests)
+set_tests_properties( AStarFindPathNE.BasicAssertions PROPERTIES WORKING_DIRECTORY /Users/debrajray/MyComputer/RTS/hog2_debraj/hog2/apps/game1/test SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+set( ExampleTests_TESTS AStarFindPathDiagonal.BasicAssertions AStarFindPathVertical.BasicAssertions AStarFindPathNE.BasicAssertions)
