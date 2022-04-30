@@ -1,3 +1,0 @@
-ToolSet: 1.0 (local)Options: 
-
-Options:-DCMAKE_PREFIX_PATH=/Users/debrajray/MyComputer/anaconda/anaconda3/lib/python3.8/site-packages/torch
