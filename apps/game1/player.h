@@ -24,19 +24,17 @@ class player : public rl_control {
 public:
     int current_x;
     int current_y;
+    int source_x;
+    int source_y;
     int destination_x;
     int destination_y;
     int life_left;
     bool ontrack;
 
-    player(int x, int y, int life, int dest_x, int dest_y) {
-        current_x = x;
-        current_y = y;
-        destination_x = dest_x;
-        destination_y = dest_y;
-        life_left = life;
-        ontrack = true;
+    player() {
     }
+
+    void initialize(int src_x, int src_y, int dest_x, int dest_y);
 
     void takeDamage(int points);
 

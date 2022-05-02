@@ -42,7 +42,7 @@ add_definitions(-DXTENSOR_USE_OPENMP)
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIR})
 
-add_executable(${This} AStar_test.cpp ../gameEnv.h ../gameEnv.cpp ../fixedobstacles.h ../fixedobstacles.cpp ../gameConstants.h ../enemy/enemy.h ../enemy/fixedEnemy.cpp ../enemy/fixedEnemy.h ../gameSimulation.cpp ../gameSimulation.h ../findPath.cpp ../findPath.h ../player.cpp ../player.h ../state.h ../state.cpp ../rl_control.cpp ../rl_control.h ../observation.h ../coordinatesUtil.cpp ../coordinatesUtil.h
+add_executable(${This} AStar_test.cpp GameMaps_test.cpp ../gameEnv.h ../gameEnv.cpp ../fixedobstacles.h ../fixedobstacles.cpp ../gameConstants.h ../enemy/enemy.h ../enemy/fixedEnemy.cpp ../enemy/fixedEnemy.h ../gameSimulation.cpp ../gameSimulation.h ../findPath.cpp ../findPath.h ../player.cpp ../player.h ../state.h ../state.cpp ../rl_control.cpp ../rl_control.h ../observation.h ../coordinatesUtil.cpp ../coordinatesUtil.h
         ../plot/pbPlots.hpp ../plot/pbPlots.cpp ../plot/supportLib.hpp ../plot/supportLib.cpp ../enemyLocator.cpp ../enemyLocator.h ../observation.cpp ../AStar_.cpp ../AStar_.h ../AStarOpenList.cpp ../AStarOpenList.h ../node_.cpp ../node_.h)
 
 target_include_directories(${This} PUBLIC ${GTEST_INCLUDE_DIR} ${xtensor_INCLUDE_DIRS})

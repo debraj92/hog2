@@ -10,6 +10,7 @@ int main() {
 //std::cout << tensor << std::endl;
 
     GameEnv gameEnv;
-    gameEnv.train(1);
+    gameEnv.createMap2();
+    gameEnv.train();
 
 }

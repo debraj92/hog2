@@ -40,6 +40,21 @@ bool findPath::isOnTrack(int current_x, int current_y) {
     return aStar.isOnPath(current);
 }
 
+/**
+ *
+ *     --->y (columns)
+ *     |
+ *     v
+ *     x (rows)
+ */
+
+/**
+*    NW  N  NE
+*       |
+*     W- -E
+*       |
+*  SW  S  SE
+*/
 int findPath::pathDirection(int x, int y) {
     node_ current(x,y);
     if (isOnTrack(x, y)) {
@@ -52,19 +67,19 @@ int findPath::pathDirection(int x, int y) {
         int y_minus = y-1;
         if (x_plus == next.x && y_plus == next.y) {
             return SE;
-        } else if (x_plus == next.x && y == next.y) {
+        } else if (x == next.x && y_plus == next.y) {
             return E;
-        } else if (x_plus == next.x && y_minus == next.y) {
+        } else if (x_minus == next.x && y_plus == next.y) {
             return NE;
-        } else if (x == next.x && y_minus == next.y) {
+        } else if (x_minus == next.x && y == next.y) {
             return N;
         } else if (x_minus == next.x && y_minus == next.y) {
             return NW;
-        } else if (x_minus == next.x && y == next.y) {
+        } else if (x == next.x && y_minus == next.y) {
             return W;
-        } else if (x_minus == next.x && y_plus == next.y) {
+        } else if (x_plus == next.x && y_minus == next.y) {
             return SW;
-        } else if (x == next.x && y_plus == next.y) {
+        } else if (x_plus == next.x && y == next.y) {
             return S;
         }
         // TODO: Error

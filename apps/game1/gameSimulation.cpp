@@ -9,6 +9,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     grid[player1->current_x][player1->current_y] = 19;
+    //player1->printBoard(grid);
     player1->ontrack = true;
     observation ob = player1->createObservation(grid, enemies);
     player1->createStartState(ob);
@@ -17,13 +18,13 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     //player1->cur_state->updateObstacleDistances(grid, player1->current_x, player1->current_y);
     int time = 1;
     int actionError = 0;
-    while(player1->current_x != destination_x && player1->current_y != destination_y && player1->life_left > 0
-    && time < SESSION_TIMEOUT) {
+    while(!isDestinationReached() && player1->life_left > 0 && time < SESSION_TIMEOUT) {
         std::cout<<"Time "<<time<<endl;
         std::cout<<"player ("<<player1->current_x<<","<<player1->current_y<<")"<<endl;
         // Next Action
         int action = movePlayer(&actionError);
         grid[player1->current_x][player1->current_y] = 19;
+        //player1->printBoard(grid);
         moveEnemies(enemies);
         ob = player1->createObservation(grid, enemies);
         int reward = calculateReward(enemies, ob, actionError);
@@ -88,7 +89,7 @@ void gameSimulation::fight(std::vector<enemy> &enemies) {
 
 
 int gameSimulation::calculateReward(vector<enemy> &enemies, observation &ob, int action_error) {
-    if(player1->current_x == destination_x && player1->current_y == destination_y) {
+    if(isDestinationReached()) {
         return REWARD_REACH;
     }
     enemy e = enemies[0];
@@ -150,4 +151,8 @@ void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, vector<enem
     for(enemy e: enemies) {
         grid[e.start_x][e.start_y] = e.id;
     }
+}
+
+bool gameSimulation::isDestinationReached() {
+    return player1->current_x == player1->destination_x && player1->current_y == player1->destination_y;
 }

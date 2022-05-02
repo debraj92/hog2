@@ -17,12 +17,14 @@ public:
     int setDodgeRightActionCoordinates(int& x, int& y, int direction);
     int setDodgeDiagonalRightActionCoordinates(int& x, int& y, int direction);
 
+    int setNCoordinates(int& x, int& y);
+    int setNECoordinates(int& x, int& y);
+    int setNWCoordinates(int& x, int& y);
+    int setECoordinates(int& x, int& y);
+    int setWCoordinates(int& x, int& y);
+    int setSCoordinates(int& x, int& y);
     int setSECoordinates(int& x, int& y);
     int setSWCoordinates(int& x, int& y);
-    int setSCoordinates(int& x, int& y);
-
-    int setNECoordinates(int& x, int& y);
-    int setECoordinates(int& x, int& y);
 };
 
 

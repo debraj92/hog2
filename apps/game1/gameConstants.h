@@ -5,11 +5,19 @@
 #ifndef EXAMPLE_GAMECONSTANTS_H
 #define EXAMPLE_GAMECONSTANTS_H
 
-const int MAX_EPISODES = 2000;
-const int SESSION_TIMEOUT = 20;
+const int MAX_EPISODES = 10000;
+const int SESSION_TIMEOUT = 50;
 
+/**
+ * Debug Params
+ */
+//const int MAX_EPISODES = 2000;
+//const int SESSION_TIMEOUT = 20;
+//const int GRID_SPAN=5;
+
+//const int GRID_SPAN=100;
 const int GRID_SPAN=12;
-static const int MAX_STATES = 5000;
+static const int MAX_STATES = 10000;
 
 /**
  *    NW  N  NE
@@ -55,5 +63,7 @@ const int REWARD_TRACK_FOLLOW = -1;
 const int REWARD_TRACK_ONE_DIV = -2;
 const int REWARD_TRACK_TWO_DIV = -3;
 const int REWARD_OFFTRACK = -4;
+
+const int MAX_LIFE = 10;
 
 #endif //EXAMPLE_GAMECONSTANTS_H

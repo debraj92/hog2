@@ -33,7 +33,9 @@ public:
 
     //void startGame(int mapNo);
 
-    void train(int mapNo);
+    void train();
+
+    void printMap();
 
 };
 #endif //EXAMPLE_GAMEENV_H

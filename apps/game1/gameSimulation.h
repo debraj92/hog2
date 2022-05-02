@@ -17,9 +17,6 @@ using namespace std;
 
 class gameSimulation : public coordinatesUtil {
 
-    int destination_x = GRID_SPAN - 1;
-    int destination_y = GRID_SPAN - 1;
-
     int total_rewards = 0;
 
     int movePlayer(int* error);
@@ -30,9 +27,10 @@ class gameSimulation : public coordinatesUtil {
 
     void printAction(int action);
 
+    bool isDestinationReached();
+
 public:
     player* player1;
-    //rl_control& rl;
 
     void learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
 

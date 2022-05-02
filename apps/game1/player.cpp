@@ -71,7 +71,25 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     vector<double> episodes;
     gameSimulation game;
     game.player1 = this;
+
+    int sources[4][2] = {
+            {0, 0},
+            {GRID_SPAN-1, GRID_SPAN-1},
+            {0, (GRID_SPAN-1)/2},
+            {GRID_SPAN-1, (GRID_SPAN-1)/2}
+    };
+    int destinations[4][2] = {
+            {GRID_SPAN-1, GRID_SPAN-1},
+            {0, 0},
+            {GRID_SPAN-1, (GRID_SPAN-1) / 2},
+            {0, (GRID_SPAN-1)/2}
+    };
+
+
     for(int i=1; i<MAX_EPISODES; i++) {
+        // pick a random source and destination
+        game.player1->initialize(sources[i%4][0], sources[i%4][1], destinations[i%4][0], destinations[i%4][1]);
+
         cout<<"EPOCH "<<i<<endl;
         game.learnToPlay(grid, enemies);
         printAllStatesAndPolicies();
@@ -105,14 +123,17 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 observation player::createObservation(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
     cout<<"player::createObservation"<<endl;
     observation ob;
-    ob.direction = getDirection();
     if (!isOnTrack()) {
         cout<<"("<<current_x<<", "<<current_y<<") is not on track"<<endl;
         locateTrajectoryAndDirection(ob);
     } else {
         cout<<"("<<current_x<<", "<<current_y<<") is on track"<<endl;
         ob.trajectory = on_track;
+        ob.direction = getDirection();
     }
+    /**
+     * Trajectory and direction may not be set
+     */
     enemyLocator el;
     for(const enemy& e: enemies) {
         el.locateEnemy(current_x, current_y, ob.direction, e.current_x, e.current_y);
@@ -127,10 +148,9 @@ observation player::createObservation(std::vector<std::vector<int>> &grid, std::
 }
 
 void player::reset(std::vector<std::vector<int>> &grid) {
-    // TODO: current_x and current_y can be anywhere in the map
-    current_x = 0;
-    current_y = 0;
-    life_left = 10;
+    current_x = source_x;
+    current_y = source_y;
+    life_left = MAX_LIFE;
 }
 
 int player::getDirection() {
@@ -167,4 +187,16 @@ void player::printBoard(std::vector<std::vector<int>> &grid) {
         }
         cout<<"\n";
     }
+}
+
+void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
+    source_x = src_x;
+    source_y = src_y;
+    destination_x = dest_x;
+    destination_y = dest_y;
+    life_left = MAX_LIFE;
+    ontrack = true;
+    current_x = source_x;
+    current_y = source_y;
+
 }

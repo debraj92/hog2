@@ -35,7 +35,7 @@ void GameEnv::createMap1() {
 
 void GameEnv::createMap2() {
     createEmptyGrid();
-    fixedEnemy f1(GRID_SPAN/2, GRID_SPAN/2, 1);
+    fixedEnemy f1(GRID_SPAN/2, (GRID_SPAN-1)/2, 1);
     enemies.push_back(f1);
 }
 /*
@@ -45,9 +45,17 @@ void GameEnv::startGame(int mapNo) {
     game.learnToPlay(grid, enemies);
 }
 */
-void GameEnv::train(int mapNo) {
-    createMap2();
-    player player1(0, 0, 10, GRID_SPAN -1, GRID_SPAN -1);
+void GameEnv::train() {
+    player player1;
     player1.learnGame(grid, enemies);
+}
+
+void GameEnv::printMap() {
+    for (int row=0; row<GRID_SPAN; row++) {
+        for (int col=0; col<GRID_SPAN; col++) {
+            cout<<grid[row][col]<<" ";
+        }
+        cout<<"\n";
+    }
 }
 
