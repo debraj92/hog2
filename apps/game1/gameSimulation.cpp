@@ -134,9 +134,9 @@ int gameSimulation::calculateReward(vector<enemy> &enemies, observation &ob, int
     }
     if(ob.trajectory == on_track) {
         return REWARD_TRACK_FOLLOW;
-    } else if (ob.trajectory >= 11 && ob.trajectory <= 14) {
+    } else if (ob.trajectory >= lower_bound_one_deviation && ob.trajectory <= upper_bound_one_deviation) {
         return REWARD_TRACK_ONE_DIV;
-    } else if (ob.trajectory >= 21 && ob.trajectory <= 24) {
+    } else if (ob.trajectory >= lower_bound_two_deviation && ob.trajectory <= upper_bound_two_deviation) {
         return REWARD_TRACK_TWO_DIV;
     } else {
         return REWARD_OFFTRACK;

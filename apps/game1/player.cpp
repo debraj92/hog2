@@ -8,75 +8,12 @@
 #include "gameSimulation.h"
 #include "plot/pbPlots.hpp"
 #include "plot/supportLib.hpp"
-#include "enemyLocator.h"
 
 #include <random>
 #include <iostream>
 
 void player::takeDamage(int points) {
     life_left -= points;
-}
-
-/**
- *   -->y
- *   |
- *   v
- *   x
- */
-
-void player::locateTrajectoryAndDirection(observation &ob) {
-    cout<<"locateTrajectoryAndDirection "<<endl;
-    int row, col;
-    for (int i=1; i<=VISION_RADIUS; i++) {
-        row = current_x - i;
-        if (row > 0) {
-            for(col=current_y - i; col<=current_y + i; col++) {
-                if (col > 0 && col < GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
-                        ob.direction = fp->pathDirection(row, col);
-                        ob.trajectory = (i*10) + 1;
-                        return;
-                    }
-                }
-            }
-        }
-        row = current_x + i;
-        if (row < GRID_SPAN - 1) {
-            for(col=current_y - i; col<=current_y + i; col++) {
-                if (col > 0 && col < GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
-                        ob.direction = fp->pathDirection(row, col);
-                        ob.trajectory = (i*10) + 2;
-                        return;
-                    }
-                }
-            }
-        }
-        col = current_y - i;
-        if (col > 0) {
-            for(row=current_x - i; row<=current_x + i; row++) {
-                if (row > 0 && row < GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
-                        ob.direction = fp->pathDirection(row, col);
-                        ob.trajectory = (i*10) + 3;
-                        return;
-                    }
-                }
-            }
-        }
-        col = current_y + i;
-        if (col < GRID_SPAN - 1) {
-            for(row=current_x - i; row<=current_x + i; row++) {
-                if (row > 0 && row < GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
-                        ob.direction = fp->pathDirection(row, col);
-                        ob.trajectory = (i*10) + 4;
-                        return;
-                    }
-                }
-            }
-        }
-    }
 }
 
 void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
@@ -126,8 +63,8 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
         // pick a random source and destination
         int src_x, src_y, dest_x, dest_y;
 
-        game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
-        //game.player1->initialize(sources[10][0], sources[10][1], destinations[10][0], destinations[10][1]);
+        //game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
+        game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
         //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
         //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
@@ -178,25 +115,17 @@ observation player::createObservation(std::vector<std::vector<int>> &grid, std::
     observation ob;
     if (!isOnTrack()) {
         cout<<"("<<current_x<<", "<<current_y<<") is not on track"<<endl;
-        locateTrajectoryAndDirection(ob);
+        ob.locateTrajectoryAndDirection(fp, current_x, current_y);
     } else {
         cout<<"("<<current_x<<", "<<current_y<<") is on track"<<endl;
         ob.trajectory = on_track;
         ob.direction = getDirection();
     }
-    /**
-     * Trajectory and direction may not be set
-     */
-    enemyLocator el;
-    for(const enemy& e: enemies) {
-        el.locateEnemy(current_x, current_y, ob.direction, e.current_x, e.current_y);
-        double distance = el.getEnemyDistance();
-        if (distance <= VISION_RADIUS * sqrt(2)) {
-            ob.enemy_distance = distance;
-            ob.enemy_cosine = el.getEnemyCosine();
-        }
+
+    if (ob.direction != 0) {
+        ob.locateEnemies(enemies, current_x, current_y);
+        ob.updateObstacleDistances(grid, current_x, current_y);
     }
-    ob.updateObstacleDistances(grid, current_x, current_y);
     return ob;
 }
 
@@ -212,7 +141,7 @@ int player::getDirection() {
 
 void player::findPathToDestination(std::vector<std::vector<int>> &grid, int src_x, int src_y, int dst_x, int dst_y) {
     cout<<"Find path to destination"<<endl;
-    fp = std::make_unique<findPath>(grid, src_x, src_y, dst_x, dst_y);
+    fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
     fp->findPathToDestination();
 }
 

@@ -8,17 +8,15 @@
 #include "state.h"
 #include "vector"
 #include <set>
-#include "enemy/enemy.h"
 #include "rl_control.h"
 #include <cmath>
 #include "findPath.h"
 
 class player : public rl_control {
 
-    unique_ptr<findPath> fp;
+    shared_ptr<findPath> fp;
 
     //state cur_state;
-    void locateTrajectoryAndDirection(observation& ob);
     void reset(std::vector<std::vector<int>> &grid);
 
 public:
