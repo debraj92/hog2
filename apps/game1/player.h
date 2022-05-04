@@ -40,6 +40,8 @@ public:
 
     void learnGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
 
+    void playGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y);
+
     observation createObservation(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies);
 
     int getDirection();
@@ -50,9 +52,13 @@ public:
 
     bool isOnTrack();
 
-    void evaluateActionQValues(int reward, observation& next_observation, int current_action, std::vector<std::vector<int>> &grid);
+    void evaluateActionQValues(int reward, observation& next_observation, int current_action);
+
+    void getNextStateForInference(observation& next_observation);
 
     void printBoard(std::vector<std::vector<int>> &grid);
+
+    void selectRandomSourceAndDestinationCoordinates(std::mt19937 &rng, std::uniform_int_distribution<std::mt19937::result_type> &randGen, std::vector<std::vector<int>> &grid, int &src_x, int &src_y, int &dest_x, int &dest_y);
 };
 
 

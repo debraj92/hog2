@@ -35,18 +35,13 @@ void GameEnv::createMap1() {
 
 void GameEnv::createMap2() {
     createEmptyGrid();
-    fixedEnemy f1(GRID_SPAN/2, (GRID_SPAN-1)/2, 1);
+    fixedEnemy f1(GRID_SPAN/2, GRID_SPAN/2, 1);
+    fixedEnemy f2(GRID_SPAN/2-1, GRID_SPAN/2-1, 1);
     enemies.push_back(f1);
+    //enemies.push_back(f2);
 }
-/*
-void GameEnv::startGame(int mapNo) {
-    createMap2();
-    gameSimulation game;
-    game.learnToPlay(grid, enemies);
-}
-*/
+
 void GameEnv::train() {
-    player player1;
     player1.learnGame(grid, enemies);
 }
 
@@ -57,5 +52,9 @@ void GameEnv::printMap() {
         }
         cout<<"\n";
     }
+}
+
+void GameEnv::test(int source_x, int source_y, int destination_x, int destination_y, std::vector<enemy> &enemies) {
+    player1.playGame(grid, enemies, source_x, source_y, destination_x, destination_y);
 }
 

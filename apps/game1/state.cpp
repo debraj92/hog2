@@ -9,6 +9,7 @@
 using namespace std;
 
 unsigned long state::getMaxQValueAction() {
+    printPolicy();
     return argmax(policy)(0) + 1;
 }
 
@@ -32,6 +33,7 @@ double state::getMaxProbability() {
 
 void state::printPolicy() {
     cout<<"X,Y ="<<x<<", "<<y<<endl;
+    cout<<"Policy Size"<<policy.size()<<endl;
     cout<<"ACTION_FOLLOW: "<<policy.at(ACTION_FOLLOW-1)<<endl;
     cout<<"ACTION_DODGE_LEFT: "<<policy.at(ACTION_DODGE_LEFT -1)<<endl;
     cout<<"ACTION_DODGE_DIAGONAL_LEFT: "<<policy.at(ACTION_DODGE_DIAGONAL_LEFT -1)<<endl;

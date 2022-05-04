@@ -10,10 +10,19 @@
 #include "plot/supportLib.hpp"
 #include "enemyLocator.h"
 
+#include <random>
+#include <iostream>
+
 void player::takeDamage(int points) {
     life_left -= points;
 }
 
+/**
+ *   -->y
+ *   |
+ *   v
+ *   x
+ */
 
 void player::locateTrajectoryAndDirection(observation &ob) {
     cout<<"locateTrajectoryAndDirection "<<endl;
@@ -26,6 +35,7 @@ void player::locateTrajectoryAndDirection(observation &ob) {
                     if (fp->isOnTrack(row, col)) {
                         ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 1;
+                        return;
                     }
                 }
             }
@@ -37,6 +47,7 @@ void player::locateTrajectoryAndDirection(observation &ob) {
                     if (fp->isOnTrack(row, col)) {
                         ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 2;
+                        return;
                     }
                 }
             }
@@ -48,6 +59,7 @@ void player::locateTrajectoryAndDirection(observation &ob) {
                     if (fp->isOnTrack(row, col)) {
                         ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 3;
+                        return;
                     }
                 }
             }
@@ -59,6 +71,7 @@ void player::locateTrajectoryAndDirection(observation &ob) {
                     if (fp->isOnTrack(row, col)) {
                         ob.direction = fp->pathDirection(row, col);
                         ob.trajectory = (i*10) + 4;
+                        return;
                     }
                 }
             }
@@ -72,23 +85,51 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     gameSimulation game;
     game.player1 = this;
 
-    int sources[4][2] = {
+
+    int sources[11][2] = {
             {0, 0},
             {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, (GRID_SPAN-1)/2}
+            {0, (GRID_SPAN)/2},
+            {1, (GRID_SPAN)/4},
+            {GRID_SPAN-1, (GRID_SPAN)/2},
+            {(GRID_SPAN)/2, GRID_SPAN-1},
+            {0, GRID_SPAN-1},
+            {(GRID_SPAN)/2,0},
+            {(GRID_SPAN)/3,GRID_SPAN-1},
+            {GRID_SPAN-2, GRID_SPAN-1},
+            {GRID_SPAN-1, GRID_SPAN-1}
     };
-    int destinations[4][2] = {
+    int destinations[11][2] = {
             {GRID_SPAN-1, GRID_SPAN-1},
             {0, 0},
-            {GRID_SPAN-1, (GRID_SPAN-1) / 2},
-            {0, (GRID_SPAN-1)/2}
+            {GRID_SPAN-1, (GRID_SPAN) / 2},
+            {GRID_SPAN-1, GRID_SPAN-1},
+            {0, (GRID_SPAN)/2},
+            {(GRID_SPAN)/2, 0},
+            {GRID_SPAN-1, 2},
+            {(GRID_SPAN)/3,GRID_SPAN-1},
+            {0, (GRID_SPAN)/3},
+            {1, 0},
+            {1, 0}
     };
+
+
+    /*
+     * TODO: Will work only when dodge is perfectly implemented - no getting lost
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> randomGen(0,GRID_SPAN-1);
+     */
 
 
     for(int i=1; i<MAX_EPISODES; i++) {
         // pick a random source and destination
-        game.player1->initialize(sources[i%4][0], sources[i%4][1], destinations[i%4][0], destinations[i%4][1]);
+        int src_x, src_y, dest_x, dest_y;
+
+        game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
+        //game.player1->initialize(sources[10][0], sources[10][1], destinations[10][0], destinations[10][1]);
+        //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
+        //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
         cout<<"EPOCH "<<i<<endl;
         game.learnToPlay(grid, enemies);
@@ -118,6 +159,18 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
         cerr << endl;
     }
 
+}
+
+void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y) {
+    gameSimulation game;
+    game.player1 = this;
+    cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
+    this->initialize(src_x, src_y, dest_x, dest_y);
+    game.play(grid, enemies);
+    cout<<endl;
+    printBoard(grid);
+    reset(grid);
+    game.reset(grid);
 }
 
 observation player::createObservation(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
@@ -173,10 +226,15 @@ bool player::isOnTrack() {
     return fp->isOnTrack(current_x, current_y);
 }
 
-void player::evaluateActionQValues(int reward, observation &next_observation, int current_action, std::vector<std::vector<int>> &grid) {
+void player::evaluateActionQValues(int reward, observation &next_observation, int current_action) {
     cur_state = evaluateActionProbabilities(reward, next_observation, current_action);
     ontrack = next_observation.trajectory == on_track;
     //cur_state->updateObstacleDistances(grid, current_x, current_y);
+}
+
+void player::getNextStateForInference(observation &next_observation) {
+    cur_state = getNextStateFromObservation(next_observation);
+    ontrack = next_observation.trajectory == on_track;
 }
 
 void player::printBoard(std::vector<std::vector<int>> &grid) {
@@ -200,3 +258,27 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
     current_y = source_y;
 
 }
+
+void player::selectRandomSourceAndDestinationCoordinates(std::mt19937 &rng, std::uniform_int_distribution<std::mt19937::result_type> &randGen, std::vector<std::vector<int>> &grid, int &src_x, int &src_y, int &dest_x, int &dest_y) {
+    bool src_generated = false;
+    while(!src_generated) {
+        src_x = randGen(rng);
+        src_y = randGen(rng);
+        if(grid[src_x][src_y]==0) {
+            src_generated = true;
+        }
+    }
+
+    bool dest_generated = false;
+    while(!dest_generated) {
+        dest_x = randGen(rng);
+        dest_y = randGen(rng);
+        if(grid[dest_x][dest_y]==0 && !(dest_x == src_x && dest_y == src_y)) {
+            dest_generated = true;
+        }
+    }
+
+    cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
+}
+
+

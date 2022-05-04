@@ -7,10 +7,13 @@
 
 #include <vector>
 #include "enemy/fixedEnemy.h"
+#include "player.h"
 
 class GameEnv {
 
     std::vector<std::vector<int>> grid;
+
+    player player1;
 
     static const int TOTAL_FIXED_OBSTACLES = 4;
     int obstacles[TOTAL_FIXED_OBSTACLES][4] = {
@@ -34,6 +37,8 @@ public:
     //void startGame(int mapNo);
 
     void train();
+
+    void test(int source_x, int source_y, int destination_x, int destination_y, std::vector<enemy> &enemies);
 
     void printMap();
 

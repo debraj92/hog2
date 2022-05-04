@@ -4,6 +4,34 @@
 
 #include "gameSimulation.h"
 
+
+void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+    cout<<"gameSimulation::play"<<endl;
+    populateEnemies(grid, enemies);
+    player1->findPathToDestination(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+    grid[player1->current_x][player1->current_y] = 19;
+    int time = 1;
+    int actionError = 0;
+    while(!isDestinationReached() && player1->life_left > 0 && time < SESSION_TIMEOUT) {
+        std::cout<<"Time "<<time<<endl;
+        std::cout<<"player ("<<player1->current_x<<","<<player1->current_y<<")"<<endl;
+        // Observe the state and take an action
+        observation ob = player1->createObservation(grid, enemies);
+        player1->getNextStateForInference(ob);
+        player1->cur_state->x = player1->current_x;
+        player1->cur_state->y = player1->current_y;
+        // Next Action
+        movePlayer(&actionError, true);
+        grid[player1->current_x][player1->current_y] = 19;
+        player1->printBoard(grid);
+        moveEnemies(enemies);
+        fight(enemies);
+        time++;
+    }
+    std::cout<<"Player 1 life left "<<player1->life_left<<"\n";
+}
+
+
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {
     cout<<"gameSimulation::learnToPlay"<<endl;
     populateEnemies(grid, enemies);
@@ -28,7 +56,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         moveEnemies(enemies);
         ob = player1->createObservation(grid, enemies);
         int reward = calculateReward(enemies, ob, actionError);
-        player1->evaluateActionQValues(reward, ob, action, grid);
+        player1->evaluateActionQValues(reward, ob, action);
         player1->cur_state->x = player1->current_x;
         player1->cur_state->y = player1->current_y;
         fight(enemies);
@@ -39,8 +67,13 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
 }
 
 // TODO: Handle move unavailable - don't change state
-int gameSimulation::movePlayer(int* error) {
-    int nextAction = player1->getNextAction();
+int gameSimulation::movePlayer(int* error, bool isInference) {
+    int nextAction;
+    if (isInference) {
+        nextAction = player1->getNextActionForInference();
+    } else {
+        nextAction = player1->getNextAction();
+    }
     std::cout<<"NEXT ACTION ";
     printAction(nextAction);
     switch(nextAction) {
@@ -132,7 +165,11 @@ void gameSimulation::printAction(int action) {
         case ACTION_DODGE_DIAGONAL_RIGHT:
             cout<<"ACTION_DODGE_DIAGONAL_RIGHT"<<endl;
             break;
-
+        case ACTION_STRAIGHT:
+            cout<<"ACTION_STRAIGHT"<<endl;
+            break;
+        default:
+            cout<<"INVALID ACTION "<<action<<endl;
     }
 }
 

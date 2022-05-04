@@ -17,6 +17,12 @@ state* rl_control::evaluateActionProbabilities(int reward, observation& next_obs
     return &states[next_state_index];
 }
 
+state *rl_control::getNextStateFromObservation(observation &next_observation) {
+    cout<<"rl_control::getNextStateFromObservation"<<endl;
+    int next_state_index = getStateFromObservation(next_observation);
+    return &states[next_state_index];
+}
+
 double rl_control::getCurrentQValue(state *current_state, int current_action) {
     cout<<"rl_control::getCurrentQValue"<<endl;
     return current_state->getQvalueOfAction(current_action);
@@ -36,6 +42,7 @@ int rl_control::getStateFromObservation(observation &ob) {
             return i;
         }
     }
+    cout<<"No matching state found "<<endl;
     return -1;
 }
 
@@ -62,6 +69,10 @@ int rl_control::getNextAction() {
     } else {
         return cur_state->getMaxQValueAction();
     }
+}
+
+int rl_control::getNextActionForInference() {
+    return cur_state->getMaxQValueAction();
 }
 
 void rl_control::createStartState(observation& ob) {
@@ -106,3 +117,10 @@ void rl_control::copyObstacleInfo(observation &ob, state& new_state) {
     new_state.obstacle_front_right = ob.obstacle_front_right;
 }
 
+void rl_control::createModel() {
+
+}
+
+void rl_control::restoreModel() {
+
+}

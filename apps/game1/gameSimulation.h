@@ -19,7 +19,7 @@ class gameSimulation : public coordinatesUtil {
 
     int total_rewards = 0;
 
-    int movePlayer(int* error);
+    int movePlayer(int* error, bool isInference = false);
     void moveEnemies(std::vector<enemy>& enemies);
     void fight(std::vector<enemy>& enemies);
     int calculateReward(std::vector<enemy>& enemies, observation &ob, int action_error);
@@ -33,6 +33,8 @@ public:
     player* player1;
 
     void learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
+
+    void play(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
 
     int getTotalRewardsCollected();
 

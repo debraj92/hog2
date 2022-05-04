@@ -6,6 +6,7 @@
 #include <vector>
 #include "../AStar_.h"
 #include "../gameConstants.h"
+#include "../gameEnv.h"
 
 using namespace std;
 
@@ -44,4 +45,24 @@ TEST(AStarFindPathNE, BasicAssertions) {
     AStar_ aStar(grid, 5, 6, 11, 0);
     bool found = aStar.findPathToDestination();
     ASSERT_TRUE(found);
+}
+
+TEST(AStarRL_DodgeDemo1, BasicAssertions) {
+
+GameEnv gameEnv;
+gameEnv.createMap2();
+gameEnv.train();
+
+fixedEnemy f1(GRID_SPAN/2, GRID_SPAN/2, 1);
+std::vector<enemy> enemies;
+enemies.push_back(f1);
+gameEnv.test(0, 0, GRID_SPAN - 1, GRID_SPAN - 1, enemies);
+cout<<"****************************"<<endl;
+gameEnv.test(0, (GRID_SPAN)/2, GRID_SPAN-1, (GRID_SPAN) / 2, enemies);
+cout<<"****************************"<<endl;
+gameEnv.test((GRID_SPAN)/3,GRID_SPAN-1, 0, (GRID_SPAN)/3, enemies);
+cout<<"****************************"<<endl;
+gameEnv.test(1, (GRID_SPAN)/4, GRID_SPAN-1, GRID_SPAN-1, enemies);
+cout<<"****************************"<<endl;
+gameEnv.test(GRID_SPAN-1, GRID_SPAN-1, 1, 0, enemies);
 }

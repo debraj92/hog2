@@ -43,7 +43,11 @@ public:
 
     state* evaluateActionProbabilities(int reward, observation& next_observation, int current_action);
 
+    state* getNextStateFromObservation(observation& next_observation);
+
     int getNextAction();
+
+    int getNextActionForInference();
 
     void createStartState(observation& ob);
 
@@ -52,6 +56,10 @@ public:
     void printAllStatesAndPolicies();
 
     void copyObstacleInfo(observation& ob, state& new_state);
+
+    void createModel();
+
+    void restoreModel();
 
 };
 
