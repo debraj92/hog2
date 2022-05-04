@@ -4,7 +4,7 @@
 
 #include "observation.h"
 #include "coordinatesUtil.h"
-#include "enemyLocator.h"
+#include "objectLocator.h"
 
 using namespace std;
 void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid, int x, int y) {
@@ -142,14 +142,34 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
 }
 
 void observation::locateEnemies(std::vector<enemy> &enemies, int current_x, int current_y) {
-    enemyLocator el;
+    objectLocator ol;
     for(const enemy& e: enemies) {
-        el.locateEnemy(current_x, current_y, direction, e.current_x, e.current_y);
-        double distance = el.getEnemyDistance();
+        ol.locateObject(current_x, current_y, direction, e.current_x, e.current_y);
+        double distance = ol.getObjectDistance();
         if (distance <= VISION_RADIUS * sqrt(2)) {
             enemy_distance = distance;
-            enemy_cosine = el.getEnemyCosine();
+            enemy_cosine = ol.getObjectCosine();
+        } else {
+            // reset
+            enemy_distance = 5*VISION_RADIUS;
+            enemy_cosine = -1; // cos theta
         }
     }
 }
+
+// This is probably not required because the goal of RL is to tackle adversary and restore to A star track.
+void observation::locateDestination(int current_x, int current_y, int destination_x, int destination_y) {
+    objectLocator ol;
+    ol.locateObject(current_x, current_y, direction, destination_x, destination_y);
+    double distance = ol.getObjectDistance();
+    if (distance <= VISION_RADIUS * sqrt(2)) {
+        destination_distance = distance;
+        destination_cosine = ol.getObjectCosine();
+    } else {
+        destination_distance = 1000;
+        destination_cosine = -1;
+    }
+}
+
+
 

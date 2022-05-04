@@ -63,8 +63,8 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
         // pick a random source and destination
         int src_x, src_y, dest_x, dest_y;
 
-        //game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
-        game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
+        game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
+        //game.player1->initialize(sources[9][0], sources[9][1], destinations[9][0], destinations[9][1]);
         //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
         //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
@@ -124,6 +124,7 @@ observation player::createObservation(std::vector<std::vector<int>> &grid, std::
 
     if (ob.direction != 0) {
         ob.locateEnemies(enemies, current_x, current_y);
+        //ob.locateDestination(current_x, current_y, destination_x, destination_y);
         ob.updateObstacleDistances(grid, current_x, current_y);
     }
     return ob;

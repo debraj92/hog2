@@ -168,6 +168,9 @@ void gameSimulation::printAction(int action) {
         case ACTION_STRAIGHT:
             cout<<"ACTION_STRAIGHT"<<endl;
             break;
+        case ACTION_REROUTE:
+            cout<<"ACTION_REROUTE"<<endl;
+            break;
         default:
             cout<<"INVALID ACTION "<<action<<endl;
     }

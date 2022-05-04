@@ -18,6 +18,8 @@ public:
     double enemy_distance = 5*VISION_RADIUS;
     double enemy_cosine = -1; // cos theta
     int trajectory = 0;
+    double destination_distance = 1000;
+    double destination_cosine = -1;
 
     int obstacle_front = VISION_RADIUS + 1; // can be at distance 0/1/2 deviation
     int obstacle_left = VISION_RADIUS + 1;
@@ -28,6 +30,7 @@ public:
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int current_x, int current_y);
     void updateObstacleDistances(std::vector<std::vector<int>> &grid, int x, int y);
     void locateEnemies(std::vector<enemy>& enemies, int current_x, int current_y);
+    void locateDestination(int current_x, int current_y, int destination_x, int destination_y);
 
     void printData();
 };
