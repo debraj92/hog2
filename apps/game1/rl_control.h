@@ -37,6 +37,8 @@ class rl_control {
 
     bool checkObstacles(observation& ob, state &s);
 
+    bool compareEnemies(observation& ob, state &s);
+
 public:
 
     state *cur_state;

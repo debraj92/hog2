@@ -36,8 +36,9 @@ int rl_control::getStateFromObservation(observation &ob) {
     cout<<"rl_control::getStateFromObservation"<<endl;
     for(int i = 0; i<nextFreeSlot; i++) {
         state m = states[i];
-        if(ob.enemy_distance == states[i].enemy_distance && ob.enemy_cosine == states[i].enemy_cosine &&
-        ob.trajectory == states[i].trajectory && checkObstacles(ob, states[i])
+        if(compareEnemies(ob, states[i])
+        && ob.trajectory == states[i].trajectory
+        && checkObstacles(ob, states[i])
         && ob.direction == states[i].direction) {
             return i;
         }
@@ -49,8 +50,16 @@ int rl_control::getStateFromObservation(observation &ob) {
 void rl_control::createNonTerminalState(observation &ob) {
     cout<<"rl_control::createNonTerminalState"<<endl;
     state new_state;
-    new_state.enemy_distance = ob.enemy_distance;
-    new_state.enemy_cosine = ob.enemy_cosine;
+    new_state.enemy_distance_1 = ob.enemy_distance_1;
+    new_state.enemy_distance_2 = ob.enemy_distance_2;
+    new_state.enemy_distance_3 = ob.enemy_distance_3;
+    new_state.enemy_distance_4 = ob.enemy_distance_4;
+
+    new_state.enemy_cosine_1 = ob.enemy_cosine_1;
+    new_state.enemy_cosine_2 = ob.enemy_cosine_2;
+    new_state.enemy_cosine_3 = ob.enemy_cosine_3;
+    new_state.enemy_cosine_4 = ob.enemy_cosine_4;
+
     new_state.trajectory = ob.trajectory;
     new_state.direction = ob.direction;
     copyObstacleInfo(ob, new_state);
@@ -79,8 +88,17 @@ void rl_control::createStartState(observation& ob) {
     int next_state_index = getStateFromObservation(ob);
     if (next_state_index == -1) {
         state new_state;
-        new_state.enemy_distance = ob.enemy_distance;
-        new_state.enemy_cosine = ob.enemy_cosine;
+
+        new_state.enemy_distance_1 = ob.enemy_distance_1;
+        new_state.enemy_distance_2 = ob.enemy_distance_2;
+        new_state.enemy_distance_3 = ob.enemy_distance_3;
+        new_state.enemy_distance_4 = ob.enemy_distance_4;
+
+        new_state.enemy_cosine_1 = ob.enemy_cosine_1;
+        new_state.enemy_cosine_2 = ob.enemy_cosine_2;
+        new_state.enemy_cosine_3 = ob.enemy_cosine_3;
+        new_state.enemy_cosine_4 = ob.enemy_cosine_4;
+
         new_state.trajectory = ob.trajectory;
         new_state.direction = ob.direction;
         copyObstacleInfo(ob, new_state);
@@ -123,4 +141,11 @@ void rl_control::createModel() {
 
 void rl_control::restoreModel() {
 
+}
+
+bool rl_control::compareEnemies(observation &ob, state &s) {
+    return ob.enemy_distance_1 == s.enemy_distance_1 && ob.enemy_distance_2 == s.enemy_distance_2 &&
+            ob.enemy_distance_3 == s.enemy_distance_3 && ob.enemy_distance_4 == s.enemy_distance_4 &&
+            ob.enemy_cosine_1 == s.enemy_cosine_1 && ob.enemy_cosine_2 == s.enemy_cosine_2 &&
+            ob.enemy_cosine_3 == s.enemy_cosine_3 && ob.enemy_cosine_4 == s.enemy_cosine_4;
 }

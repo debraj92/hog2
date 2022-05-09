@@ -15,8 +15,22 @@ class observation {
 
 public:
     int direction = 0;
-    double enemy_distance = 5*VISION_RADIUS;
-    double enemy_cosine = -1; // cos theta
+    /**
+     * Assumption: Maximum 4 enemies within the vision radius
+     */
+    double enemy_distance_1 = 5*VISION_RADIUS;
+    double enemy_cosine_1 = -1; // cos theta
+
+    double enemy_distance_2 = 5*VISION_RADIUS;
+    double enemy_cosine_2 = -1; // cos theta
+
+    double enemy_distance_3 = 5*VISION_RADIUS;
+    double enemy_cosine_3 = -1; // cos theta
+
+    double enemy_distance_4 = 5*VISION_RADIUS;
+    double enemy_cosine_4 = -1; // cos theta
+
+
     int trajectory = 0;
     double destination_distance = 1000;
     double destination_cosine = -1;

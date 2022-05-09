@@ -39,7 +39,13 @@ void GameEnv::createMap1() {
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
     fixedEnemy f1(7, 7, 1);
+    fixedEnemy f2(7, 6, 2);
+    fixedEnemy f3(8, 9, 3);
+    fixedEnemy f4(5, 7, 4);
     enemies.push_back(f1);
+    enemies.push_back(f2);
+    enemies.push_back(f3);
+    enemies.push_back(f4);
 }
 
 void GameEnv::createMap2() {
