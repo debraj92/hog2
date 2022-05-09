@@ -15,15 +15,6 @@ class GameEnv {
 
     player player1;
 
-    static const int TOTAL_FIXED_OBSTACLES = 4;
-    int obstacles[TOTAL_FIXED_OBSTACLES][4] = {
-            //x_s, x_e, y_s, y_e
-            {10, 20, 75, 90},
-            {20, 90, 0, 10},
-            {40, 60, 20, 80},
-            {70, 90, 25, 60},
-
-    };
     std::vector<enemy> enemies;
 
 public:

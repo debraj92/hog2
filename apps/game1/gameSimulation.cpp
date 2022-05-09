@@ -9,7 +9,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     cout<<"gameSimulation::play"<<endl;
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
-    grid[player1->current_x][player1->current_y] = 19;
+    grid[player1->current_x][player1->current_y] = 9;
     int time = 1;
     int actionError = 0;
     while(!isDestinationReached() && player1->life_left > 0 && time < SESSION_TIMEOUT) {
@@ -22,7 +22,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         player1->cur_state->y = player1->current_y;
         // Next Action
         movePlayer(&actionError, true);
-        grid[player1->current_x][player1->current_y] = 19;
+        grid[player1->current_x][player1->current_y] = 9;
         player1->printBoard(grid);
         moveEnemies(enemies);
         fight(enemies);
@@ -36,7 +36,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     cout<<"gameSimulation::learnToPlay"<<endl;
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
-    grid[player1->current_x][player1->current_y] = 19;
+    grid[player1->current_x][player1->current_y] = 9;
     //player1->printBoard(grid);
     player1->ontrack = true;
     observation ob = player1->createObservation(grid, enemies);
@@ -51,7 +51,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         std::cout<<"player ("<<player1->current_x<<","<<player1->current_y<<")"<<endl;
         // Next Action
         int action = movePlayer(&actionError);
-        grid[player1->current_x][player1->current_y] = 19;
+        grid[player1->current_x][player1->current_y] = 9;
         //player1->printBoard(grid);
         moveEnemies(enemies);
         ob = player1->createObservation(grid, enemies);
@@ -179,7 +179,7 @@ void gameSimulation::printAction(int action) {
 void gameSimulation::reset(std::vector<std::vector<int>> &grid) {
     for(int i=0; i<GRID_SPAN; i++) {
         for(int j=0; j<GRID_SPAN; j++) {
-            if(grid[i][j] == 19 || grid[i][j] == 1) {
+            if(grid[i][j] > 0) {
                 grid[i][j] = 0;
             }
         }

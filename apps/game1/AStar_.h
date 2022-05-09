@@ -32,6 +32,8 @@ class AStar_ {
 
     void reverseNodeLinks();
 
+    void addEdge(int src, int dest, vector<pair<int, int>> &nodes);
+
 public:
 
     AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) : grid(grid) {

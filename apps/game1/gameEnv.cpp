@@ -21,16 +21,25 @@ void GameEnv::createEmptyGrid() {
 
 void GameEnv::createMap1() {
     createEmptyGrid();
+    const int TOTAL_FIXED_OBSTACLES = 2;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {0, 4, 2, 6},
+            {6, 7, 3, 5}
+
+    };
 
     // fill with static obstacles
     FixedObstacles fixedObstacles;
     for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
-        int x_s = obstacles[obstacle][0];
-        int x_e = obstacles[obstacle][1];
-        int y_s = obstacles[obstacle][2];
-        int y_e = obstacles[obstacle][3];
+        int x_s = blockObstacles[obstacle][0];
+        int x_e = blockObstacles[obstacle][1];
+        int y_s = blockObstacles[obstacle][2];
+        int y_e = blockObstacles[obstacle][3];
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
+    fixedEnemy f1(7, 7, 1);
+    enemies.push_back(f1);
 }
 
 void GameEnv::createMap2() {

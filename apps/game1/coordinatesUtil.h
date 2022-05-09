@@ -6,10 +6,21 @@
 #define EXAMPLE_COORDINATESUTIL_H
 
 #include "gameConstants.h"
+#include <vector>
+
+using namespace std;
 
 class coordinatesUtil {
 
+    vector<vector<int>> &grid;
+
+    bool verifyObstacle(int x, int y);
+
 public:
+
+    explicit coordinatesUtil(vector<vector<int>> &grid) : grid(grid){
+
+    }
 
     int setStraightActionCoordinates(int& x, int& y, int direction);
     int setDodgeLeftActionCoordinates(int& x, int& y, int direction);

@@ -19,7 +19,7 @@ void player::takeDamage(int points) {
 void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     vector<double> rewards;
     vector<double> episodes;
-    gameSimulation game;
+    gameSimulation game(grid);
     game.player1 = this;
 
 
@@ -63,8 +63,8 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
         // pick a random source and destination
         int src_x, src_y, dest_x, dest_y;
 
-        game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
-        //game.player1->initialize(sources[9][0], sources[9][1], destinations[9][0], destinations[9][1]);
+        //game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
+        game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
         //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
         //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
@@ -99,7 +99,7 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 }
 
 void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y) {
-    gameSimulation game;
+    gameSimulation game(grid);
     game.player1 = this;
     cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
     this->initialize(src_x, src_y, dest_x, dest_y);
@@ -171,7 +171,11 @@ void player::printBoard(std::vector<std::vector<int>> &grid) {
     cout<<"print board"<<endl;
     for (int row=0; row<GRID_SPAN; row++) {
         for (int col=0; col<GRID_SPAN; col++) {
-            cout<<grid[row][col]<<" ";
+            if(grid[row][col]<0) {
+                cout<<grid[row][col]<<" ";
+            } else {
+                cout<<" "<<grid[row][col]<<" ";
+            }
         }
         cout<<"\n";
     }

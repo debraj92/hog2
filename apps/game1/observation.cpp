@@ -8,9 +8,9 @@
 
 using namespace std;
 void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid, int x, int y) {
-    coordinatesUtil coordinates;
+    coordinatesUtil coordinates(grid);
 
-    // TODO: Check obstacles [Consider backward movements?]
+    // TODO: Consider backward movements?
 
     // front
     int next_x = x;

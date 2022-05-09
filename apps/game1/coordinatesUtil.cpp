@@ -20,10 +20,13 @@
 *  SW  S  SE
 */
 
+
 int coordinatesUtil::setNCoordinates(int &x, int &y) {
     if (x > 0) {
-        x--;
-        return 0;
+        if(verifyObstacle(x-1,y)) {
+            x--;
+            return 0;
+        }
     }
     return -1;
 }
@@ -31,44 +34,54 @@ int coordinatesUtil::setNCoordinates(int &x, int &y) {
 
 int coordinatesUtil::setSWCoordinates(int& x, int& y) {
     if (y > 0 && x < GRID_SPAN - 1) {
-        y--;
-        x++;
-        return 0;
+        if(verifyObstacle(x+1,y-1)) {
+            y--;
+            x++;
+            return 0;
+        }
     }
     return -1;
 }
 
 int coordinatesUtil::setSECoordinates(int& x, int& y) {
     if (x < GRID_SPAN - 1 && y < GRID_SPAN - 1) {
-        x++;
-        y++;
-        return 0;
+        if(verifyObstacle(x+1,y+1)) {
+            x++;
+            y++;
+            return 0;
+        }
     }
     return -1;
 }
 
 int coordinatesUtil::setSCoordinates(int& x, int& y) {
     if (x < GRID_SPAN - 1) {
-        x++;
-        return 0;
+        if(verifyObstacle(x+1,y)) {
+            x++;
+            return 0;
+        }
     }
     return -1;
 }
 
 int coordinatesUtil::setNECoordinates(int& x, int& y) {
     if (x > 0 && y < GRID_SPAN - 1) {
-        y++;
-        x--;
-        return 0;
+        if(verifyObstacle(x-1,y+1)) {
+            y++;
+            x--;
+            return 0;
+        }
     }
     return -1;
 }
 
 int coordinatesUtil::setNWCoordinates(int &x, int &y) {
     if (y > 0 && x > 0) {
-        x--;
-        y--;
-        return 0;
+        if(verifyObstacle(x-1,y-1)) {
+            x--;
+            y--;
+            return 0;
+        }
     }
     return -1;
 }
@@ -76,16 +89,20 @@ int coordinatesUtil::setNWCoordinates(int &x, int &y) {
 
 int coordinatesUtil::setECoordinates(int& x, int& y) {
     if (y < GRID_SPAN - 1) {
-        y++;
-        return 0;
+        if(verifyObstacle(x,y+1)) {
+            y++;
+            return 0;
+        }
     }
     return -1;
 }
 
 int coordinatesUtil::setWCoordinates(int& x, int& y) {
     if (y > 0) {
-        y--;
-        return 0;
+        if(verifyObstacle(x,y-1)) {
+            y--;
+            return 0;
+        }
     }
     return -1;
 }
@@ -204,5 +221,9 @@ int coordinatesUtil::setDodgeDiagonalRightActionCoordinates(int &x, int &y, int 
         default:
             return -1;
     }
+}
+
+bool coordinatesUtil::verifyObstacle(int x, int y) {
+    return grid[x][y] >= 0;
 }
 

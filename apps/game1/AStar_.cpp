@@ -57,7 +57,6 @@ bool AStar_::findPathToDestination() {
 
 }
 
-// TODO: Handle Obstacles
 void AStar_::calculateAdjacentNodes(vector<pair<int, int>> &childNodes, node_& nextNode) {
     /**
              * 8 possible moves
@@ -74,30 +73,30 @@ void AStar_::calculateAdjacentNodes(vector<pair<int, int>> &childNodes, node_& n
     if(nextNode.x-1 >= 0) {
         //j-1, j, j+1 : 3 moves
         if (nextNode.y-1 >= 0) {
-            childNodes.emplace_back(nextNode.x-1, nextNode.y-1);
+            addEdge(nextNode.x-1, nextNode.y-1, childNodes);
         }
         if (nextNode.y+1 < GRID_SPAN) {
-            childNodes.emplace_back(nextNode.x-1, nextNode.y+1);
+            addEdge(nextNode.x-1, nextNode.y+1, childNodes);
         }
         childNodes.emplace_back(nextNode.x-1, nextNode.y);
     }
     if(nextNode.x+1 < GRID_SPAN) {
         //j-1, j, j+1 : 3 moves
         if (nextNode.y-1 >= 0) {
-            childNodes.emplace_back(nextNode.x+1, nextNode.y-1);
+            addEdge(nextNode.x+1, nextNode.y-1, childNodes);
         }
         if (nextNode.y+1 < GRID_SPAN) {
-            childNodes.emplace_back(nextNode.x+1, nextNode.y+1);
+            addEdge(nextNode.x+1, nextNode.y+1, childNodes);
         }
-        childNodes.emplace_back(nextNode.x+1, nextNode.y);
+        addEdge(nextNode.x+1, nextNode.y, childNodes);
     }
     if (nextNode.y-1 >= 0) {
         // i : 1 move
-        childNodes.emplace_back(nextNode.x, nextNode.y-1);
+        addEdge(nextNode.x, nextNode.y-1, childNodes);
     }
     if (nextNode.y+1 < GRID_SPAN) {
         // i : 1 move
-        childNodes.emplace_back(nextNode.x, nextNode.y+1);
+        addEdge(nextNode.x, nextNode.y+1, childNodes);
     }
 }
 
@@ -148,3 +147,8 @@ void AStar_::reverseNodeLinks() {
 }
 
 
+void AStar_::addEdge(int src, int dest, vector<pair<int, int>> &nodes) {
+    if (grid[src][dest] >= 0) {
+        nodes.emplace_back(src, dest);
+    }
+}

@@ -8,9 +8,9 @@
 
 void FixedObstacles::createBlockObstacle(int x_start, int x_end, int y_start, int y_end,
                                          std::vector<std::vector<int>> &grid) {
-    for(int row = y_start; row <= y_end; row++) {
-        for(int col = x_start; col <= x_end; col++) {
-            grid[row][col] = 1;
+    for(int row = x_start; row <= x_end; row++) {
+        for(int col = y_start; col <= y_end; col++) {
+            grid[row][col] = -1;
         }
     }
 }

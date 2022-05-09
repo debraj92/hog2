@@ -30,6 +30,11 @@ class gameSimulation : public coordinatesUtil {
     bool isDestinationReached();
 
 public:
+
+    explicit gameSimulation(vector<vector<int>> &grid) : coordinatesUtil(grid) {
+
+    }
+
     player* player1;
 
     void learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
