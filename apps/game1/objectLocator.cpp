@@ -53,7 +53,7 @@ void objectLocator::init() {
 }
 
 void objectLocator::locateObject(int player_x, int player_y, int direction, int object_x, int object_y) {
-    cout<<"locate enemy direction"<<direction<<endl;
+    cout<<"Unit direction"<<direction<<endl;
     double det = calculateDeterminant(direction);
     int diff1 = object_x - player_x;
     int diff2 = object_y - player_y;

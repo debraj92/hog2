@@ -9,12 +9,14 @@
 #include <unordered_set>
 #include "node_.h"
 #include <unordered_map>
+#include "enemy/enemy.h"
+#include "iostream"
 
 using namespace std;
 
 class AStar_ {
 
-    vector<vector<int>> &grid;
+    vector<vector<int>> grid;
     pair<int, int> source;
     pair<int, int> destination;
 
@@ -30,25 +32,32 @@ class AStar_ {
 
     void finalizeNodeLinks();
 
-    void reverseNodeLinks();
+    int reverseNodeLinks(node_& current);
 
     void addEdge(int src, int dest, vector<pair<int, int>> &nodes);
 
+    double computeDistance(int x, int y);
+
 public:
 
-    AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) : grid(grid) {
+    AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) {
+        cout<<"AStar created, source: "<<startX<<", "<<startY<<endl;
+        std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
         source = make_pair(startX, startY);
         destination = make_pair(endX, endY);
     }
 
     bool findPathToDestination();
 
-    int countTotalNodesInOptimalPath(node_& current);
-
     node_ getNextNode(node_& current);
 
     bool isOnPath(node_& current);
 
+    void populateEnemyObstacles(vector<enemy> &enemies);
+
+    void printTrack(node_ root);
+
+    void printBoard(vector<std::vector<int>> &grid);
 };
 
 

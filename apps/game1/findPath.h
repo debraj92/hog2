@@ -11,6 +11,7 @@
 #include <map>
 #include "gameConstants.h"
 #include "AStar_.h"
+#include "enemy/enemy.h"
 
 using namespace std;
 
@@ -41,6 +42,7 @@ public:
     int getNext_y();
     bool isOnTrack(int current_x, int current_y);
     int pathDirection(int current_x, int current_y);
+    void populateEnemyObstacles(vector<enemy> &enemies);
 };
 
 

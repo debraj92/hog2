@@ -48,12 +48,99 @@ void GameEnv::createMap1() {
     enemies.push_back(f4);
 }
 
+void GameEnv::createMap3() {
+    createEmptyGrid();
+    const int TOTAL_FIXED_OBSTACLES = 3;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {0, 3, 2, 6},
+            {5, 6, 3, 5},
+            {4, 6, 7, 9}
+
+    };
+
+    // fill with static obstacles
+    FixedObstacles fixedObstacles;
+    for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
+        int x_s = blockObstacles[obstacle][0];
+        int x_e = blockObstacles[obstacle][1];
+        int y_s = blockObstacles[obstacle][2];
+        int y_e = blockObstacles[obstacle][3];
+        fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
+    }
+    fixedEnemy f1(6, 2, 1);
+    fixedEnemy f2(9, 6, 2);
+    fixedEnemy f3(8, 3, 3);
+    fixedEnemy f4(9, 8, 4);
+    fixedEnemy f5(4, 5, 5);
+    fixedEnemy f6(7, 1, 6);
+    fixedEnemy f7(2, 8, 7);
+    fixedEnemy f8(0, 8, 8);
+    enemies.push_back(f1);
+    enemies.push_back(f2);
+    enemies.push_back(f3);
+    enemies.push_back(f4);
+    enemies.push_back(f5);
+    enemies.push_back(f6);
+    enemies.push_back(f7);
+    enemies.push_back(f8);
+}
+/*
 void GameEnv::createMap2() {
     createEmptyGrid();
-    fixedEnemy f1(GRID_SPAN/2, GRID_SPAN/2, 1);
-    fixedEnemy f2(GRID_SPAN/2-1, GRID_SPAN/2-1, 1);
+
+    const int TOTAL_FIXED_OBSTACLES = 1;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {0, 3, 1, 3}
+
+    };
+
+    // fill with static obstacles
+    FixedObstacles fixedObstacles;
+    for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
+        int x_s = blockObstacles[obstacle][0];
+        int x_e = blockObstacles[obstacle][1];
+        int y_s = blockObstacles[obstacle][2];
+        int y_e = blockObstacles[obstacle][3];
+        fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
+    }
+
+    fixedEnemy f1(5, 4, 1);
+    //fixedEnemy f2(4, 1, 1);
     enemies.push_back(f1);
     //enemies.push_back(f2);
+}
+ */
+
+void GameEnv::createMap2() {
+    createEmptyGrid();
+
+    const int TOTAL_FIXED_OBSTACLES = 1;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {0, 3, 1, 3}
+
+    };
+
+    // fill with static obstacles
+    FixedObstacles fixedObstacles;
+    for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
+        int x_s = blockObstacles[obstacle][0];
+        int x_e = blockObstacles[obstacle][1];
+        int y_s = blockObstacles[obstacle][2];
+        int y_e = blockObstacles[obstacle][3];
+        fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
+    }
+
+    fixedEnemy f1(5, 4, 1);
+    fixedEnemy f2(4, 1, 2);
+    fixedEnemy f3(5, 3, 3);
+    fixedEnemy f4(4, 4, 4);
+    enemies.push_back(f1);
+    enemies.push_back(f2);
+    enemies.push_back(f3);
+    enemies.push_back(f4);
 }
 
 void GameEnv::train() {

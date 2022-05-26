@@ -37,7 +37,8 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
             {GRID_SPAN-1, GRID_SPAN-1}
     };
     int destinations[11][2] = {
-            {GRID_SPAN-1, GRID_SPAN-1},
+            //{GRID_SPAN-1, GRID_SPAN-1},
+            {0, GRID_SPAN-1},
             {0, 0},
             {GRID_SPAN-1, (GRID_SPAN) / 2},
             {GRID_SPAN-1, GRID_SPAN-1},
@@ -70,7 +71,7 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 
         cout<<"EPOCH "<<i<<endl;
         game.learnToPlay(grid, enemies);
-        printAllStatesAndPolicies();
+        //printAllStatesAndPolicies();
         cout<<endl;
         printBoard(grid);
         cout<<"Total rewards collected "<<game.getTotalRewardsCollected()<<endl;
@@ -110,16 +111,17 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
     game.reset(grid);
 }
 
-observation player::createObservation(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
-    cout<<"player::createObservation"<<endl;
-    observation ob;
-    if (!isOnTrack()) {
-        cout<<"("<<current_x<<", "<<current_y<<") is not on track"<<endl;
-        ob.locateTrajectoryAndDirection(fp, current_x, current_y);
-    } else {
-        cout<<"("<<current_x<<", "<<current_y<<") is on track"<<endl;
-        ob.trajectory = on_track;
-        ob.direction = getDirection();
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect) {
+    cout<<"player::observe"<<endl;
+    if (!isRedirect) {
+        if (!isOnTrack()) {
+            cout<<"("<<current_x<<", "<<current_y<<") is not on track"<<endl;
+            ob.locateTrajectoryAndDirection(fp, current_x, current_y, destination_x, destination_y);
+        } else {
+            cout<<"("<<current_x<<", "<<current_y<<") is on track"<<endl;
+            ob.trajectory = on_track;
+            ob.direction = getDirection();
+        }
     }
 
     if (ob.direction != 0) {
@@ -127,7 +129,6 @@ observation player::createObservation(std::vector<std::vector<int>> &grid, std::
         //ob.locateDestination(current_x, current_y, destination_x, destination_y);
         ob.updateObstacleDistances(grid, current_x, current_y);
     }
-    return ob;
 }
 
 void player::reset(std::vector<std::vector<int>> &grid) {
@@ -140,9 +141,10 @@ int player::getDirection() {
     return fp->pathDirection(current_x, current_y);
 }
 
-void player::findPathToDestination(std::vector<std::vector<int>> &grid, int src_x, int src_y, int dst_x, int dst_y) {
+void player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
     cout<<"Find path to destination"<<endl;
     fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
+    fp->populateEnemyObstacles(enemies);
     fp->findPathToDestination();
 }
 
@@ -214,5 +216,6 @@ void player::selectRandomSourceAndDestinationCoordinates(std::mt19937 &rng, std:
 
     cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
 }
+
 
 

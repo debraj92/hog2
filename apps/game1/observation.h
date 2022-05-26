@@ -13,6 +13,8 @@
 
 class observation {
 
+    void setDirectionAngles(int (&angles)[9]);
+
 public:
     int direction = 0;
     /**
@@ -30,6 +32,7 @@ public:
     double enemy_distance_4 = 5*VISION_RADIUS;
     double enemy_cosine_4 = -1; // cos theta
 
+    vector<enemy> enemies_in_vision;
 
     int trajectory = 0;
     double destination_distance = 1000;
@@ -41,12 +44,14 @@ public:
     int obstacle_front_left = VISION_RADIUS + 1;
     int obstacle_front_right = VISION_RADIUS + 1;
 
-    void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int current_x, int current_y);
+    void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int current_x, int current_y, int destination_x, int destination_y);
     void updateObstacleDistances(std::vector<std::vector<int>> &grid, int x, int y);
     void locateEnemies(std::vector<enemy>& enemies, int current_x, int current_y);
     void locateDestination(int current_x, int current_y, int destination_x, int destination_y);
 
     void printData();
+
+    void redirect(int current_x, int current_y, int destination_x, int destination_y);
 };
 
 #endif //EXAMPLE_OBSERVATION_H

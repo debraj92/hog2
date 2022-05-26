@@ -18,6 +18,7 @@ float AStar_::findShortestDistance(pair<int, int> src, pair<int, int> dst) {
 }
 
 bool AStar_::findPathToDestination() {
+    printBoard(grid);
     node_ root(source.first, source.second);
     root.computeF(0, findShortestDistance(source, destination));
     childParent.insert(make_pair(root, root));
@@ -28,8 +29,8 @@ bool AStar_::findPathToDestination() {
         closedList.insert(nextNode);
         if(isDestinationFound(nextNode)) {
             finalizeNodeLinks();
-            std::cout <<"Number of nodes to destination "<<countTotalNodesInOptimalPath(nextNode)<<endl;
-            reverseNodeLinks();
+            std::cout <<"Number of nodes to destination "<<reverseNodeLinks(nextNode)<<endl;
+            printTrack(root);
             return true;
         }
         vector<pair<int, int>> childNodes;
@@ -78,7 +79,7 @@ void AStar_::calculateAdjacentNodes(vector<pair<int, int>> &childNodes, node_& n
         if (nextNode.y+1 < GRID_SPAN) {
             addEdge(nextNode.x-1, nextNode.y+1, childNodes);
         }
-        childNodes.emplace_back(nextNode.x-1, nextNode.y);
+        addEdge(nextNode.x-1, nextNode.y, childNodes);
     }
     if(nextNode.x+1 < GRID_SPAN) {
         //j-1, j, j+1 : 3 moves
@@ -104,17 +105,6 @@ bool AStar_::isDestinationFound(node_ node) {
     return node.x == destination.first and node.y == destination.second;
 }
 
-int AStar_::countTotalNodesInOptimalPath(node_& current) {
-    node_ parent = childParent.find(current)->second;
-    int count = 0;
-    while(parent !=  current) {
-        count++;
-        current = parent;
-        parent = childParent.find(parent)->second;
-    }
-    return count+1;
-}
-
 node_ AStar_::getNextNode(node_& current) {
     return childParent.find(current)->second;
 }
@@ -136,19 +126,62 @@ void AStar_::finalizeNodeLinks() {
     }
 }
 
-void AStar_::reverseNodeLinks() {
-    auto childParentIterator = childParent.begin();
+int AStar_::reverseNodeLinks(node_& current) {
     unordered_map<node_, node_, node_::node_Hash> temp_childParent;
-    while(childParentIterator != childParent.end()) {
-        temp_childParent.insert(make_pair(childParentIterator->second, childParentIterator->first));
-        childParentIterator++;
+    node_ parent = childParent.find(current)->second;
+    temp_childParent.insert(make_pair(parent, current));
+    int count = 0;
+    while(parent !=  current) {
+        count++;
+        current = parent;
+        parent = childParent.find(parent)->second;
+        temp_childParent.insert(make_pair(parent, current));
+        count++;
     }
     childParent = temp_childParent;
+    return count+1;
 }
-
 
 void AStar_::addEdge(int src, int dest, vector<pair<int, int>> &nodes) {
     if (grid[src][dest] >= 0) {
         nodes.emplace_back(src, dest);
+    }
+}
+
+double AStar_::computeDistance(int x, int y) {
+    double d1 = x - source.first;
+    double d2 = y - source.second;
+    return sqrt(pow(d1, 2) + pow(d2, 2));
+}
+
+void AStar_::populateEnemyObstacles(vector<enemy> &enemies) {
+    for(const enemy& e: enemies) {
+        if (computeDistance(e.current_x, e.current_y) <= VISION_RADIUS * sqrt(2)) {
+            grid[e.current_x][e.current_y] = -e.id;
+        }
+    }
+}
+
+void AStar_::printTrack(node_ root) {
+    cout<<"AStar_::printTrack"<<endl;
+    string path = "("+ to_string(root.x)+", "+to_string(root.y)+") ";
+    while(!isDestinationFound(root)) {
+        root = getNextNode(root);
+        path += "("+ to_string(root.x)+", "+to_string(root.y)+") ";
+    }
+    cout<<path<<endl;
+}
+
+void AStar_::printBoard(std::vector<std::vector<int>> &grid) {
+    cout<<"AStar_::print board"<<endl;
+    for (int row=0; row<GRID_SPAN; row++) {
+        for (int col=0; col<GRID_SPAN; col++) {
+            if(grid[row][col]<0) {
+                cout<<grid[row][col]<<" ";
+            } else {
+                cout<<" "<<grid[row][col]<<" ";
+            }
+        }
+        cout<<"\n";
     }
 }

@@ -25,6 +25,8 @@ public:
 
     void createMap2();
 
+    void createMap3();
+
     //void startGame(int mapNo);
 
     void train();

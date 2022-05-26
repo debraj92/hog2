@@ -74,7 +74,7 @@ int rl_control::getNextAction() {
     double random = random::rand<double>({1}, 0, 1).at(0);
     if (random < epsilon) {
         // random action
-        return random::randint({1},1,6).at(0);
+        return random::randint({1},1, ACTION_SPACE).at(0);
     } else {
         return cur_state->getMaxQValueAction();
     }

@@ -22,7 +22,7 @@ class rl_control {
     double alpha = 0.1;
     double gamma = 0.6;
     double epsilon = 0.3;
-    double epsilon_decay = 0.8;
+    double epsilon_decay = 0.9;
 
     // Q(st, at)
     double getCurrentQValue(state* current_state, int current_action);

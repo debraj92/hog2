@@ -91,3 +91,7 @@ int findPath::pathDirection(int x, int y) {
     }
     return -1;
 }
+
+void findPath::populateEnemyObstacles(vector<enemy> &enemies) {
+    aStar.populateEnemyObstacles(enemies);
+}

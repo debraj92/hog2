@@ -40,11 +40,11 @@ public:
 
     void playGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y);
 
-    observation createObservation(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies);
+    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect);
 
     int getDirection();
 
-    void findPathToDestination(std::vector<std::vector<int>> &grid, int src_x, int src_y, int dst_x, int dst_y);
+    void findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
     void follow();
 
