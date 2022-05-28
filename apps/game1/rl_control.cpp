@@ -3,6 +3,7 @@
 //
 
 #include "rl_control.h"
+#include <chrono>
 
 state* rl_control::evaluateActionProbabilities(int reward, observation& next_observation, int current_action) {
     cout<<"rl_control::evaluateActionProbabilities"<<endl;
@@ -39,7 +40,8 @@ int rl_control::getStateFromObservation(observation &ob) {
         if(compareEnemies(ob, states[i])
         && ob.trajectory == states[i].trajectory
         && checkObstacles(ob, states[i])
-        && ob.direction == states[i].direction) {
+        && ob.direction == states[i].direction
+        && ob.rerouteDistance == states[i].rerouteDistance) {
             return i;
         }
     }
@@ -70,10 +72,11 @@ void rl_control::createNonTerminalState(observation &ob) {
 
 int rl_control::getNextAction() {
     cout<<"rl_control::getNextAction"<<endl;
-    //random::seed(time(NULL));
+    random::seed(time(NULL));
     double random = random::rand<double>({1}, 0, 1).at(0);
     if (random < epsilon) {
         // random action
+        random::seed(time(NULL));
         return random::randint({1},1, ACTION_SPACE).at(0);
     } else {
         return cur_state->getMaxQValueAction();

@@ -10,10 +10,17 @@
 #include "findPath.h"
 #include <iostream>
 #include "enemy/enemy.h"
+#include "vector"
 
 class observation {
 
+    struct enemy_distance_cosine {
+        double distance;
+        double cosine;
+    };
+
     void setDirectionAngles(int (&angles)[9]);
+    void updateEnemyDistanceAndAngles(vector<enemy_distance_cosine>& enemy_distance_cosines);
 
 public:
     int direction = 0;
@@ -34,6 +41,8 @@ public:
 
     vector<enemy> enemies_in_vision;
 
+    int rerouteDistance = 1000;
+
     int trajectory = 0;
     double destination_distance = 1000;
     double destination_cosine = -1;
@@ -52,6 +61,7 @@ public:
     void printData();
 
     void redirect(int current_x, int current_y, int destination_x, int destination_y);
+    void resetRerouteDistance();
 };
 
 #endif //EXAMPLE_OBSERVATION_H

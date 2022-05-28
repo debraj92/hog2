@@ -95,3 +95,7 @@ int findPath::pathDirection(int x, int y) {
 void findPath::populateEnemyObstacles(vector<enemy> &enemies) {
     aStar.populateEnemyObstacles(enemies);
 }
+
+int findPath::getDistanceToDestination() {
+    return aStar.getCountOfNodesToDestination();
+}

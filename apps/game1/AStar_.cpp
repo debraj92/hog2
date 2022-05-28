@@ -29,7 +29,8 @@ bool AStar_::findPathToDestination() {
         closedList.insert(nextNode);
         if(isDestinationFound(nextNode)) {
             finalizeNodeLinks();
-            std::cout <<"Number of nodes to destination "<<reverseNodeLinks(nextNode)<<endl;
+            countOfNodesToDestination = reverseNodeLinks(nextNode);
+            std::cout <<"Number of nodes to destination "<<countOfNodesToDestination<<endl;
             printTrack(root);
             return true;
         }
@@ -132,7 +133,6 @@ int AStar_::reverseNodeLinks(node_& current) {
     temp_childParent.insert(make_pair(parent, current));
     int count = 0;
     while(parent !=  current) {
-        count++;
         current = parent;
         parent = childParent.find(parent)->second;
         temp_childParent.insert(make_pair(parent, current));
@@ -184,4 +184,8 @@ void AStar_::printBoard(std::vector<std::vector<int>> &grid) {
         }
         cout<<"\n";
     }
+}
+
+int AStar_::getCountOfNodesToDestination() {
+    return countOfNodesToDestination;
 }

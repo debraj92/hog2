@@ -198,10 +198,6 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
 
 void observation::locateEnemies(std::vector<enemy> &enemies, int current_x, int current_y) {
     objectLocator ol;
-    struct enemy_distance_cosine {
-        double distance;
-        double cosine;
-    };
     vector<enemy_distance_cosine> enemy_distance_cosines;
     for(const enemy& e: enemies) {
         ol.locateObject(current_x, current_y, direction, e.current_x, e.current_y);
@@ -219,48 +215,14 @@ void observation::locateEnemies(std::vector<enemy> &enemies, int current_x, int 
     sort(enemy_distance_cosines.begin(), enemy_distance_cosines.end(),
          [](const enemy_distance_cosine &e1, const enemy_distance_cosine &e2) -> bool
          {
-             //return a.mProperty > b.mProperty;
-             return e1.distance != e2.distance ? e1.distance > e2.distance : abs(e1.cosine) > abs(e2.cosine);
+            if (abs(e1.cosine - e2.cosine) <= 0.5) {
+                return e1.distance > e2.distance;
+            } else {
+                return e1.cosine > e2.cosine;
+            }
          });
 
-    // TODO: Need to re-think this logic for multi-agent system. The number of enemies can also go up
-    assert(enemy_distance_cosines.size() <= 4);
-
-    if(enemy_distance_cosines.size() == 4) {
-        enemy_distance_4 = enemy_distance_cosines[3].distance;
-        enemy_cosine_4 = enemy_distance_cosines[3].cosine;
-        enemy_distance_cosines.pop_back();
-    } else {
-        enemy_distance_4 = 5*VISION_RADIUS;
-        enemy_cosine_4 = -1; // cos theta
-    }
-
-    if(enemy_distance_cosines.size() == 3) {
-        enemy_distance_3 = enemy_distance_cosines[2].distance;
-        enemy_cosine_3 = enemy_distance_cosines[2].cosine;
-        enemy_distance_cosines.pop_back();
-    } else {
-        enemy_distance_3 = 5*VISION_RADIUS;
-        enemy_cosine_3 = -1; // cos theta
-    }
-
-    if(enemy_distance_cosines.size() == 2) {
-        enemy_distance_2 = enemy_distance_cosines[1].distance;
-        enemy_cosine_2 = enemy_distance_cosines[1].cosine;
-        enemy_distance_cosines.pop_back();
-    } else {
-        enemy_distance_2 = 5*VISION_RADIUS;
-        enemy_cosine_2 = -1; // cos theta
-    }
-
-    if(enemy_distance_cosines.size() == 1) {
-        enemy_distance_1 = enemy_distance_cosines[0].distance;
-        enemy_cosine_1 = enemy_distance_cosines[0].cosine;
-        enemy_distance_cosines.pop_back();
-    } else {
-        enemy_distance_1 = 5*VISION_RADIUS;
-        enemy_cosine_1 = -1; // cos theta
-    }
+    updateEnemyDistanceAndAngles(enemy_distance_cosines);
 
 }
 
@@ -309,6 +271,49 @@ void observation::setDirectionAngles(int (&angles)[9]) {
     angles[NW] = NW_Angle;
     angles[SE] = SE_Angle;
     angles[SW] = SW_Angle;
+}
+
+void observation::updateEnemyDistanceAndAngles(vector<enemy_distance_cosine>& enemy_distance_cosines) {
+    // Ignoring enemy count above 4
+    if(enemy_distance_cosines.size() >= 4) {
+        enemy_distance_4 = enemy_distance_cosines[3].distance;
+        enemy_cosine_4 = enemy_distance_cosines[3].cosine;
+        enemy_distance_cosines.pop_back();
+    } else {
+        enemy_distance_4 = 5*VISION_RADIUS;
+        enemy_cosine_4 = -1; // cos theta
+    }
+
+    if(enemy_distance_cosines.size() == 3) {
+        enemy_distance_3 = enemy_distance_cosines[2].distance;
+        enemy_cosine_3 = enemy_distance_cosines[2].cosine;
+        enemy_distance_cosines.pop_back();
+    } else {
+        enemy_distance_3 = 5*VISION_RADIUS;
+        enemy_cosine_3 = -1; // cos theta
+    }
+
+    if(enemy_distance_cosines.size() == 2) {
+        enemy_distance_2 = enemy_distance_cosines[1].distance;
+        enemy_cosine_2 = enemy_distance_cosines[1].cosine;
+        enemy_distance_cosines.pop_back();
+    } else {
+        enemy_distance_2 = 5*VISION_RADIUS;
+        enemy_cosine_2 = -1; // cos theta
+    }
+
+    if(enemy_distance_cosines.size() == 1) {
+        enemy_distance_1 = enemy_distance_cosines[0].distance;
+        enemy_cosine_1 = enemy_distance_cosines[0].cosine;
+        enemy_distance_cosines.pop_back();
+    } else {
+        enemy_distance_1 = 5*VISION_RADIUS;
+        enemy_cosine_1 = -1; // cos theta
+    }
+}
+
+void observation::resetRerouteDistance() {
+    rerouteDistance = 1000;
 }
 
 

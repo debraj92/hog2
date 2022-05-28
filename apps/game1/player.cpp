@@ -23,32 +23,37 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     game.player1 = this;
 
 
-    int sources[11][2] = {
+    int sources[14][2] = {
             {0, 0},
             {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN)/2},
-            {1, (GRID_SPAN)/4},
-            {GRID_SPAN-1, (GRID_SPAN)/2},
-            {(GRID_SPAN)/2, GRID_SPAN-1},
+            {0, (GRID_SPAN-1)/2},
+            {GRID_SPAN-1, 0},
+            {(GRID_SPAN-1)/2, GRID_SPAN-1},
             {0, GRID_SPAN-1},
-            {(GRID_SPAN)/2,0},
-            {(GRID_SPAN)/3,GRID_SPAN-1},
-            {GRID_SPAN-2, GRID_SPAN-1},
-            {GRID_SPAN-1, GRID_SPAN-1}
+            {(GRID_SPAN-1)/2, 0},
+            {(GRID_SPAN-1)/2, 0},
+            {0, (GRID_SPAN-1)/2},
+            {(GRID_SPAN-1)/2, 0},
+            {0, 0},
+            {GRID_SPAN-1, 0},
+            {GRID_SPAN-1, GRID_SPAN-1},
+            {0, GRID_SPAN-1}
     };
-    int destinations[11][2] = {
-            //{GRID_SPAN-1, GRID_SPAN-1},
-            {0, GRID_SPAN-1},
-            {0, 0},
-            {GRID_SPAN-1, (GRID_SPAN) / 2},
+    int destinations[14][2] = {
             {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN)/2},
-            {(GRID_SPAN)/2, 0},
-            {GRID_SPAN-1, 2},
-            {(GRID_SPAN)/3,GRID_SPAN-1},
-            {0, (GRID_SPAN)/3},
-            {1, 0},
-            {1, 0}
+            {0, (GRID_SPAN-1)/2},
+            {GRID_SPAN-1, 0},
+            {(GRID_SPAN-1)/2, GRID_SPAN-1},
+            {GRID_SPAN-1, (GRID_SPAN-1)/2},
+            {GRID_SPAN-1, 0},
+            {0, GRID_SPAN-1},
+            {(GRID_SPAN-1)/2, GRID_SPAN-1},
+            {GRID_SPAN-1, (GRID_SPAN-1)/2},
+            {0, (GRID_SPAN-1)/2},
+            {GRID_SPAN/2, GRID_SPAN/2},
+            {GRID_SPAN/2, GRID_SPAN/2},
+            {GRID_SPAN/2, GRID_SPAN/2},
+            {GRID_SPAN/2, GRID_SPAN/2}
     };
 
 
@@ -64,8 +69,8 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
         // pick a random source and destination
         int src_x, src_y, dest_x, dest_y;
 
-        //game.player1->initialize(sources[i%11][0], sources[i%11][1], destinations[i%11][0], destinations[i%11][1]);
-        game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
+        game.player1->initialize(sources[i%14][0], sources[i%14][1], destinations[i%14][0], destinations[i%14][1]);
+        //game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
         //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
         //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
@@ -99,7 +104,7 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 
 }
 
-void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y) {
+void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
     gameSimulation game(grid);
     game.player1 = this;
     cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
@@ -107,6 +112,11 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
     game.play(grid, enemies);
     cout<<endl;
     printBoard(grid);
+    result.final_x = game.player1->current_x;
+    result.final_y = game.player1->current_y;
+    result.destination_x = game.player1->destination_x;
+    result.destination_y = game.player1->destination_y;
+    result.total_rewards = game.player1->total_rewards;
     reset(grid);
     game.reset(grid);
 }
@@ -161,7 +171,6 @@ bool player::isOnTrack() {
 void player::evaluateActionQValues(int reward, observation &next_observation, int current_action) {
     cur_state = evaluateActionProbabilities(reward, next_observation, current_action);
     ontrack = next_observation.trajectory == on_track;
-    //cur_state->updateObstacleDistances(grid, current_x, current_y);
 }
 
 void player::getNextStateForInference(observation &next_observation) {
@@ -192,6 +201,7 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
     ontrack = true;
     current_x = source_x;
     current_y = source_y;
+    total_rewards = 0;
 
 }
 
@@ -215,6 +225,26 @@ void player::selectRandomSourceAndDestinationCoordinates(std::mt19937 &rng, std:
     }
 
     cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
+}
+
+void player::findNewRoute(vector<std::vector<int>> &grid, observation &ob, vector<enemy> &enemies, int src_x, int src_y, int dst_x,
+                          int dst_y) {
+    cout<<"Find new temporary route to destination"<<endl;
+    fp_temp_reroute = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
+    fp_temp_reroute->populateEnemyObstacles(enemies);
+    fp_temp_reroute->findPathToDestination();
+    ob.rerouteDistance = fp_temp_reroute->getDistanceToDestination();
+}
+
+int player::switchToNewRoute(observation &ob) {
+    cout<<"switchToNewRoute"<<endl;
+    if (ob.rerouteDistance < 1000) {
+        cout<<"New distance "<<ob.rerouteDistance<<endl;
+        // implies last action was re-route
+        fp = fp_temp_reroute;
+        return 0;
+    }
+    return -1;
 }
 
 

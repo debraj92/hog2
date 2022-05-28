@@ -17,8 +17,6 @@ using namespace std;
 
 class gameSimulation : public coordinatesUtil {
 
-    int total_rewards = 0;
-
     int movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &ob, int* error, bool isInference = false);
     void moveEnemies(std::vector<enemy>& enemies);
     void fight(std::vector<enemy>& enemies);
@@ -28,6 +26,8 @@ class gameSimulation : public coordinatesUtil {
     void printAction(int action);
 
     bool isDestinationReached();
+
+    observation createObservationAfterAction(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &ob, int action);
 
 public:
 

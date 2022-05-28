@@ -41,7 +41,7 @@ void state::printPolicy() {
     cout<<"ACTION_DODGE_DIAGONAL_RIGHT: "<<policy.at(ACTION_DODGE_DIAGONAL_RIGHT -1)<<endl;
     cout<<"ACTION_STRAIGHT: "<<policy.at(ACTION_STRAIGHT -1)<<endl;
     cout<<"ACTION_REROUTE: "<<policy.at(ACTION_REROUTE -1)<<endl;
-    //cout<<"ACTION_REDIRECT: "<<policy.at(ACTION_REDIRECT -1)<<endl;
+    cout<<"ACTION_SWITCH: "<<policy.at(ACTION_SWITCH -1)<<endl;
 }
 
 

@@ -20,6 +20,8 @@ class AStar_ {
     pair<int, int> source;
     pair<int, int> destination;
 
+    int countOfNodesToDestination;
+
     unordered_set<node_, node_::node_Hash> closedList;
 
     unordered_map<node_, node_, node_::node_Hash> childParent;
@@ -58,6 +60,8 @@ public:
     void printTrack(node_ root);
 
     void printBoard(vector<std::vector<int>> &grid);
+
+    int getCountOfNodesToDestination();
 };
 
 

@@ -43,6 +43,7 @@ public:
     bool isOnTrack(int current_x, int current_y);
     int pathDirection(int current_x, int current_y);
     void populateEnemyObstacles(vector<enemy> &enemies);
+    int getDistanceToDestination();
 };
 
 
