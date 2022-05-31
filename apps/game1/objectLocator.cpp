@@ -60,7 +60,10 @@ void objectLocator::locateObject(int player_x, int player_y, int direction, int 
     object_l = (p2[direction] * diff1 - p1[direction] * diff2) / det;
     object_p = (-l2[direction] * diff1 + l1[direction] * diff2) / det;
     computeDistance();
-    computeCosine();
+    findQuadrant();
+    measureUniqueAngle();
+    calculateRiskFromDistance();
+    calculateRiskFeatures();
 }
 
 double objectLocator::calculateDeterminant(int direction) {
@@ -73,7 +76,13 @@ void objectLocator::computeDistance() {
 
 void objectLocator::computeCosine() {
     if(object_distance != 0) {
-        object_cosine = object_l / object_distance;
+        object_angle = object_l / object_distance;
+    }
+}
+
+void objectLocator::computeSine() {
+    if(object_distance != 0) {
+        object_angle = object_p / object_distance;
     }
 }
 
@@ -82,12 +91,59 @@ double objectLocator::getObjectDistance() {
     return round_values(object_distance);
 }
 
-double objectLocator::getObjectCosine() {
-    cout<<"getObjectCosine"<<endl;
-    return round_values(object_cosine);
-}
-
 double objectLocator::round_values(double value) {
     // round to 2 decimal places
     return std::round(value * 100) / 100;
+}
+
+void objectLocator::findQuadrant() {
+    if (object_l >= 0 and object_p >= 0) {
+        quadrant = 1;
+    } else if (object_p >= 0) {
+        quadrant = 2;
+    } else if (object_l >= 0) {
+        quadrant = 4;
+    } else {
+        quadrant = 3;
+    }
+    cout<<"Quadrant"<<quadrant<<endl;
+}
+
+void objectLocator::measureUniqueAngle() {
+    switch (quadrant) {
+        case 1:
+            computeCosine();
+            object_angle++;
+            break;
+        case 2:
+        case 3:
+            computeSine();
+            break;
+        case 4:
+            computeCosine();
+            object_angle *= -1;
+            object_angle--;
+            break;
+    }
+    cout<<"measureUniqueAngle "<<object_angle<<endl;
+}
+
+void objectLocator::calculateRiskFromDistance() {
+    risk_distance = RISK_DISTANCE_MAX_MAGNITUDE * exp(-object_distance);
+    cout<<"calculateRiskFromDistance "<<risk_distance<<endl;
+}
+
+void objectLocator::calculateRiskFeatures() {
+    risk_feature = risk_distance * object_angle;
+    cout<<"calculateRiskFeatures "<<risk_feature<<endl;
+}
+
+double objectLocator::getObjectRiskFeature() {
+    cout<<"objectLocator::getObjectRiskFeature"<<endl;
+    return risk_feature;
+}
+
+double objectLocator::getObjectAngle() {
+    cout<<"objectLocator::getObjectAngle"<<endl;
+    return object_angle;
 }

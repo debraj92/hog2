@@ -198,46 +198,25 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
 
 void observation::locateEnemies(std::vector<enemy> &enemies, int current_x, int current_y) {
     objectLocator ol;
-    vector<enemy_distance_cosine> enemy_distance_cosines;
+    vector<enemy_attributes> enemy_properties;
     for(const enemy& e: enemies) {
         ol.locateObject(current_x, current_y, direction, e.current_x, e.current_y);
         double distance = ol.getObjectDistance();
-        cout<<"Enemy cosine "<<ol.getObjectCosine()<<endl;
         if (distance <= VISION_RADIUS * sqrt(2)) {
-            enemy_distance_cosine edc = {distance, ol.getObjectCosine()};
-            enemy_distance_cosines.push_back(edc);
-            enemies_in_vision.push_back(e);
+            enemy_properties.push_back({ol.getObjectDistance(), ol.getObjectAngle(), ol.getObjectRiskFeature()});
         }
     }
 
-    cout<<"Number of enemies in vision "<<enemy_distance_cosines.size()<<endl;
+    cout<<"Number of enemies in vision "<<enemy_properties.size()<<endl;
 
-    sort(enemy_distance_cosines.begin(), enemy_distance_cosines.end(),
-         [](const enemy_distance_cosine &e1, const enemy_distance_cosine &e2) -> bool
+    sort(enemy_properties.begin(), enemy_properties.end(),
+         [](const enemy_attributes &e1, const enemy_attributes &e2) -> bool
          {
-            if (abs(e1.cosine - e2.cosine) <= 0.5) {
-                return e1.distance > e2.distance;
-            } else {
-                return e1.cosine > e2.cosine;
-            }
+            return e1.risk_measure > e2.risk_measure;
          });
 
-    updateEnemyDistanceAndAngles(enemy_distance_cosines);
+    updateEnemyDistanceAndAngles(enemy_properties);
 
-}
-
-// This is probably not required because the goal of RL is to tackle adversary and restore to A star track.
-void observation::locateDestination(int current_x, int current_y, int destination_x, int destination_y) {
-    objectLocator ol;
-    ol.locateObject(current_x, current_y, direction, destination_x, destination_y);
-    double distance = ol.getObjectDistance();
-    if (distance <= VISION_RADIUS * sqrt(2)) {
-        destination_distance = distance;
-        destination_cosine = ol.getObjectCosine();
-    } else {
-        destination_distance = 1000;
-        destination_cosine = -1;
-    }
 }
 
 void observation::redirect(int current_x, int current_y, int destination_x, int destination_y) {
@@ -273,47 +252,100 @@ void observation::setDirectionAngles(int (&angles)[9]) {
     angles[SW] = SW_Angle;
 }
 
-void observation::updateEnemyDistanceAndAngles(vector<enemy_distance_cosine>& enemy_distance_cosines) {
+void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties) {
     // Ignoring enemy count above 4
-    if(enemy_distance_cosines.size() >= 4) {
-        enemy_distance_4 = enemy_distance_cosines[3].distance;
-        enemy_cosine_4 = enemy_distance_cosines[3].cosine;
-        enemy_distance_cosines.pop_back();
+    if(enemy_properties.size() >= 4) {
+        enemy_distance_4 = enemy_properties[3].distance;
+        enemy_angle_4 = enemy_properties[3].angle;
+        enemy_risk_4 = enemy_properties[3].risk_measure;
+        enemy_properties.pop_back();
     } else {
         enemy_distance_4 = 5*VISION_RADIUS;
-        enemy_cosine_4 = -1; // cos theta
+        enemy_angle_4 = -1; // cos theta
+        enemy_risk_4 = 0;
     }
 
-    if(enemy_distance_cosines.size() == 3) {
-        enemy_distance_3 = enemy_distance_cosines[2].distance;
-        enemy_cosine_3 = enemy_distance_cosines[2].cosine;
-        enemy_distance_cosines.pop_back();
+    if(enemy_properties.size() == 3) {
+        enemy_distance_3 = enemy_properties[2].distance;
+        enemy_angle_3 = enemy_properties[2].angle;
+        enemy_risk_3 = enemy_properties[2].risk_measure;
+        enemy_properties.pop_back();
     } else {
         enemy_distance_3 = 5*VISION_RADIUS;
-        enemy_cosine_3 = -1; // cos theta
+        enemy_angle_3 = -1; // cos theta
+        enemy_risk_3 = 0;
     }
 
-    if(enemy_distance_cosines.size() == 2) {
-        enemy_distance_2 = enemy_distance_cosines[1].distance;
-        enemy_cosine_2 = enemy_distance_cosines[1].cosine;
-        enemy_distance_cosines.pop_back();
+    if(enemy_properties.size() == 2) {
+        enemy_distance_2 = enemy_properties[1].distance;
+        enemy_angle_2 = enemy_properties[1].angle;
+        enemy_risk_2 = enemy_properties[1].risk_measure;
+        enemy_properties.pop_back();
     } else {
         enemy_distance_2 = 5*VISION_RADIUS;
-        enemy_cosine_2 = -1; // cos theta
+        enemy_angle_2 = -1; // cos theta
+        enemy_risk_2 = 0;
     }
 
-    if(enemy_distance_cosines.size() == 1) {
-        enemy_distance_1 = enemy_distance_cosines[0].distance;
-        enemy_cosine_1 = enemy_distance_cosines[0].cosine;
-        enemy_distance_cosines.pop_back();
+    if(enemy_properties.size() == 1) {
+        enemy_distance_1 = enemy_properties[0].distance;
+        enemy_angle_1 = enemy_properties[0].angle;
+        enemy_risk_1 = enemy_properties[0].risk_measure;
+        enemy_properties.pop_back();
     } else {
         enemy_distance_1 = 5*VISION_RADIUS;
-        enemy_cosine_1 = -1; // cos theta
+        enemy_angle_1 = -1; // cos theta
+        enemy_risk_1 = 0;
     }
 }
 
 void observation::resetRerouteDistance() {
     rerouteDistance = 1000;
+}
+
+void observation::flattenObservationToVector(double (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
+    int nextPosOffset = 0;
+    // ONE HOT
+    if (direction > 0) {
+        // set direction [first 8 positions taken]
+        observation_vector[direction % 8] = 1;
+    }
+    nextPosOffset += 8;
+    // set trajectory. Takes 9 positions
+    // ONE HOT
+    if (trajectory < 20) {
+        // indices : 0, 1, 2, 3, 4
+        observation_vector[nextPosOffset + trajectory - 10] = 1;
+    } else {
+        // indices : 5, 6, 7, 8
+        observation_vector[nextPosOffset + trajectory - 20 + 4] = 1;
+    }
+    nextPosOffset += 9;
+    // Real Number values next
+    observation_vector[nextPosOffset++] = obstacle_front;
+    observation_vector[nextPosOffset++] = obstacle_left;
+    observation_vector[nextPosOffset++] = obstacle_right;
+    observation_vector[nextPosOffset++] = obstacle_front_left;
+    observation_vector[nextPosOffset++] = obstacle_front_right;
+
+    observation_vector[nextPosOffset++] = rerouteDistance;
+
+    observation_vector[nextPosOffset++] = enemy_distance_1;
+    observation_vector[nextPosOffset++] = enemy_angle_1;
+    observation_vector[nextPosOffset++] = enemy_risk_1;
+
+    observation_vector[nextPosOffset++] = enemy_distance_2;
+    observation_vector[nextPosOffset++] = enemy_angle_2;
+    observation_vector[nextPosOffset++] = enemy_risk_2;
+
+    observation_vector[nextPosOffset++] = enemy_distance_3;
+    observation_vector[nextPosOffset++] = enemy_angle_3;
+    observation_vector[nextPosOffset++] = enemy_risk_3;
+
+    observation_vector[nextPosOffset++] = enemy_distance_4;
+    observation_vector[nextPosOffset++] = enemy_angle_4;
+    observation_vector[nextPosOffset] = enemy_risk_4;
+
 }
 
 

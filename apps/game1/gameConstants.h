@@ -63,7 +63,9 @@ const int two_deviation_S = 22;
 const int two_deviation_W = 23;
 const int two_deviation_E = 24;
 
-
+/**
+ * TODO: Actions must start from 0. Otherwsie DQN will fail
+ */
 const int ACTION_SWITCH = 1;
 const int ACTION_DODGE_LEFT = 2;
 const int ACTION_DODGE_DIAGONAL_LEFT = 3;
@@ -87,5 +89,11 @@ const int REWARD_REROUTE = -15;
 const int REWARD_REDIRECT = -10;
 
 const int MAX_LIFE = 10;
+
+const int MAX_ABSTRACT_OBSERVATIONS = 35;
+
+const int RISK_DISTANCE_MAX_MAGNITUDE = 10; //would increase if FOV increases
+
+static const int MAX_CAPACITY_REPLAY_BUFFER = 1000;
 
 #endif //EXAMPLE_GAMECONSTANTS_H

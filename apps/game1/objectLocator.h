@@ -19,7 +19,11 @@ class objectLocator {
     double object_l;
     double object_p;
     double object_distance;
-    double object_cosine;
+    double object_angle;
+    int quadrant;
+    double risk_distance;
+
+    double risk_feature;
 
     void init();
 
@@ -28,6 +32,18 @@ class objectLocator {
     void computeDistance();
 
     void computeCosine();
+
+    void computeSine();
+
+    void findQuadrant();
+
+    void measureUniqueAngle(); // psi
+
+    void calculateRiskFromDistance();
+
+    void calculateRiskFeatures();
+
+
 
     double round_values(double value);
 
@@ -41,7 +57,9 @@ public:
 
     double getObjectDistance();
 
-    double getObjectCosine();
+    double getObjectAngle();
+
+    double getObjectRiskFeature();
 };
 
 

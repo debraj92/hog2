@@ -57,10 +57,10 @@ void rl_control::createNonTerminalState(observation &ob) {
     new_state.enemy_distance_3 = ob.enemy_distance_3;
     new_state.enemy_distance_4 = ob.enemy_distance_4;
 
-    new_state.enemy_cosine_1 = ob.enemy_cosine_1;
-    new_state.enemy_cosine_2 = ob.enemy_cosine_2;
-    new_state.enemy_cosine_3 = ob.enemy_cosine_3;
-    new_state.enemy_cosine_4 = ob.enemy_cosine_4;
+    new_state.enemy_angle_1 = ob.enemy_angle_1;
+    new_state.enemy_angle_2 = ob.enemy_angle_2;
+    new_state.enemy_angle_3 = ob.enemy_angle_3;
+    new_state.enemy_angle_4 = ob.enemy_angle_4;
 
     new_state.trajectory = ob.trajectory;
     new_state.direction = ob.direction;
@@ -97,10 +97,10 @@ void rl_control::createStartState(observation& ob) {
         new_state.enemy_distance_3 = ob.enemy_distance_3;
         new_state.enemy_distance_4 = ob.enemy_distance_4;
 
-        new_state.enemy_cosine_1 = ob.enemy_cosine_1;
-        new_state.enemy_cosine_2 = ob.enemy_cosine_2;
-        new_state.enemy_cosine_3 = ob.enemy_cosine_3;
-        new_state.enemy_cosine_4 = ob.enemy_cosine_4;
+        new_state.enemy_angle_1 = ob.enemy_angle_1;
+        new_state.enemy_angle_2 = ob.enemy_angle_2;
+        new_state.enemy_angle_3 = ob.enemy_angle_3;
+        new_state.enemy_angle_4 = ob.enemy_angle_4;
 
         new_state.trajectory = ob.trajectory;
         new_state.direction = ob.direction;
@@ -149,6 +149,6 @@ void rl_control::restoreModel() {
 bool rl_control::compareEnemies(observation &ob, state &s) {
     return ob.enemy_distance_1 == s.enemy_distance_1 && ob.enemy_distance_2 == s.enemy_distance_2 &&
             ob.enemy_distance_3 == s.enemy_distance_3 && ob.enemy_distance_4 == s.enemy_distance_4 &&
-            ob.enemy_cosine_1 == s.enemy_cosine_1 && ob.enemy_cosine_2 == s.enemy_cosine_2 &&
-            ob.enemy_cosine_3 == s.enemy_cosine_3 && ob.enemy_cosine_4 == s.enemy_cosine_4;
+           ob.enemy_angle_1 == s.enemy_angle_1 && ob.enemy_angle_2 == s.enemy_angle_2 &&
+           ob.enemy_angle_3 == s.enemy_angle_3 && ob.enemy_angle_4 == s.enemy_angle_4;
 }
