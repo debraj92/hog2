@@ -66,15 +66,15 @@ const int two_deviation_E = 24;
 /**
  * TODO: Actions must start from 0. Otherwsie DQN will fail
  */
-const int ACTION_SWITCH = 1;
-const int ACTION_DODGE_LEFT = 2;
-const int ACTION_DODGE_DIAGONAL_LEFT = 3;
-const int ACTION_DODGE_RIGHT = 4;
-const int ACTION_DODGE_DIAGONAL_RIGHT = 5;
-const int ACTION_STRAIGHT = 6;
-const int ACTION_REROUTE = 7;
-const int ACTION_REDIRECT = 8;
-const int ACTION_FOLLOW = 9;
+const int ACTION_SWITCH = 0;
+const int ACTION_DODGE_LEFT = 1;
+const int ACTION_DODGE_DIAGONAL_LEFT = 2;
+const int ACTION_DODGE_RIGHT = 3;
+const int ACTION_DODGE_DIAGONAL_RIGHT = 4;
+const int ACTION_STRAIGHT = 5;
+const int ACTION_REROUTE = 6;
+const int ACTION_REDIRECT = 7;
+const int ACTION_FOLLOW = 8;
 
 const int ACTION_SPACE = 9;
 

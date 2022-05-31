@@ -77,7 +77,7 @@ int rl_control::getNextAction() {
     if (random < epsilon) {
         // random action
         random::seed(time(NULL));
-        return random::randint({1},1, ACTION_SPACE).at(0);
+        return random::randint({1},0, ACTION_SPACE-1).at(0);
     } else {
         return cur_state->getMaxQValueAction();
     }
