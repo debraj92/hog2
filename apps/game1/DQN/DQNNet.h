@@ -15,17 +15,22 @@ using namespace std;
 class DQNNet : public nn::Module {
 
     nn::Sequential model;
-    int inputSize;
-    int outputSize;
-    int hiddenLayer1Size;
-    int hiddenLayer2Size;
 
-    optim::Adam optimizer;
+    nn::Sigmoid sigmoidLayer;
+
+    int count = 1;
+
+    unique_ptr<optim::Adam> optimizer;
+
+    vector<double> losses;
+    vector<double> loss_count;
 
 public:
     DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name);
 
-    Tensor forward(const Tensor& inputs);
+    Tensor forwardPass1(const Tensor& inputs);
+
+    Tensor forwardPass2(const Tensor& input1, const Tensor& input2);
 
     void saveModel(string &file);
 
@@ -35,7 +40,9 @@ public:
 
     void loadModel(stringstream &stream);
 
-    void computeLossAndBackPropagate(Tensor expected, Tensor predicted);
+    double computeLossAndBackPropagate(Tensor expected, Tensor predicted);
+
+    void plotLoss();
 };
 
 

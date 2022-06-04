@@ -15,37 +15,45 @@ using namespace std;
 class RLNN_Agent {
 
     // Hyperparameters
-    double alpha = 1e-2;
+    const double lr = 1e-3;
     // discount factor
-    double gamma = 0.7;
+    const double gamma = 0.9;
     double epsilon = 1;
-    double epsilon_min = 0.01;
-    double epsilon_decay = 0.95;
+    const double epsilon_min = 0.001;
+    const double epsilon_decay = 0.99;
+    const double alpha = 0.5;
+    const int epsilon_annealing_percent = 60;
 
-    int batchSize = 50;
+    int batchSize = 2000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;
 
     ReplayMemory memory;
+    bool isTrainingMode;
+    bool startEpsilonDecay;
 
+    bool isExplore(int episodeCount);
 
 public:
 
-    RLNN_Agent(bool isTrainingMode) {
+    RLNN_Agent(bool isTrainingMode) : isTrainingMode(isTrainingMode) {
         int sizeHiddenLayers = (MAX_ABSTRACT_OBSERVATIONS + ACTION_SPACE) / 2;
-        policyNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, alpha, "policyNet");
-        targetNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, alpha, "policyNet");
+        policyNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "policyNet");
+        targetNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "targetNet");
         // since no learning is performed on the target net
         targetNet->eval();
         if (!isTrainingMode) {
             policyNet->eval();
         }
+        startEpsilonDecay = false;
     }
 
-    int selectAction(observation currentState);
+    int selectAction(observation& currentState, int episodeCount, bool *explore);
 
-    void learn();
+    void learnWithDQN();
+
+    void memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done);
 
     void saveModel(string &file);
 
@@ -54,6 +62,10 @@ public:
     void updateTargetNet();
 
     void decayEpsilon();
+
+    void printAction(int action);
+
+    void plotLosses();
 };
 
 
