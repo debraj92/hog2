@@ -20,7 +20,7 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     auto random_indices = random::randint<int>({batchSize}, 0, getBufferSize() - 1, random::get_default_random_engine());
 
     vector<long> temp_actions;
-    vector<long> temp_rewards;
+    vector<float> temp_rewards;
     vector<long> temp_dones;
     vector<torch::Tensor> stateSequence(batchSize);
     vector<torch::Tensor> nextStateSequence(batchSize);
@@ -44,12 +44,13 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     }
 
     tensor_actions = torch::from_blob(temp_actions.data(), {batchSize}, options2).clone();
-    tensor_rewards = torch::from_blob(temp_rewards.data(), {batchSize}, options2).clone();
+    tensor_rewards = torch::from_blob(temp_rewards.data(), {batchSize}, options).clone();
     tensor_dones = torch::from_blob(temp_dones.data(), {batchSize}, options2).clone();
 }
 
-void ReplayMemory::storeExperience(observation &current, observation &next, int action, int reward, bool done) {
+void ReplayMemory::storeExperience(observation &current, observation &next, int action, float reward, bool done) {
     cout<<"ReplayMemory::storeExperience"<<endl;
+
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
     buffer_states[idx].assign(observation_vector, observation_vector + MAX_ABSTRACT_OBSERVATIONS);

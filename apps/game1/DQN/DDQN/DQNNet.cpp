@@ -6,45 +6,42 @@
 
 #include <utility>
 #include <iostream>
-#include "../plot/pbPlots.hpp"
-#include "../plot/supportLib.hpp"
+#include "../../plot/pbPlots.hpp"
+#include "../../plot/supportLib.hpp"
 
 using namespace std;
 
-DQNNet::DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name) {
+DQNNet::DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name)
+{
     cout<<"Creating DQNNet "<<module_name<<endl;
 
-    model = nn::Sequential(nn::Linear(inputSize, hiddenLayer1Size),
-                           nn::Sigmoid(),
-                           nn::Linear(hiddenLayer1Size, outputSize));
+    m_sequential = nn::Sequential(nn::Linear(inputSize, hiddenLayer1Size),
+                                  nn::Sigmoid(),
+                                  nn::Linear(hiddenLayer1Size, outputSize));
 
-    register_module(module_name, model);
+    register_module(module_name, m_sequential);
 
-    optimizer = std::make_unique<optim::Adam>(model->parameters(), torch::optim::AdamOptions(learning_rate));
+    optimizer = std::make_unique<optim::Adam>(this->parameters(), torch::optim::AdamOptions(learning_rate));
 }
 
-Tensor DQNNet::forwardPass1(const Tensor& inputs) {
-    cout<<"DQNNet::forwardPass1"<<endl;
+Tensor DQNNet::forwardPass(const Tensor& inputs) {
+    cout<<"DQNNet::forwardPass"<<endl;
     optimizer->zero_grad();
-    return model->forward(inputs);
-}
-
-Tensor DQNNet::forwardPass2(const Tensor& input1, const Tensor& input2) {
-    cout<<"DQNNet::forwardPass2"<<endl;
-    return sigmoidLayer(input1 + input2);
+    return m_sequential->forward(inputs);
 }
 
 void DQNNet::saveModel(string &file) {
     cout<<"DQNNet::saveModel"<<endl;
-    torch::save(model, file + "/model.pt");
+    torch::save(m_sequential, file + "/m_sequential.pt");
 }
 
 void DQNNet::loadModel(string &file) {
     cout<<"DQNNet::loadModel"<<endl;
-    torch::load(model, file + "/model.pt");
+    torch::load(m_sequential, file + "/m_sequential.pt");
 }
 
-double DQNNet::computeLossAndBackPropagate(Tensor expected, Tensor predicted) {
+
+double DQNNet::computeLossAndBackPropagate(const Tensor& expected, const Tensor& predicted) {
     cout<<"computeLossAndBackPropagate "<<endl;
 
     auto lossfn = nn::SmoothL1Loss();
@@ -56,21 +53,18 @@ double DQNNet::computeLossAndBackPropagate(Tensor expected, Tensor predicted) {
     loss_count.push_back(count++);
 
     loss.backward();
+
+    /// Gradient clipping
+    for (auto &param: this->parameters()) {
+        param.grad().data().clamp_(-1, 1);
+    }
+
     optimizer->step();
 
     return loss_value;
 
 }
 
-void DQNNet::saveModel(stringstream &stream) {
-    cout<<"DQNNet::saveModel stream"<<endl;
-    torch::save(model, stream);
-}
-
-void DQNNet::loadModel(stringstream &stream) {
-    cout<<"DQNNet::loadModel stream"<<endl;
-    torch::load(model, stream);
-}
 
 void DQNNet::plotLoss() {
     cout<<"Network Loss"<<endl;
@@ -93,4 +87,13 @@ void DQNNet::plotLoss() {
     }
 
 }
+
+void DQNNet::loadModel(stringstream &stream) {
+    torch::load(m_sequential, stream);
+}
+
+void DQNNet::saveModel(stringstream &stream) {
+    torch::save(m_sequential, stream);
+}
+
 

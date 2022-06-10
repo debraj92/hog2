@@ -8,15 +8,18 @@
 #include <torch/torch.h>
 #include <vector>
 #include <string>
+#include "../../gameConstants.h"
 
 using namespace torch;
 using namespace std;
 
 class DQNNet : public nn::Module {
 
-    nn::Sequential model;
+    nn::Sequential m_sequential;
 
-    nn::Sigmoid sigmoidLayer;
+    nn::Linear m_value;
+
+    nn::Linear m_advantage;
 
     int count = 1;
 
@@ -26,21 +29,30 @@ class DQNNet : public nn::Module {
     vector<double> loss_count;
 
 public:
+
+    enum MODEL_TYPE{
+        SEQUENTIAL,
+        VALUE,
+        ADVANTAGE
+    };
+
     DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name);
 
-    Tensor forwardPass1(const Tensor& inputs);
+    Tensor forwardPass(const Tensor& inputs);
 
-    Tensor forwardPass2(const Tensor& input1, const Tensor& input2);
+    Tensor forwardPassValue(const Tensor& inputs);
+
+    Tensor forwardPassAdvantage(const Tensor& inputs);
 
     void saveModel(string &file);
 
     void loadModel(string &file);
 
-    void saveModel(stringstream &stream);
+    void saveModel(stringstream &stream, const MODEL_TYPE &model_type);
 
-    void loadModel(stringstream &stream);
+    void loadModel(stringstream &stream, const MODEL_TYPE &model_type);
 
-    double computeLossAndBackPropagate(Tensor expected, Tensor predicted);
+    double computeLossAndBackPropagate(const Tensor& expected, const Tensor& predicted);
 
     void plotLoss();
 };

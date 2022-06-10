@@ -6,13 +6,14 @@
 #define EXAMPLE_TESTS_RLNN_AGENT_H
 
 #include "DQNNet.h"
-#include "../gameConstants.h"
-#include "ReplayMemory.h"
+#include "../../gameConstants.h"
+#include "../DQN_interface.h"
+#include "../ReplayMemory.h"
 #include <string>
 
 using namespace std;
 
-class RLNN_Agent {
+class RLNN_Agent : public DQN_interface {
 
     // Hyperparameters
     const double lr = 1e-3;
@@ -22,7 +23,7 @@ class RLNN_Agent {
     const double epsilon_min = 0.001;
     const double epsilon_decay = 0.99;
     const double alpha = 0.5;
-    const int epsilon_annealing_percent = 60;
+    const int epsilon_annealing_percent = 50;//60;
 
     int batchSize = 2000;
 
@@ -33,12 +34,14 @@ class RLNN_Agent {
     bool isTrainingMode;
     bool startEpsilonDecay;
 
+    bool stopLearning = false;
+
     bool isExplore(int episodeCount);
 
 public:
 
-    RLNN_Agent(bool isTrainingMode) : isTrainingMode(isTrainingMode) {
-        int sizeHiddenLayers = (MAX_ABSTRACT_OBSERVATIONS + ACTION_SPACE) / 2;
+    RLNN_Agent() {
+        int sizeHiddenLayers = (2 * (MAX_ABSTRACT_OBSERVATIONS + ACTION_SPACE)) / 3;
         policyNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "policyNet");
         targetNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "targetNet");
         // since no learning is performed on the target net
@@ -49,14 +52,18 @@ public:
         startEpsilonDecay = false;
     }
 
+    void setTrainingMode(bool value);
+
     int selectAction(observation& currentState, int episodeCount, bool *explore);
 
     void learnWithDQN();
 
     void memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done);
 
+    /// provide file path
     void saveModel(string &file);
 
+    /// provide file path
     void loadModel(string &file);
 
     void updateTargetNet();

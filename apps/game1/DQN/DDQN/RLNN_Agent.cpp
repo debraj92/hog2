@@ -32,8 +32,7 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
         Tensor stateTensor = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options);
         {
             torch::NoGradGuard no_grad;
-            auto fp1 = policyNet->forwardPass1(stateTensor.unsqueeze(0));
-            auto actions = policyNet->forwardPass2(fp1, torch::zeros_like(fp1));
+            auto actions = policyNet->forwardPass(stateTensor.unsqueeze(0));
             action = torch::argmax(actions).detach().item<int>();
             cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
         }
@@ -46,6 +45,11 @@ void RLNN_Agent::learnWithDQN() {
     cout<<"RLNN_Agent::learn"<<endl;
     // start learning after the replay buffer is partially filled
     if (memory.getBufferSize() < MIN_BUFFERED_EXPERIENCE_FOR_LEARNING) {
+        cout<<"Ignoring learning attempt due to insufficient samples";
+        return;
+    }
+    if (stopLearning) {
+        cout<<"Ignoring learning attempt due to finished training";
         return;
     }
     // select n samples picked uniformly at random from the experience replay memory, such that n=batchsize
@@ -53,30 +57,26 @@ void RLNN_Agent::learnWithDQN() {
 
     // states have dimension: batch_size X observation_feature_size
     // output would have dimensions: batch_size X action_space
-    /**
-     * The actual actions selected are present in tensor_actions.
-     * We want to gather their corresponding predicted q values.
-     *
-     * Explanation of gather: https://jamesmccaffrey.wordpress.com/2021/01/18/an-example-of-the-pytorch-gather-function/
-     */
-     auto q_pred = policyNet->forwardPass1(memory.tensor_states).gather(1, memory.tensor_actions.view({-1, 1}));
+    auto q_pred = policyNet->forwardPass(memory.tensor_states).gather(1, memory.tensor_actions.view({-1, 1}));
 
-     q_pred = policyNet->forwardPass2(q_pred, torch::zeros_like(q_pred));
+    // targetNet is used for prediction of next state Q value to reduce instability of bootstrapping.
+    //auto q_target = get<0>(targetNet->forwardPass1(memory.tensor_next_states).max(1, true));
+    auto q_next_state_target = targetNet->forwardPass(memory.tensor_next_states);
+    auto q_next_state_policy = policyNet->forwardPass(memory.tensor_next_states);
 
-     // targetNet is used for prediction of next state Q value to reduce instability of bootstrapping.
-     auto q_target = get<0>(targetNet->forwardPass1(memory.tensor_next_states).max(1, true));
+    auto maximum_from_policy = get<1>(q_next_state_policy.max(1, true));
+    auto q_target = q_next_state_target.gather(1, maximum_from_policy);
 
-     // for all terminal states in the batch, set target state q value to 0
-     q_target = alpha * gamma * q_target * (1 - memory.tensor_dones.view({-1, 1}));
+    // for all terminal states in the batch, set target state q value to 0
+    q_target = alpha * gamma * q_target * (1 - memory.tensor_dones.view({-1, 1}));
 
-     auto discounted_reward = alpha * memory.tensor_rewards.view({-1, 1}) + (1 - alpha) * q_pred;
+    auto discounted_reward = alpha * memory.tensor_rewards.view({-1, 1}) + (1 - alpha) * q_pred;
 
-     // calculate expected q value
-     auto y = targetNet->forwardPass2(discounted_reward, q_target);
+    // calculate expected q value
+    auto y = discounted_reward + q_target;
 
-     // calculate the loss as the mean-squared error of y and qpred
-     policyNet->computeLossAndBackPropagate(y, q_pred);
-
+    // calculate the loss as the mean-squared error of y and qpred
+    policyNet->computeLossAndBackPropagate(y, q_pred);
 }
 
 
@@ -90,6 +90,7 @@ void RLNN_Agent::saveModel(string &file) {
 
 void RLNN_Agent::updateTargetNet() {
     std::stringstream stream;
+
     policyNet->saveModel(stream);
     targetNet->loadModel(stream);
 }
@@ -147,7 +148,8 @@ bool RLNN_Agent::isExplore(int episodeCount) {
     if(episodeCompletion < epsilon_annealing_percent) {
         return true;
     }
-    if (episodeCompletion > 98) {
+    if (episodeCompletion > SWITCH_TO_EXPLOITATION_ONLY_PERCENT) {
+        stopLearning = true;
         return false;
     }
     startEpsilonDecay = true;
@@ -157,4 +159,8 @@ bool RLNN_Agent::isExplore(int episodeCount) {
     std::default_random_engine re;
     re.seed(std::chrono::system_clock::now().time_since_epoch().count());
     return unif(re) < epsilon;
+}
+
+void RLNN_Agent::setTrainingMode(bool value) {
+    isTrainingMode = value;
 }

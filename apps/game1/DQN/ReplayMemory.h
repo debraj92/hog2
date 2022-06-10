@@ -25,7 +25,7 @@ class ReplayMemory {
     vector<vector<float>> buffer_states;
     vector<vector<float>> buffer_next_states;
     vector<long> buffer_actions;
-    vector<long> rewards;
+    vector<float> rewards;
     vector<bool> dones;
     int idx = 0;
 
@@ -45,7 +45,7 @@ public:
     {}
     void sampleBatch(int batchSize);
 
-    void storeExperience(observation &current, observation &next, int action, int reward, bool done);
+    void storeExperience(observation &current, observation &next, int action, float reward, bool done);
 
     int getBufferSize();
 };
