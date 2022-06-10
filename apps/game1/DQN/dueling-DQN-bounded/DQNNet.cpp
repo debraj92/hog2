@@ -15,7 +15,9 @@ using namespace std;
 DQNNet::DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name) : m_value(hiddenLayer1Size, 1),
                                                                                                                                                   m_advantage(hiddenLayer1Size, outputSize)
 {
-    cout<<"Creating DQNNet "<<module_name<<endl;
+    logger = std::make_unique<Logger>(LogLevel);
+
+    logger->logDebug("Creating DQNNet ")->logDebug(module_name)->endLineDebug();
 
     m_sequential = nn::Sequential(nn::Linear(inputSize, hiddenLayer1Size),
                                   nn::Sigmoid());
@@ -33,7 +35,7 @@ DQNNet::DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLa
 }
 
 Tensor DQNNet::forwardPass1(const Tensor& inputs) {
-    cout<<"DQNNet::forwardPass1"<<endl;
+    logger->logDebug("DQNNet::forwardPass1")->endLineDebug();
     optimizer->zero_grad();
     return m_sequential->forward(inputs);
 }
@@ -48,13 +50,13 @@ Tensor DQNNet::forwardPassAdvantage(const Tensor &inputs) {
 
 /// For lower bound - CELU
 Tensor DQNNet::forwardPass2(const Tensor& input1, const Tensor& input2) {
-    cout<<"DQNNet::forwardPass2"<<endl;
+    logger->logDebug("DQNNet::forwardPass2")->endLineDebug();
     return m_lower_bound(input1 + input2);
 }
 
 
 void DQNNet::saveModel(string &file) {
-    cout<<"DQNNet::saveModel"<<endl;
+    logger->logDebug("DQNNet::saveModel from file")->endLineDebug();
     torch::save(m_sequential, file + "/m_sequential.pt");
     torch::save(m_value, file + "/m_value.pt");
     torch::save(m_advantage, file + "/m_adv.pt");
@@ -62,7 +64,7 @@ void DQNNet::saveModel(string &file) {
 }
 
 void DQNNet::loadModel(string &file) {
-    cout<<"DQNNet::loadModel"<<endl;
+    logger->logDebug("DQNNet::loadModel from file")->endLineDebug();
     torch::load(m_sequential, file + "/m_sequential.pt");
     torch::load(m_value, file + "/m_value.pt");
     torch::load(m_advantage, file + "/m_adv.pt");
@@ -71,13 +73,12 @@ void DQNNet::loadModel(string &file) {
 
 
 double DQNNet::computeLossAndBackPropagate(const Tensor& expected, const Tensor& predicted) {
-    cout<<"computeLossAndBackPropagate "<<endl;
-
+    logger->logDebug("computeLossAndBackPropagate")->endLineDebug();
     auto lossfn = nn::SmoothL1Loss();
 
     auto loss = lossfn(predicted, expected);
-    cout<<"Network Loss: "<<loss<<endl;
     double loss_value = loss.data().detach().item<double>();
+    logger->logDebug("Network Loss: ")->logDebug(loss_value)->endLineDebug();
     losses.push_back(loss_value);
     loss_count.push_back(count++);
 
@@ -96,10 +97,8 @@ double DQNNet::computeLossAndBackPropagate(const Tensor& expected, const Tensor&
 
 
 void DQNNet::plotLoss() {
-    cout<<"Network Loss"<<endl;
-    /*for(double loss: losses) {
-        cout<<loss<<endl;
-    }*/
+    logger->logDebug("Network Loss")->endLineDebug();
+
     RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
     StringReference *errorMessage = new StringReference();
     auto success = DrawScatterPlot(imageReference, 1000, 1000, &loss_count, &losses, errorMessage);

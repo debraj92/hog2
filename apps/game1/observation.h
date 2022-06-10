@@ -11,8 +11,13 @@
 #include <iostream>
 #include "enemy/enemy.h"
 #include "vector"
+#include "Logger.h"
 
 class observation {
+
+    LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+
+    std::shared_ptr<Logger> logger;
 
     struct enemy_attributes {
         float distance;
@@ -24,6 +29,11 @@ class observation {
     void updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties);
 
 public:
+
+    observation() {
+        logger = std::make_shared<Logger>(LogLevel);
+    }
+
     int playerX = 0;
     int playerY = 0;
     float playerLifeLeft = 0;

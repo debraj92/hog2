@@ -18,7 +18,7 @@ float AStar_::findShortestDistance(pair<int, int> src, pair<int, int> dst) {
 }
 
 bool AStar_::findPathToDestination() {
-    printBoard();
+    logger->printBoard(grid);
     reset();
     node_ root(source.first, source.second);
     root.computeF(0, findShortestDistance(source, destination));
@@ -31,8 +31,10 @@ bool AStar_::findPathToDestination() {
         if(isDestinationFound(nextNode)) {
             finalizeNodeLinks();
             countOfNodesToDestination = reverseNodeLinks(nextNode);
-            std::cout <<"Number of nodes to destination "<<countOfNodesToDestination<<endl;
-            printTrack(root);
+            logger->logDebug("Number of nodes to destination ")->logDebug(countOfNodesToDestination)->endLineDebug();
+            if (LogLevel == LOG_LEVEL::DEBUG) {
+                printTrack(root);
+            }
             return true;
         }
         vector<pair<int, int>> childNodes;
@@ -164,15 +166,16 @@ void AStar_::populateEnemyObstacles(vector<enemy> &enemies) {
 }
 
 void AStar_::printTrack(node_ root) {
-    cout<<"AStar_::printTrack"<<endl;
+    logger->logDebug("AStar_::printTrack")->endLineDebug();
     string path = "("+ to_string(root.x)+", "+to_string(root.y)+") ";
     while(!isDestinationFound(root)) {
         root = getNextNode(root);
         path += "("+ to_string(root.x)+", "+to_string(root.y)+") ";
     }
-    cout<<path<<endl;
+    logger->logDebug(path)->endLineDebug();
 }
 
+// TODO: Delete after removing calls from tests
 void AStar_::printBoard() {
     cout<<"AStar_::print board"<<endl;
     for (int row=0; row<GRID_SPAN_; row++) {

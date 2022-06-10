@@ -77,14 +77,14 @@ void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) 
 }
 
 void observation::printData() {
-    cout<<"Player Direction "<<direction<<endl;
-    cout<<"Player trajectory "<<trajectory<<endl;
-    //cout<<"Enemy distance and cosine "<<enemy_distance<<", "<<enemy_cosine<<endl;
-    cout<<"Obstacle front "<<obstacle_front<<endl;
-    cout<<"Obstacle left "<<obstacle_left<<endl;
-    cout<<"Obstacle front left "<<obstacle_front_left<<endl;
-    cout<<"Obstacle right "<<obstacle_right<<endl;
-    cout<<"Obstacle front right "<<obstacle_front_right<<endl;
+
+    logger->logDebug("Player Direction ")->logDebug(direction)->endLineDebug();
+    logger->logDebug("Player trajectory ")->logDebug(trajectory)->endLineDebug();
+    logger->logDebug("Obstacle front ")->logDebug(obstacle_front)->endLineDebug();
+    logger->logDebug("Obstacle left ")->logDebug(obstacle_left)->endLineDebug();
+    logger->logDebug("Obstacle front left ")->logDebug(obstacle_front_left)->endLineDebug();
+    logger->logDebug("Obstacle right ")->logDebug(obstacle_right)->endLineDebug();
+    logger->logDebug("Obstacle front right ")->logDebug(obstacle_front_right)->endLineDebug();
 }
 
 /**
@@ -95,7 +95,7 @@ void observation::printData() {
  */
 
 void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int destination_x, int destination_y) {
-    cout<<"locateTrajectoryAndDirection "<<endl;
+    logger->logDebug("locateTrajectoryAndDirection ")->endLineDebug();
 
     int current_x = playerX;
     int current_y = playerY;
@@ -219,7 +219,7 @@ void observation::locateEnemies(std::vector<enemy> &enemies) {
         }
     }
 
-    cout<<"Number of enemies in vision "<<enemy_properties.size()<<endl;
+    logger->logDebug("Number of enemies in vision ")->logDebug(enemy_properties.size())->endLineDebug();
 
     sort(enemy_properties.begin(), enemy_properties.end(),
          [](const enemy_attributes &e1, const enemy_attributes &e2) -> bool
@@ -232,7 +232,7 @@ void observation::locateEnemies(std::vector<enemy> &enemies) {
 }
 
 void observation::redirect(int current_x, int current_y, int destination_x, int destination_y) {
-    cout<<"observation::redirect "<<endl;
+    logger->logDebug("observation::redirect ")->endLineDebug();
     using namespace xt;
     double dx = destination_x - current_x;
     double dy = destination_y - current_y;

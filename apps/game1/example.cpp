@@ -4,18 +4,15 @@
 #include "gameEnv.h"
 #include "AStar_.h"
 #include "gameConstants.h"
+#include "Logger.h"
 
 int main() {
-//torch::Tensor tensor = torch::rand({2, 3});
-//std::cout << tensor << std::endl;
+    using namespace RTS;
+    Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
-//std::cout << torch::cuda::is_available << std::endl;
-
-
-    GameEnv gameEnv;
-    gameEnv.createMap3();
+    GameEnv gameEnv(true);
+    gameEnv.createMapEasiest();
     gameEnv.printMap();
     gameEnv.train();
-
 
 }

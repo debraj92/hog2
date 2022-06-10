@@ -46,7 +46,7 @@ find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIR})
 
 add_executable(${This} AStar_test.cpp GameMaps_test.cpp Observation_test.cpp ../gameEnv.h ../gameEnv.cpp ../fixedobstacles.h ../fixedobstacles.cpp ../gameConstants.h ../enemy/enemy.h ../enemy/fixedEnemy.cpp ../enemy/fixedEnemy.h ../gameSimulation.cpp ../gameSimulation.h ../findPath.cpp ../findPath.h ../player.cpp ../player.h ../state.h ../state.cpp ../rl_control.cpp ../rl_control.h ../observation.h ../coordinatesUtil.cpp ../coordinatesUtil.h
-        ../plot/pbPlots.hpp ../plot/pbPlots.cpp ../plot/supportLib.hpp ../plot/supportLib.cpp ../objectLocator.cpp ../objectLocator.h ../observation.cpp ../AStar_.cpp ../AStar_.h ../AStarOpenList.cpp ../AStarOpenList.h ../node_.cpp ../node_.h Observation_test.cpp FullTrainingSingleAgent.cpp ../TestResult.h ../DQN/ReplayMemory.cpp ../DQN/ReplayMemory.h ../DQN/DQN_interface.h replayMemory_test.cpp
+        ../plot/pbPlots.hpp ../plot/pbPlots.cpp ../plot/supportLib.hpp ../plot/supportLib.cpp ../objectLocator.cpp ../objectLocator.h ../observation.cpp ../AStar_.cpp ../AStar_.h ../AStarOpenList.cpp ../AStarOpenList.h ../node_.cpp ../node_.h Observation_test.cpp FullTrainingSingleAgent.cpp ../TestResult.h ../DQN/ReplayMemory.cpp ../DQN/ReplayMemory.h ../DQN/DQN_interface.h replayMemory_test.cpp Logging_test.cpp ../Logger.cpp ../Logger.h
         #../DQN/dueling-DQN/DQNNet.cpp ../DQN/dueling-DQN/DQNNet.h ../DQN/dueling-DQN/RLNN_Agent.cpp ../DQN/dueling-DQN/RLNN_Agent.h
         #../DQN/DDQN/DQNNet.cpp ../DQN/DDQN/DQNNet.h ../DQN/DDQN/RLNN_Agent.cpp ../DQN/DDQN/RLNN_Agent.h
         #../DQN/Vanilla-DQN/DQNNet.cpp ../DQN/Vanilla-DQN/DQNNet.h ../DQN/Vanilla-DQN/RLNN_Agent.cpp ../DQN/Vanilla-DQN/RLNN_Agent.h

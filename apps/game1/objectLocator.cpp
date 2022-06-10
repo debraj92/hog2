@@ -53,7 +53,7 @@ void objectLocator::init() {
 }
 
 void objectLocator::locateObject(int player_x, int player_y, int direction, int object_x, int object_y) {
-    cout<<"Unit direction"<<direction<<endl;
+    logger->logDebug("Unit direction")->logDebug(direction)->endLineDebug();
     float det = calculateDeterminant(direction);
     int diff1 = object_x - player_x;
     int diff2 = object_y - player_y;
@@ -87,7 +87,8 @@ void objectLocator::computeSine() {
 }
 
 float objectLocator::getObjectDistance() {
-    cout<<"getObjectDistance"<<endl;
+    //cout<<"getObjectDistance"<<endl;
+    logger->logDebug("getObjectDistance")->endLineDebug();
     return round_values(object_distance);
 }
 
@@ -106,7 +107,7 @@ void objectLocator::findQuadrant() {
     } else {
         quadrant = 3;
     }
-    cout<<"Quadrant"<<quadrant<<endl;
+    logger->logDebug("Quadrant")->endLineDebug();
 }
 
 void objectLocator::measureUniqueAngle() {
@@ -125,25 +126,25 @@ void objectLocator::measureUniqueAngle() {
             object_angle--;
             break;
     }
-    cout<<"measureUniqueAngle "<<object_angle<<endl;
+    logger->logDebug("measureUniqueAngle ")->logDebug(object_angle)->endLineDebug();
 }
 
 void objectLocator::calculateRiskFromDistance() {
     risk_distance = RISK_DISTANCE_MAX_MAGNITUDE * exp(-object_distance);
-    cout<<"calculateRiskFromDistance "<<risk_distance<<endl;
+    logger->logDebug("calculateRiskFromDistance ")->logDebug(risk_distance)->endLineDebug();
 }
 
 void objectLocator::calculateRiskFeatures() {
     risk_feature = risk_distance * object_angle;
-    cout<<"calculateRiskFeatures "<<risk_feature<<endl;
+    logger->logDebug("calculateRiskFeatures ")->logDebug(risk_feature)->endLineDebug();
 }
 
 float objectLocator::getObjectRiskFeature() {
-    cout<<"objectLocator::getObjectRiskFeature"<<endl;
+    logger->logDebug("objectLocator::getObjectRiskFeature")->endLineDebug();
     return risk_feature;
 }
 
 float objectLocator::getObjectAngle() {
-    cout<<"objectLocator::getObjectAngle"<<endl;
+    logger->logDebug("objectLocator::getObjectAngle")->endLineDebug();
     return object_angle;
 }

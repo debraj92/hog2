@@ -15,6 +15,9 @@ using namespace std;
 
 class RLNN_Agent : public DQN_interface {
 
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+    std::unique_ptr<Logger> logger;
+
     // Hyperparameters
     const double lr = 1e-3;
     // discount factor
@@ -50,13 +53,14 @@ public:
             policyNet->eval();
         }
         startEpsilonDecay = false;
+        logger = std::make_unique<Logger>(LogLevel);
     }
 
     void setTrainingMode(bool value);
 
     int selectAction(observation& currentState, int episodeCount, bool *explore);
 
-    void learnWithDQN();
+    double learnWithDQN();
 
     void memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done);
 

@@ -9,11 +9,16 @@
 #include <vector>
 #include <string>
 #include "../../gameConstants.h"
+#include "../../Logger.h"
 
 using namespace torch;
 using namespace std;
+using namespace RTS;
 
 class DQNNet : public nn::Module {
+
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+    std::unique_ptr<Logger> logger;
 
     nn::Sequential m_sequential;
 

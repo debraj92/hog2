@@ -4,7 +4,6 @@
 
 #include "findPath.h"
 #include "AStar_.h"
-#include <iostream>
 
 using namespace std;
 
@@ -20,7 +19,7 @@ void findPath::calculateNextPosition(int x, int y) {
         next_y = next.y;
     } else {
         // stuck
-        cout<<"Unit Not on path, will get stuck"<<endl;
+        logger->logInfo("Unit Not on path, will get stuck")->endLineDebug();
         next_x = x;
         next_y = y;
     }
@@ -59,8 +58,8 @@ int findPath::pathDirection(int x, int y) {
     node_ current(x,y);
     if (isOnTrack(x, y)) {
         node_ next = aStar.getNextNode(current);
-        cout<<"pathDirection current "<<x<<", "<<y<<endl;
-        cout<<"pathDirection next "<<next.x<<", "<<next.y<<endl;
+        logger->logDebug("Current Position ")->logDebug(x)->logDebug(", ")->logDebug(y)->endLineDebug();
+        logger->logDebug("Next Position ")->logDebug(next.x)->logDebug(", ")->logDebug(next.y)->endLineDebug();
         int x_plus = x+1;
         int x_minus = x-1;
         int y_plus = y+1;
@@ -83,11 +82,11 @@ int findPath::pathDirection(int x, int y) {
             return S;
         }
         // TODO: Error
-        cout<<"Invalid next move"<<endl;
+        logger->logInfo("Invalid next move")->endLineDebug();
         return -1;
     } else {
         // TODO: Error Handling
-        cout<<"Unit not on track, cannot find direction"<<endl;
+        logger->logInfo("Unit not on track, cannot find direction")->endLineDebug();
     }
     return -1;
 }

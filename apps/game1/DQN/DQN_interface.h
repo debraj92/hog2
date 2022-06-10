@@ -17,7 +17,8 @@ public:
 
     virtual int selectAction(observation& currentState, int episodeCount, bool *explore) = 0;
 
-    virtual void learnWithDQN() = 0;
+    /// Returns the network loss
+    virtual double learnWithDQN() = 0;
 
     virtual void memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done) = 0;
 

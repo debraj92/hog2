@@ -11,10 +11,16 @@
 #include <unordered_map>
 #include "enemy/enemy.h"
 #include "iostream"
+#include "Logger.h"
 
 using namespace std;
+using namespace RTS;
 
 class AStar_ {
+
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+
+    std::unique_ptr<Logger> logger;
 
     vector<vector<int>> grid;
     pair<int, int> source;
@@ -53,7 +59,9 @@ public:
      * Such objects would not apply to other units.
      */
     AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) : GRID_SPAN_(grid.size()) {
-        cout<<"AStar created, source: "<<startX<<", "<<startY<<endl;
+        logger = std::make_unique<Logger>(LogLevel);
+        logger->logDebug("AStar created, source: ");
+        logger->logDebug(startX)->logDebug(", ")->logDebug(startY)->endLineDebug();
         std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
         source = make_pair(startX, startY);
         destination = make_pair(endX, endY);
