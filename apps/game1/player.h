@@ -8,15 +8,24 @@
 #include "state.h"
 #include "vector"
 #include <set>
-#include "rl_control.h"
 #include <cmath>
 #include "findPath.h"
 #include "TestResult.h"
 
-class player : public rl_control {
+///// Change header-folder to load different RL models
+//#include "DQN/dueling-DQN/RLNN_Agent.h"
+//#include "DQN/DDQN/RLNN_Agent.h"
+//#include "DQN/Vanilla-DQN/RLNN_Agent.h"
+#include "DQN/dueling-DQN-bounded/RLNN_Agent.h"
+
+class player : public RLNN_Agent {
 
     shared_ptr<findPath> fp;
     shared_ptr<findPath> fp_temp_reroute;
+
+    int episodeCount;
+
+    int dqnTargetUpdateNextEpisode = MAX_EPISODES / 8;
 
     //state cur_state;
     void reset(std::vector<std::vector<int>> &grid);
@@ -29,11 +38,14 @@ public:
     int destination_x;
     int destination_y;
     int life_left;
-    bool ontrack;
+    bool isExploring = false;
 
-    int total_rewards = 0;
+    float total_rewards = 0;
 
-    player() {
+    int train_step = 0;
+
+    player(bool isTrainingMode) {
+        RLNN_Agent::setTrainingMode(isTrainingMode);
     }
 
     void initialize(int src_x, int src_y, int dest_x, int dest_y);
@@ -56,15 +68,15 @@ public:
 
     bool isOnTrack();
 
-    void evaluateActionQValues(int reward, observation& next_observation, int current_action);
-
-    void getNextStateForInference(observation& next_observation);
-
     void printBoard(std::vector<std::vector<int>> &grid);
 
     void findNewRoute(std::vector<std::vector<int>> &grid, observation &ob, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
-    void selectRandomSourceAndDestinationCoordinates(std::mt19937 &rng, std::uniform_int_distribution<std::mt19937::result_type> &randGen, std::vector<std::vector<int>> &grid, int &src_x, int &src_y, int &dest_x, int &dest_y);
+    int selectAction(observation& currentState);
+
+    void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done);
+
+    void learnWithDQN();
 };
 
 

@@ -26,6 +26,8 @@ class AStar_ {
 
     unordered_map<node_, node_, node_::node_Hash> childParent;
 
+    const int GRID_SPAN_;
+
     void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
 
     float findShortestDistance(pair<int, int> src, pair<int, int> dst);
@@ -40,9 +42,17 @@ class AStar_ {
 
     double computeDistance(int x, int y);
 
+    void reset();
+
+
 public:
 
-    AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) {
+    /**
+     * A star has temporary view of the map. This is done as the map is dynamic and therefore it is frozen for
+     * A star. Since different units would be using this module they would populate the map with objects in their vision.
+     * Such objects would not apply to other units.
+     */
+    AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) : GRID_SPAN_(grid.size()) {
         cout<<"AStar created, source: "<<startX<<", "<<startY<<endl;
         std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
         source = make_pair(startX, startY);
@@ -59,9 +69,13 @@ public:
 
     void printTrack(node_ root);
 
-    void printBoard(vector<std::vector<int>> &grid);
+    void printBoard();
 
     int getCountOfNodesToDestination();
+
+    void changeSourceAndDestination(int startX, int startY, int endX, int endY);
+
+    void changeMap(vector<vector<int>> &grid);
 };
 
 

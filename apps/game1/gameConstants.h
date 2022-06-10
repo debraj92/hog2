@@ -12,10 +12,10 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 4000;
-const int SESSION_TIMEOUT = 100;
+const int MAX_EPISODES = 500;//3000;   /// Must be greater than 8
+const int SESSION_TIMEOUT = 20;
 
-const int GRID_SPAN=10;
+const int GRID_SPAN=6; /// >= 10 when running unit tests
 
 static const int MAX_STATES = 20000;
 
@@ -63,37 +63,86 @@ const int two_deviation_S = 22;
 const int two_deviation_W = 23;
 const int two_deviation_E = 24;
 
-/**
- * TODO: Actions must start from 0. Otherwsie DQN will fail
- */
-const int ACTION_SWITCH = 0;
-const int ACTION_DODGE_LEFT = 1;
-const int ACTION_DODGE_DIAGONAL_LEFT = 2;
-const int ACTION_DODGE_RIGHT = 3;
-const int ACTION_DODGE_DIAGONAL_RIGHT = 4;
-const int ACTION_STRAIGHT = 5;
+
+ /*
+const int ACTION_SWITCH = 4;//0;
+const int ACTION_DODGE_LEFT = 3;//1;//0;//1;
+const int ACTION_DODGE_DIAGONAL_LEFT = 0;//2;
+const int ACTION_DODGE_RIGHT = 2;//3;
+const int ACTION_DODGE_DIAGONAL_RIGHT = 1;//3;//4;
+const int ACTION_STRAIGHT = 7;//5;
 const int ACTION_REROUTE = 6;
-const int ACTION_REDIRECT = 7;
+const int ACTION_REDIRECT = 5;//7;
+  */
+
+
+
+const int ACTION_DODGE_DIAGONAL_LEFT = 0;
+const int ACTION_DODGE_DIAGONAL_RIGHT = 1;
+const int ACTION_DODGE_LEFT = 2;
+const int ACTION_DODGE_RIGHT = 3;
+const int ACTION_STRAIGHT = 4;
+
+const int ACTION_SWITCH = 7;//0;
+//const int ACTION_DODGE_LEFT = 3;//1;//0;//1;
+
+//const int ACTION_DODGE_RIGHT = 2;//3;
+
+
+const int ACTION_REROUTE = 6;
+const int ACTION_REDIRECT = 5;//7;
+
+const int ACTION_SPACE = 5;//7;//8;
+
+
+// deprecated action
 const int ACTION_FOLLOW = 8;
 
-const int ACTION_SPACE = 9;
 
-const int REWARD_DEATH = -50;
-const int REWARD_REACH = 100;
-const int REWARD_ACTION_UNAVAILABLE = -40;
+
+// REWARDS
+const float REWARD_DEATH = -0.1;//-50;
+const float REWARD_REROUTE = -0.1;//-15;
+const float REWARD_REDIRECT = -0.1;//-10;
+
+// new rewards approved
+/*const int REWARD_REACH = 300;
+const int REWARD_ACTION_UNAVAILABLE = -10;
 const int REWARD_TRACK_FOLLOW = -1;
-const int REWARD_TRACK_ONE_DIV = -3;
+const int REWARD_TRACK_ONE_DIV = -4;
 const int REWARD_TRACK_TWO_DIV = -8;
 const int REWARD_OFFTRACK = -10;
-const int REWARD_REROUTE = -15;
-const int REWARD_REDIRECT = -10;
+ */
+
+/*
+const float REWARD_ACTION_UNAVAILABLE = -0.1 * REWARD_FACTOR;
+const float REWARD_TRACK_FOLLOW = -0.01 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -0.04 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -0.08 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -0.1 * REWARD_FACTOR;
+*/
+const float REWARD_FACTOR = 100;
+const float REWARD_REACH =  1 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -0.1 * REWARD_FACTOR;
+const float REWARD_TRACK_FOLLOW = -0.01 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -0.04 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -0.08 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -0.1 * REWARD_FACTOR;
+
 
 const int MAX_LIFE = 10;
 
-const int MAX_ABSTRACT_OBSERVATIONS = 35;
+const int MAX_DISTACE = 1000;
+
+const int MAX_ABSTRACT_OBSERVATIONS = 22;//35;
 
 const int RISK_DISTANCE_MAX_MAGNITUDE = 10; //would increase if FOV increases
 
-static const int MAX_CAPACITY_REPLAY_BUFFER = 1000;
+const int MAX_CAPACITY_REPLAY_BUFFER = 10000;
+
+const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = MAX_EPISODES * SESSION_TIMEOUT * 0.02;
+
+const int SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 90;
+
 
 #endif //EXAMPLE_GAMECONSTANTS_H

@@ -7,7 +7,7 @@
 
 void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     cout<<"gameSimulation::play"<<endl;
-
+/*
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     grid[player1->current_x][player1->current_y] = 9;
@@ -34,7 +34,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         time++;
     }
     std::cout<<"Player 1 life left "<<player1->life_left<<"\n";
-
+*/
 }
 
 
@@ -44,29 +44,24 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     grid[player1->current_x][player1->current_y] = 9;
     player1->printBoard(grid);
-    player1->ontrack = true;
-    observation ob;
-    player1->observe(ob, grid, enemies, false);
-    player1->createStartState(ob);
-    player1->cur_state->x = player1->current_x;
-    player1->cur_state->y = player1->current_y;
+    observation currentObservation;
+    player1->observe(currentObservation, grid, enemies, false);
     int time = 1;
-    int actionError = 0;
-    while(!isDestinationReached() && player1->life_left > 0 && time < SESSION_TIMEOUT) {
+    while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         std::cout<<"Time "<<time<<endl;
         std::cout<<"player ("<<player1->current_x<<","<<player1->current_y<<")"<<endl;
+        int actionError = 0;
         // Next Action
-        int action = movePlayer(grid, enemies, ob, &actionError);
-        grid[player1->current_x][player1->current_y] = 9;
+        int action = movePlayer(grid, enemies, currentObservation, &actionError);
         player1->printBoard(grid);
         moveEnemies(enemies);
-        ob = createObservationAfterAction(grid, enemies, ob, action);
+        observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
         fight(enemies);
-        int reward = calculateReward(enemies, ob, action, actionError);
+        auto reward = calculateReward(enemies, nextObservation, action, actionError);
         cout<<"Reward received "<<reward<<endl;
-        player1->evaluateActionQValues(reward, ob, action);
-        player1->cur_state->x = player1->current_x;
-        player1->cur_state->y = player1->current_y;
+        player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isEpisodeComplete());
+        player1->learnWithDQN();
+        currentObservation = nextObservation;
         time++;
         player1->total_rewards += reward;
     }
@@ -74,54 +69,45 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
 }
 
 
+int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &currentObservation, int* error) {
 
-// TODO: Handle move unavailable - don't change state
-int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &ob, int* error, bool isInference) {
-    int nextAction;
-    if (isInference) {
-        nextAction = player1->getNextActionForInference();
-    } else {
-        nextAction = player1->getNextAction();
-    }
+    int oldLocationX = player1->current_x;
+    int oldLocationY = player1->current_y;
+
     std::cout<<"NEXT ACTION ";
-    printAction(nextAction);
+    int nextAction = player1->selectAction(currentObservation);
     if (nextAction != ACTION_SWITCH) {
-        ob.resetRerouteDistance();
+        currentObservation.resetRerouteDistance();
     }
     switch(nextAction) {
-        case ACTION_FOLLOW:
-            if (!player1->isOnTrack()) {
-                *error = -1;
-                return nextAction;
-            }
-            player1->follow();
-            break;
         case ACTION_STRAIGHT:
-            *error = setStraightActionCoordinates(player1->current_x, player1->current_y, player1->cur_state->direction);
+            *error = setStraightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
         case ACTION_DODGE_LEFT:
-            *error = setDodgeLeftActionCoordinates(player1->current_x, player1->current_y, player1->cur_state->direction);
+            *error = setDodgeLeftActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
         case ACTION_DODGE_DIAGONAL_LEFT:
-            *error = setDodgeDiagonalLeftActionCoordinates(player1->current_x, player1->current_y, player1->cur_state->direction);
+            *error = setDodgeDiagonalLeftActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
         case ACTION_DODGE_RIGHT:
-            *error = setDodgeRightActionCoordinates(player1->current_x, player1->current_y, player1->cur_state->direction);
+            *error = setDodgeRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
         case ACTION_DODGE_DIAGONAL_RIGHT:
-            *error = setDodgeDiagonalRightActionCoordinates(player1->current_x, player1->current_y, player1->cur_state->direction);
+            *error = setDodgeDiagonalRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
         case ACTION_REROUTE:
-            player1->findNewRoute(grid, ob, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            player1->findNewRoute(grid, currentObservation, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
             break;
         case ACTION_REDIRECT:
-            ob.redirect(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            currentObservation.redirect(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
             break;
         case ACTION_SWITCH:
-            *error = player1->switchToNewRoute(ob);
-            ob.resetRerouteDistance();
+            *error = player1->switchToNewRoute(currentObservation);
+            currentObservation.resetRerouteDistance();
             break;
     }
+    grid[oldLocationX][oldLocationY] = 0;
+    grid[player1->current_x][player1->current_y] = 9;
     return nextAction;
 }
 
@@ -143,11 +129,11 @@ void gameSimulation::fight(std::vector<enemy> &enemies) {
 }
 
 
-int gameSimulation::calculateReward(vector<enemy> &enemies, observation &ob, int action, int action_error) {
+float gameSimulation::calculateReward(vector<enemy> &enemies, observation &ob, int action, int action_error) {
     if(isDestinationReached()) {
         return REWARD_REACH;
     }
-    if(player1->life_left <= 0) {
+    if(ob.playerLifeLeft <= 0) {
         return REWARD_DEATH;
     }
     if(action_error == -1) {
@@ -171,42 +157,8 @@ int gameSimulation::calculateReward(vector<enemy> &enemies, observation &ob, int
 }
 
 
-int gameSimulation::getTotalRewardsCollected() {
+float gameSimulation::getTotalRewardsCollected() {
     return player1->total_rewards;
-}
-
-void gameSimulation::printAction(int action) {
-    switch (action) {
-        case ACTION_FOLLOW:
-            cout<<"ACTION_FOLLOW"<<endl;
-            break;
-        case ACTION_DODGE_LEFT:
-            cout<<"ACTION_DODGE_LEFT"<<endl;
-            break;
-        case ACTION_DODGE_RIGHT:
-            cout<<"ACTION_DODGE_RIGHT"<<endl;
-            break;
-        case ACTION_DODGE_DIAGONAL_LEFT:
-            cout<<"ACTION_DODGE_DIAGONAL_LEFT"<<endl;
-            break;
-        case ACTION_DODGE_DIAGONAL_RIGHT:
-            cout<<"ACTION_DODGE_DIAGONAL_RIGHT"<<endl;
-            break;
-        case ACTION_STRAIGHT:
-            cout<<"ACTION_STRAIGHT"<<endl;
-            break;
-        case ACTION_REROUTE:
-            cout<<"ACTION_REROUTE"<<endl;
-            break;
-        case ACTION_REDIRECT:
-            cout<<"ACTION_REDIRECT"<<endl;
-            break;
-        case ACTION_SWITCH:
-            cout<<"ACTION_SWITCH"<<endl;
-            break;
-        default:
-            cout<<"INVALID ACTION "<<action<<endl;
-    }
 }
 
 void gameSimulation::reset(std::vector<std::vector<int>> &grid) {
@@ -227,11 +179,11 @@ void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, vector<enem
 }
 
 bool gameSimulation::isDestinationReached() {
-    return player1->current_x == player1->destination_x && player1->current_y == player1->destination_y;
+    return  player1->current_x == player1->destination_x and player1->current_y == player1->destination_y;
 }
 
 
-observation gameSimulation::createObservationAfterAction(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &ob, int action) {
+observation gameSimulation::createObservationAfterAction(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation ob, int action) {
     switch(action) {
         case ACTION_REDIRECT:
         {
@@ -250,11 +202,15 @@ observation gameSimulation::createObservationAfterAction(vector<vector<int>> &gr
         }
         default:
         {
-            ob = observation();
-            player1->observe(ob, grid, enemies, false);
-            return ob;
+            observation ob1;
+            player1->observe(ob1, grid, enemies, false);
+            return ob1;
         }
 
     }
 
+}
+
+bool gameSimulation::isEpisodeComplete() {
+    return isDestinationReached() or player1->life_left <= 0;
 }

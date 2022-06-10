@@ -64,35 +64,40 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     std::uniform_int_distribution<std::mt19937::result_type> randomGen(0,GRID_SPAN-1);
      */
 
-
-    for(int i=1; i<MAX_EPISODES; i++) {
+    train_step = 0;
+    for(episodeCount = 1; episodeCount < MAX_EPISODES; episodeCount++) {
         // pick a random source and destination
         int src_x, src_y, dest_x, dest_y;
 
-        game.player1->initialize(sources[i%14][0], sources[i%14][1], destinations[i%14][0], destinations[i%14][1]);
-        //game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
+        //game.player1->initialize(sources[i%14][0], sources[i%14][1], destinations[i%14][0], destinations[i%14][1]);
+        game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
         //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
         //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
-        cout<<"EPOCH "<<i<<endl;
+        cout<<"EPOCH "<<episodeCount<<endl;
+        if (train_step % dqnTargetUpdateNextEpisode == 0) {
+            updateTargetNet();
+        }
         game.learnToPlay(grid, enemies);
-        //printAllStatesAndPolicies();
+        train_step++;
         cout<<endl;
         printBoard(grid);
         cout<<"Total rewards collected "<<game.getTotalRewardsCollected()<<endl;
         rewards.push_back(game.getTotalRewardsCollected());
-        episodes.push_back(i);
+        episodes.push_back(episodeCount);
         reset(grid);
         game.reset(grid);
-        make_greedy();
+        decayEpsilon();
     }
+
+    plotLosses();
 
     RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
     StringReference *errorMessage = new StringReference();
     auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &rewards, errorMessage);
     if(success){
         vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RTS/plot/output.png");
+        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot/episode_rewards.png");
         DeleteImage(imageReference->image);
     }else{
         cerr << "Error: ";
@@ -123,21 +128,18 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
 
 void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect) {
     cout<<"player::observe"<<endl;
+    ob.playerX = this->current_x;
+    ob.playerY = this->current_y;
+    // TODO: Add to input state tensor
+    ob.playerLifeLeft = static_cast<float>(this->life_left);
+
     if (!isRedirect) {
-        if (!isOnTrack()) {
-            cout<<"("<<current_x<<", "<<current_y<<") is not on track"<<endl;
-            ob.locateTrajectoryAndDirection(fp, current_x, current_y, destination_x, destination_y);
-        } else {
-            cout<<"("<<current_x<<", "<<current_y<<") is on track"<<endl;
-            ob.trajectory = on_track;
-            ob.direction = getDirection();
-        }
+        ob.locateTrajectoryAndDirection(fp, destination_x, destination_y);
     }
 
-    if (ob.direction != 0) {
-        ob.locateEnemies(enemies, current_x, current_y);
-        //ob.locateDestination(current_x, current_y, destination_x, destination_y);
-        ob.updateObstacleDistances(grid, current_x, current_y);
+    if (ob.direction > 0) {
+        ob.locateEnemies(enemies);
+        ob.updateObstacleDistances(grid);
     }
 }
 
@@ -168,16 +170,6 @@ bool player::isOnTrack() {
     return fp->isOnTrack(current_x, current_y);
 }
 
-void player::evaluateActionQValues(int reward, observation &next_observation, int current_action) {
-    cur_state = evaluateActionProbabilities(reward, next_observation, current_action);
-    ontrack = next_observation.trajectory == on_track;
-}
-
-void player::getNextStateForInference(observation &next_observation) {
-    cur_state = getNextStateFromObservation(next_observation);
-    ontrack = next_observation.trajectory == on_track;
-}
-
 void player::printBoard(std::vector<std::vector<int>> &grid) {
     cout<<"print board"<<endl;
     for (int row=0; row<GRID_SPAN; row++) {
@@ -198,33 +190,10 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
     destination_x = dest_x;
     destination_y = dest_y;
     life_left = MAX_LIFE;
-    ontrack = true;
     current_x = source_x;
     current_y = source_y;
     total_rewards = 0;
 
-}
-
-void player::selectRandomSourceAndDestinationCoordinates(std::mt19937 &rng, std::uniform_int_distribution<std::mt19937::result_type> &randGen, std::vector<std::vector<int>> &grid, int &src_x, int &src_y, int &dest_x, int &dest_y) {
-    bool src_generated = false;
-    while(!src_generated) {
-        src_x = randGen(rng);
-        src_y = randGen(rng);
-        if(grid[src_x][src_y]==0) {
-            src_generated = true;
-        }
-    }
-
-    bool dest_generated = false;
-    while(!dest_generated) {
-        dest_x = randGen(rng);
-        dest_y = randGen(rng);
-        if(grid[dest_x][dest_y]==0 && !(dest_x == src_x && dest_y == src_y)) {
-            dest_generated = true;
-        }
-    }
-
-    cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
 }
 
 void player::findNewRoute(vector<std::vector<int>> &grid, observation &ob, vector<enemy> &enemies, int src_x, int src_y, int dst_x,
@@ -245,6 +214,20 @@ int player::switchToNewRoute(observation &ob) {
         return 0;
     }
     return -1;
+}
+
+int player::selectAction(observation& currentState) {
+    return RLNN_Agent::selectAction(currentState, episodeCount, &isExploring);
+}
+
+void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
+    if (isExploring) {
+        RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done);
+    }
+}
+
+void player::learnWithDQN() {
+    RLNN_Agent::learnWithDQN();
 }
 
 

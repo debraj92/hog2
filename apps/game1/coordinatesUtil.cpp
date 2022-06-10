@@ -33,7 +33,7 @@ int coordinatesUtil::setNCoordinates(int &x, int &y) {
 
 
 int coordinatesUtil::setSWCoordinates(int& x, int& y) {
-    if (y > 0 && x < GRID_SPAN - 1) {
+    if (y > 0 && x < GRID_SPAN_ - 1) {
         if(verifyObstacle(x+1,y-1)) {
             y--;
             x++;
@@ -44,7 +44,7 @@ int coordinatesUtil::setSWCoordinates(int& x, int& y) {
 }
 
 int coordinatesUtil::setSECoordinates(int& x, int& y) {
-    if (x < GRID_SPAN - 1 && y < GRID_SPAN - 1) {
+    if (x < GRID_SPAN_ - 1 && y < GRID_SPAN_ - 1) {
         if(verifyObstacle(x+1,y+1)) {
             x++;
             y++;
@@ -55,7 +55,7 @@ int coordinatesUtil::setSECoordinates(int& x, int& y) {
 }
 
 int coordinatesUtil::setSCoordinates(int& x, int& y) {
-    if (x < GRID_SPAN - 1) {
+    if (x < GRID_SPAN_ - 1) {
         if(verifyObstacle(x+1,y)) {
             x++;
             return 0;
@@ -65,7 +65,7 @@ int coordinatesUtil::setSCoordinates(int& x, int& y) {
 }
 
 int coordinatesUtil::setNECoordinates(int& x, int& y) {
-    if (x > 0 && y < GRID_SPAN - 1) {
+    if (x > 0 && y < GRID_SPAN_ - 1) {
         if(verifyObstacle(x-1,y+1)) {
             y++;
             x--;
@@ -88,7 +88,7 @@ int coordinatesUtil::setNWCoordinates(int &x, int &y) {
 
 
 int coordinatesUtil::setECoordinates(int& x, int& y) {
-    if (y < GRID_SPAN - 1) {
+    if (y < GRID_SPAN_ - 1) {
         if(verifyObstacle(x,y+1)) {
             y++;
             return 0;
@@ -223,7 +223,8 @@ int coordinatesUtil::setDodgeDiagonalRightActionCoordinates(int &x, int &y, int 
     }
 }
 
+/// True if no obstacle
 bool coordinatesUtil::verifyObstacle(int x, int y) {
-    return grid[x][y] >= 0;
+    return grid[x][y] == 0;
 }
 

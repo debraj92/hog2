@@ -36,7 +36,7 @@ public:
         destination_x = dest_x;
         destination_y = dest_y;
     }
-    void findPathToDestination();
+    bool findPathToDestination();
     void calculateNextPosition(int x, int y);
     int getNext_x();
     int getNext_y();
@@ -44,6 +44,9 @@ public:
     int pathDirection(int current_x, int current_y);
     void populateEnemyObstacles(vector<enemy> &enemies);
     int getDistanceToDestination();
+    void printMap();
+    void changeSourceAndDestination(int startX, int startY, int endX, int endY);
+    void changeMap(vector<vector<int>> &grid);
 };
 
 

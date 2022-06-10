@@ -18,7 +18,8 @@ float AStar_::findShortestDistance(pair<int, int> src, pair<int, int> dst) {
 }
 
 bool AStar_::findPathToDestination() {
-    printBoard(grid);
+    printBoard();
+    reset();
     node_ root(source.first, source.second);
     root.computeF(0, findShortestDistance(source, destination));
     childParent.insert(make_pair(root, root));
@@ -77,17 +78,17 @@ void AStar_::calculateAdjacentNodes(vector<pair<int, int>> &childNodes, node_& n
         if (nextNode.y-1 >= 0) {
             addEdge(nextNode.x-1, nextNode.y-1, childNodes);
         }
-        if (nextNode.y+1 < GRID_SPAN) {
+        if (nextNode.y+1 < GRID_SPAN_) {
             addEdge(nextNode.x-1, nextNode.y+1, childNodes);
         }
         addEdge(nextNode.x-1, nextNode.y, childNodes);
     }
-    if(nextNode.x+1 < GRID_SPAN) {
+    if(nextNode.x+1 < GRID_SPAN_) {
         //j-1, j, j+1 : 3 moves
         if (nextNode.y-1 >= 0) {
             addEdge(nextNode.x+1, nextNode.y-1, childNodes);
         }
-        if (nextNode.y+1 < GRID_SPAN) {
+        if (nextNode.y+1 < GRID_SPAN_) {
             addEdge(nextNode.x+1, nextNode.y+1, childNodes);
         }
         addEdge(nextNode.x+1, nextNode.y, childNodes);
@@ -96,7 +97,7 @@ void AStar_::calculateAdjacentNodes(vector<pair<int, int>> &childNodes, node_& n
         // i : 1 move
         addEdge(nextNode.x, nextNode.y-1, childNodes);
     }
-    if (nextNode.y+1 < GRID_SPAN) {
+    if (nextNode.y+1 < GRID_SPAN_) {
         // i : 1 move
         addEdge(nextNode.x, nextNode.y+1, childNodes);
     }
@@ -172,10 +173,10 @@ void AStar_::printTrack(node_ root) {
     cout<<path<<endl;
 }
 
-void AStar_::printBoard(std::vector<std::vector<int>> &grid) {
+void AStar_::printBoard() {
     cout<<"AStar_::print board"<<endl;
-    for (int row=0; row<GRID_SPAN; row++) {
-        for (int col=0; col<GRID_SPAN; col++) {
+    for (int row=0; row<GRID_SPAN_; row++) {
+        for (int col=0; col<GRID_SPAN_; col++) {
             if(grid[row][col]<0) {
                 cout<<grid[row][col]<<" ";
             } else {
@@ -188,4 +189,20 @@ void AStar_::printBoard(std::vector<std::vector<int>> &grid) {
 
 int AStar_::getCountOfNodesToDestination() {
     return countOfNodesToDestination;
+}
+
+void AStar_::reset() {
+    countOfNodesToDestination = 0;
+    closedList.clear();
+    childParent.clear();
+}
+
+void AStar_::changeSourceAndDestination(int startX, int startY, int endX, int endY) {
+    source = make_pair(startX, startY);
+    destination = make_pair(endX, endY);
+}
+
+void AStar_::changeMap(vector<vector<int>> &grid) {
+    this->grid.clear();
+    std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
 }

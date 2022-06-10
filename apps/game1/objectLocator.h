@@ -11,23 +11,23 @@ using namespace std;
 
 class objectLocator {
 
-    double l1[9];
-    double l2[9];
-    double p1[9];
-    double p2[9];
+    float l1[9];
+    float l2[9];
+    float p1[9];
+    float p2[9];
 
-    double object_l;
-    double object_p;
-    double object_distance;
-    double object_angle;
+    float object_l;
+    float object_p;
+    float object_distance;
+    float object_angle;
     int quadrant;
-    double risk_distance;
+    float risk_distance;
 
-    double risk_feature;
+    float risk_feature;
 
     void init();
 
-    double calculateDeterminant(int direction);
+    float calculateDeterminant(int direction);
 
     void computeDistance();
 
@@ -45,7 +45,7 @@ class objectLocator {
 
 
 
-    double round_values(double value);
+    static float round_values(float value);
 
 public:
 
@@ -55,11 +55,11 @@ public:
 
     void locateObject(int player_x, int player_y, int direction, int object_x, int object_y);
 
-    double getObjectDistance();
+    float getObjectDistance();
 
-    double getObjectAngle();
+    float getObjectAngle();
 
-    double getObjectRiskFeature();
+    float getObjectRiskFeature();
 };
 
 

@@ -8,8 +8,8 @@
 
 using namespace std;
 
-void findPath::findPathToDestination() {
-    aStar.findPathToDestination();
+bool findPath::findPathToDestination() {
+    return aStar.findPathToDestination();
 }
 
 void findPath::calculateNextPosition(int x, int y) {
@@ -98,4 +98,16 @@ void findPath::populateEnemyObstacles(vector<enemy> &enemies) {
 
 int findPath::getDistanceToDestination() {
     return aStar.getCountOfNodesToDestination();
+}
+
+void findPath::printMap() {
+    aStar.printBoard();
+}
+
+void findPath::changeSourceAndDestination(int startX, int startY, int endX, int endY) {
+    aStar.changeSourceAndDestination(startX, startY, endX, endY);
+}
+
+void findPath::changeMap(vector<vector<int>> &grid) {
+    aStar.changeMap(grid);
 }

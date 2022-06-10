@@ -72,7 +72,7 @@ TEST(AStarFindPathVertical, BasicAssertions) {
         std::vector<int> row(GRID_SPAN, 0);
         grid.push_back(row);
     }
-    AStar_ aStar(grid, 0, 0, 0, 6);
+    AStar_ aStar(grid, 0, 0, 0, GRID_SPAN - 1);
     bool found = aStar.findPathToDestination();
     ASSERT_TRUE(found);
 }

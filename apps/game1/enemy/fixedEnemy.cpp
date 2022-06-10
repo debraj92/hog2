@@ -4,6 +4,7 @@
 
 #include "fixedEnemy.h"
 
+/// Move to next location and clear old location
 void enemy::doNextMove() {
     // nothing
 }

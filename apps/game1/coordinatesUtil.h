@@ -16,9 +16,11 @@ class coordinatesUtil {
 
     bool verifyObstacle(int x, int y);
 
+    const int GRID_SPAN_;
+
 public:
 
-    explicit coordinatesUtil(vector<vector<int>> &grid) : grid(grid){
+    explicit coordinatesUtil(vector<vector<int>> &grid) : grid(grid), GRID_SPAN_(grid.size()){
 
     }
 

@@ -20,6 +20,38 @@ void GameEnv::createEmptyGrid() {
     }
 }
 
+void GameEnv::createMapEasiest() {
+    createEmptyGrid();
+
+    //fixedEnemy f1(GRID_SPAN/2+1, GRID_SPAN/2+1, 1);
+    //enemies.push_back(f1);
+    //fixedEnemy f2(GRID_SPAN - 1, GRID_SPAN - 2, 2);
+    //enemies.push_back(f2);
+
+
+    const int TOTAL_FIXED_OBSTACLES = 5;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {3, 3, 3, 3},
+            {1, 1, 1, 1},
+            {3, 3, 1, 1},
+            {0, 0, 2, 2},
+            {2, 2, 3, 3}
+
+    };
+
+    // fill with static obstacles
+    FixedObstacles fixedObstacles;
+    for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
+        int x_s = blockObstacles[obstacle][0];
+        int x_e = blockObstacles[obstacle][1];
+        int y_s = blockObstacles[obstacle][2];
+        int y_e = blockObstacles[obstacle][3];
+        fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
+    }
+
+}
+
 void GameEnv::createMap1() {
     createEmptyGrid();
     const int TOTAL_FIXED_OBSTACLES = 2;
@@ -142,7 +174,7 @@ void GameEnv::createMap2() {
 }
 
 void GameEnv::train() {
-    player1.learnGame(grid, enemies);
+    player1->learnGame(grid, enemies);
 }
 
 void GameEnv::printMap() {
@@ -156,7 +188,7 @@ void GameEnv::printMap() {
 
 TestResult GameEnv::test(int source_x, int source_y, int destination_x, int destination_y, std::vector<enemy> &enemies) {
     TestResult result;
-    player1.playGame(grid, enemies, source_x, source_y, destination_x, destination_y, result);
+    player1->playGame(grid, enemies, source_x, source_y, destination_x, destination_y, result);
     return result;
 }
 
@@ -173,4 +205,5 @@ void GameEnv::createAllFixedObstacles(int TOTAL_FIXED_OBSTACLES, int blockObstac
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
 }
+
 

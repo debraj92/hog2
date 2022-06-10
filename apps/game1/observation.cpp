@@ -15,10 +15,10 @@
 #include <xtensor/xio.hpp>
 
 using namespace std;
-void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid, int x, int y) {
+void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) {
+    int x = playerX;
+    int y = playerY;
     coordinatesUtil coordinates(grid);
-
-    // TODO: Consider backward movements?
 
     // front
     int next_x = x;
@@ -94,33 +94,44 @@ void observation::printData() {
  *   x
  */
 
-void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int current_x, int current_y, int destination_x, int destination_y) {
+void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int destination_x, int destination_y) {
     cout<<"locateTrajectoryAndDirection "<<endl;
+
+    int current_x = playerX;
+    int current_y = playerY;
+    if (fp->isOnTrack(current_x, current_y)) {
+        trajectory = on_track;
+        direction = fp->pathDirection(current_x, current_y);
+        return;
+    }
+
     int angles[9];
     setDirectionAngles(angles);
     redirect(current_x, current_y, destination_x, destination_y);
+    bool pathFound = false;
     int direction_dest = direction;
     int min_angle = 1000;
     int row, col;
     for (int i=1; i<=VISION_RADIUS; i++) {
         row = current_x - i;
-        if (row > 0) {
+        if (row >= 0) {
             for(col=current_y - i; col<=current_y + i; col++) {
-                if (col > 0 && col < GRID_SPAN - 1) {
+                if (col >= 0 && col <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
                         direction = fp->pathDirection(row, col);
                         trajectory = (i*10) + 1;
                         int diff = abs(angles[direction_dest] - angles[direction]);
                         min_angle = diff;
+                        pathFound = true;
                         break;
                     }
                 }
             }
         }
         row = current_x + i;
-        if (row < GRID_SPAN - 1) {
+        if (row <= GRID_SPAN - 1) {
             for(col=current_y - i; col<=current_y + i; col++) {
-                if (col > 0 && col < GRID_SPAN - 1) {
+                if (col >= 0 && col <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
                         if (min_angle == 1000) {
                             direction = fp->pathDirection(row, col);
@@ -136,15 +147,16 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
                                 trajectory = (i*10) + 2;
                             }
                         }
+                        pathFound = true;
                         break;
                     }
                 }
             }
         }
         col = current_y - i;
-        if (col > 0) {
+        if (col >= 0) {
             for(row=current_x - i; row<=current_x + i; row++) {
-                if (row > 0 && row < GRID_SPAN - 1) {
+                if (row >= 0 && row <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
                         if (min_angle == 1000) {
                             direction = fp->pathDirection(row, col);
@@ -160,15 +172,16 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
                                 trajectory = (i * 10) + 3;
                             }
                         }
+                        pathFound = true;
                         break;
                     }
                 }
             }
         }
         col = current_y + i;
-        if (col < GRID_SPAN - 1) {
+        if (col <= GRID_SPAN - 1) {
             for(row=current_x - i; row<=current_x + i; row++) {
-                if (row > 0 && row < GRID_SPAN - 1) {
+                if (row >= 0 && row <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
                         if (min_angle == 1000) {
                             direction = fp->pathDirection(row, col);
@@ -181,26 +194,25 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
                                 trajectory = (i * 10) + 4;
                             }
                         }
+                        pathFound = true;
                         break;
                     }
                 }
             }
         }
-        if (trajectory != 0) {
+        if(pathFound) {
             return;
         }
     }
-    if (trajectory == 0) {
-        // reset if path not found
-        direction = 0;
-    }
+    trajectory = 0;
+    direction = 0;
 }
 
-void observation::locateEnemies(std::vector<enemy> &enemies, int current_x, int current_y) {
+void observation::locateEnemies(std::vector<enemy> &enemies) {
     objectLocator ol;
     vector<enemy_attributes> enemy_properties;
     for(const enemy& e: enemies) {
-        ol.locateObject(current_x, current_y, direction, e.current_x, e.current_y);
+        ol.locateObject(playerX, playerY, direction, e.current_x, e.current_y);
         double distance = ol.getObjectDistance();
         if (distance <= VISION_RADIUS * sqrt(2)) {
             enemy_properties.push_back({ol.getObjectDistance(), ol.getObjectAngle(), ol.getObjectRiskFeature()});
@@ -260,7 +272,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_risk_4 = enemy_properties[3].risk_measure;
         enemy_properties.pop_back();
     } else {
-        enemy_distance_4 = 5*VISION_RADIUS;
+        enemy_distance_4 = MAX_DISTACE;
         enemy_angle_4 = -1; // cos theta
         enemy_risk_4 = 0;
     }
@@ -271,7 +283,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_risk_3 = enemy_properties[2].risk_measure;
         enemy_properties.pop_back();
     } else {
-        enemy_distance_3 = 5*VISION_RADIUS;
+        enemy_distance_3 = MAX_DISTACE;
         enemy_angle_3 = -1; // cos theta
         enemy_risk_3 = 0;
     }
@@ -282,7 +294,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_risk_2 = enemy_properties[1].risk_measure;
         enemy_properties.pop_back();
     } else {
-        enemy_distance_2 = 5*VISION_RADIUS;
+        enemy_distance_2 = MAX_DISTACE;
         enemy_angle_2 = -1; // cos theta
         enemy_risk_2 = 0;
     }
@@ -293,7 +305,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_risk_1 = enemy_properties[0].risk_measure;
         enemy_properties.pop_back();
     } else {
-        enemy_distance_1 = 5*VISION_RADIUS;
+        enemy_distance_1 = MAX_DISTACE;
         enemy_angle_1 = -1; // cos theta
         enemy_risk_1 = 0;
     }
@@ -303,7 +315,8 @@ void observation::resetRerouteDistance() {
     rerouteDistance = 1000;
 }
 
-void observation::flattenObservationToVector(double (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
+/*
+void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
     int nextPosOffset = 0;
     // ONE HOT
     if (direction > 0) {
@@ -313,22 +326,24 @@ void observation::flattenObservationToVector(double (&observation_vector)[MAX_AB
     nextPosOffset += 8;
     // set trajectory. Takes 9 positions
     // ONE HOT
-    if (trajectory < 20) {
-        // indices : 0, 1, 2, 3, 4
-        observation_vector[nextPosOffset + trajectory - 10] = 1;
-    } else {
-        // indices : 5, 6, 7, 8
-        observation_vector[nextPosOffset + trajectory - 20 + 4] = 1;
+    if (trajectory >= 10) {
+        if (trajectory < 20) {
+            // indices : 0, 1, 2, 3, 4
+            observation_vector[nextPosOffset + trajectory - 10] = 1;
+        } else {
+            // indices : 5, 6, 7, 8
+            observation_vector[nextPosOffset + trajectory - 20 + 4] = 1;
+        }
     }
     nextPosOffset += 9;
     // Real Number values next
-    observation_vector[nextPosOffset++] = obstacle_front;
-    observation_vector[nextPosOffset++] = obstacle_left;
-    observation_vector[nextPosOffset++] = obstacle_right;
-    observation_vector[nextPosOffset++] = obstacle_front_left;
-    observation_vector[nextPosOffset++] = obstacle_front_right;
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
 
-    observation_vector[nextPosOffset++] = rerouteDistance;
+    observation_vector[nextPosOffset++] = static_cast< float >(rerouteDistance);
 
     observation_vector[nextPosOffset++] = enemy_distance_1;
     observation_vector[nextPosOffset++] = enemy_angle_1;
@@ -345,6 +360,37 @@ void observation::flattenObservationToVector(double (&observation_vector)[MAX_AB
     observation_vector[nextPosOffset++] = enemy_distance_4;
     observation_vector[nextPosOffset++] = enemy_angle_4;
     observation_vector[nextPosOffset] = enemy_risk_4;
+
+}
+ */
+
+void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
+    int nextPosOffset = 0;
+
+    // ONE HOT
+    if (direction > 0) {
+        // set direction [first 8 positions taken]
+        observation_vector[direction % 8] = 1;
+    }
+    nextPosOffset += 8;
+    // set trajectory. Takes 9 positions
+    // ONE HOT
+    if (trajectory >= 10) {
+        if (trajectory < 20) {
+            // indices : 0, 1, 2, 3, 4
+            observation_vector[nextPosOffset + trajectory - 10] = 1;
+        } else {
+            // indices : 5, 6, 7, 8
+            observation_vector[nextPosOffset + trajectory - 20 + 4] = 1;
+        }
+    }
+    nextPosOffset += 9;
+
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
 
 }
 
