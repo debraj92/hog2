@@ -6,10 +6,18 @@
 #define EXAMPLE_OBJECTLOCATOR_H
 
 #include <map>
+#include "gameConstants.h"
+#include "Logger.h"
 
+
+using namespace RTS;
 using namespace std;
 
 class objectLocator {
+
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+
+    std::unique_ptr<Logger> logger;
 
     float l1[9];
     float l2[9];
@@ -51,6 +59,7 @@ public:
 
     objectLocator() {
         init();
+        logger = std::make_unique<Logger>(LogLevel);
     }
 
     void locateObject(int player_x, int player_y, int direction, int object_x, int object_y);

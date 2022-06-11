@@ -10,9 +10,9 @@ using namespace std;
 
 // Map1
 TEST(GameEnvMap1, BasicAssertions) {
-
+/*
     GameEnv gameEnv(false);
     gameEnv.createMap1();
     gameEnv.printMap();
-
+*/
 }

@@ -12,10 +12,15 @@
 #include "gameConstants.h"
 #include "AStar_.h"
 #include "enemy/enemy.h"
+#include "gameConstants.h"
+#include "Logger.h"
 
 using namespace std;
+using namespace RTS;
 
 class findPath {
+
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
 
     int current_x;
     int current_y;
@@ -27,6 +32,7 @@ class findPath {
     int destination_y;
 
     vector<std::pair<int, int>> path;
+    std::unique_ptr<Logger> logger;
 
 public:
 
@@ -35,6 +41,7 @@ public:
         current_y = src_y;
         destination_x = dest_x;
         destination_y = dest_y;
+        logger = std::make_unique<Logger>(LogLevel);
     }
     bool findPathToDestination();
     void calculateNextPosition(int x, int y);

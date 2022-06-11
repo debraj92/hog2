@@ -74,15 +74,15 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
         //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
         //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
-        cout<<"EPOCH "<<episodeCount<<endl;
+        logger->logInfo("Episode ")->logInfo(episodeCount)->endLineInfo();
+
         if (train_step % dqnTargetUpdateNextEpisode == 0) {
             updateTargetNet();
         }
         game.learnToPlay(grid, enemies);
         train_step++;
-        cout<<endl;
-        printBoard(grid);
-        cout<<"Total rewards collected "<<game.getTotalRewardsCollected()<<endl;
+        logger->printBoard(grid);
+        logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
         rewards.push_back(game.getTotalRewardsCollected());
         episodes.push_back(episodeCount);
         reset(grid);
@@ -112,11 +112,11 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
     gameSimulation game(grid);
     game.player1 = this;
-    cout<<"Source ("<<src_x<<", "<<src_y<<") Destination ("<<dest_x<<", "<<dest_y<<")"<<endl;
+    logger->logInfo("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
+            ->endLineInfo();
     this->initialize(src_x, src_y, dest_x, dest_y);
     game.play(grid, enemies);
-    cout<<endl;
-    printBoard(grid);
+    logger->printBoard(grid);
     result.final_x = game.player1->current_x;
     result.final_y = game.player1->current_y;
     result.destination_x = game.player1->destination_x;
@@ -127,7 +127,7 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
 }
 
 void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect) {
-    cout<<"player::observe"<<endl;
+    logger->logDebug("player::observe")->endLineDebug();
     ob.playerX = this->current_x;
     ob.playerY = this->current_y;
     // TODO: Add to input state tensor
@@ -154,7 +154,7 @@ int player::getDirection() {
 }
 
 void player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
-    cout<<"Find path to destination"<<endl;
+    logger->logDebug("Find path to destination")->endLineDebug();
     fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
     fp->populateEnemyObstacles(enemies);
     fp->findPathToDestination();
@@ -168,20 +168,6 @@ void player::follow() {
 
 bool player::isOnTrack() {
     return fp->isOnTrack(current_x, current_y);
-}
-
-void player::printBoard(std::vector<std::vector<int>> &grid) {
-    cout<<"print board"<<endl;
-    for (int row=0; row<GRID_SPAN; row++) {
-        for (int col=0; col<GRID_SPAN; col++) {
-            if(grid[row][col]<0) {
-                cout<<grid[row][col]<<" ";
-            } else {
-                cout<<" "<<grid[row][col]<<" ";
-            }
-        }
-        cout<<"\n";
-    }
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
@@ -198,7 +184,7 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
 
 void player::findNewRoute(vector<std::vector<int>> &grid, observation &ob, vector<enemy> &enemies, int src_x, int src_y, int dst_x,
                           int dst_y) {
-    cout<<"Find new temporary route to destination"<<endl;
+    logger->logDebug("Find new temporary route to destination")->endLineDebug();
     fp_temp_reroute = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
     fp_temp_reroute->populateEnemyObstacles(enemies);
     fp_temp_reroute->findPathToDestination();
@@ -206,9 +192,9 @@ void player::findNewRoute(vector<std::vector<int>> &grid, observation &ob, vecto
 }
 
 int player::switchToNewRoute(observation &ob) {
-    cout<<"switchToNewRoute"<<endl;
+    logger->logDebug("switchToNewRoute")->endLineDebug();
     if (ob.rerouteDistance < 1000) {
-        cout<<"New distance "<<ob.rerouteDistance<<endl;
+        logger->logDebug("New distance ")->logDebug(ob.rerouteDistance)->endLineDebug();
         // implies last action was re-route
         fp = fp_temp_reroute;
         return 0;
@@ -226,8 +212,8 @@ void player::memorizeExperienceForReplay(observation &current, observation &next
     }
 }
 
-void player::learnWithDQN() {
-    RLNN_Agent::learnWithDQN();
+double player::learnWithDQN() {
+    return RLNN_Agent::learnWithDQN();
 }
 
 

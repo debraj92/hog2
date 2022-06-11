@@ -4,9 +4,10 @@
 
 #include "gameSimulation.h"
 
+using namespace std;
 
 void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
-    cout<<"gameSimulation::play"<<endl;
+    logger->logDebug("gameSimulation::play")->endLineDebug();
 /*
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
@@ -39,33 +40,40 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
 
 
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {
-    cout<<"gameSimulation::learnToPlay"<<endl;
+    logger->logDebug("gameSimulation::learnToPlay")->endLineDebug();
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     grid[player1->current_x][player1->current_y] = 9;
-    player1->printBoard(grid);
+    logger->printBoard(grid);
     observation currentObservation;
     player1->observe(currentObservation, grid, enemies, false);
     int time = 1;
+    double loss_sum = 0;
+    int loss_count = 0;
     while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
-        std::cout<<"Time "<<time<<endl;
-        std::cout<<"player ("<<player1->current_x<<","<<player1->current_y<<")"<<endl;
+        logger->logDebug("Time ")->logDebug(time)->endLineDebug();
+        logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
         int actionError = 0;
         // Next Action
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
-        player1->printBoard(grid);
+        logger->printBoard(grid);
         moveEnemies(enemies);
         observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
         fight(enemies);
         auto reward = calculateReward(enemies, nextObservation, action, actionError);
-        cout<<"Reward received "<<reward<<endl;
+        logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isEpisodeComplete());
-        player1->learnWithDQN();
+        loss_sum += player1->learnWithDQN();
+        loss_count ++;
         currentObservation = nextObservation;
         time++;
         player1->total_rewards += reward;
     }
-    std::cout<<"Player 1 life left "<<player1->life_left<<"\n";
+    double avg_loss = loss_sum / loss_count;
+    logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
+    if (not player1->stopLearning) {
+        logger->logInfo("Network Loss after episode completion ")->logInfo(avg_loss)->endLineInfo();
+    }
 }
 
 
@@ -74,7 +82,8 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
     int oldLocationX = player1->current_x;
     int oldLocationY = player1->current_y;
 
-    std::cout<<"NEXT ACTION ";
+    //std::cout<<"NEXT ACTION ";
+    logger->logDebug("NEXT ACTION: ")->endLineDebug();
     int nextAction = player1->selectAction(currentObservation);
     if (nextAction != ACTION_SWITCH) {
         currentObservation.resetRerouteDistance();
@@ -122,7 +131,7 @@ void gameSimulation::fight(std::vector<enemy> &enemies) {
         //cout<<"fight player at "<<player1.current_x<<", "<<player1.current_y<<"\n";
         //cout<<"enemy at "<<e.current_x<<", "<<e.current_y<<"\n";
         if (e.current_x == player1->current_x && e.current_y == player1->current_y) {
-            cout<<"Player1 damaged"<<endl;
+            logger->logDebug("Player1 damaged")->endLineDebug();
             player1->takeDamage(e.getAttackPoints());
         }
     }

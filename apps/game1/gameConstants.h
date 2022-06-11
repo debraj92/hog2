@@ -144,5 +144,12 @@ const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = MAX_EPISODES * SESSION_TIMEOUT 
 
 const int SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 90;
 
+namespace RTS {
+    enum LOG_LEVEL {
+        INFO,
+        DEBUG,
+        OFF
+    };
+}
 
 #endif //EXAMPLE_GAMECONSTANTS_H

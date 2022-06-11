@@ -17,6 +17,10 @@ using namespace std;
 
 class gameSimulation : public coordinatesUtil {
 
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+
+    std::unique_ptr<Logger> logger;
+
     int movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &currentObservation, int* error);
     void moveEnemies(std::vector<enemy>& enemies);
     void fight(std::vector<enemy>& enemies);
@@ -32,7 +36,7 @@ class gameSimulation : public coordinatesUtil {
 public:
 
     explicit gameSimulation(vector<vector<int>> &grid) : coordinatesUtil(grid) {
-
+        logger = std::make_unique<Logger>(LogLevel);
     }
 
     player* player1;

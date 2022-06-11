@@ -6,11 +6,16 @@
 #define EXAMPLE_COORDINATESUTIL_H
 
 #include "gameConstants.h"
+#include "Logger.h"
 #include <vector>
 
 using namespace std;
 
 class coordinatesUtil {
+
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+
+    std::unique_ptr<Logger> logger;
 
     vector<vector<int>> &grid;
 
@@ -21,7 +26,7 @@ class coordinatesUtil {
 public:
 
     explicit coordinatesUtil(vector<vector<int>> &grid) : grid(grid), GRID_SPAN_(grid.size()){
-
+        logger = std::make_unique<Logger>(LogLevel);
     }
 
     int setStraightActionCoordinates(int& x, int& y, int direction);

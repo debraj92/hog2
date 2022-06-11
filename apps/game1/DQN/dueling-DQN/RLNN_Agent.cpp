@@ -42,16 +42,16 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
     return action;
 }
 
-void RLNN_Agent::learnWithDQN() {
+double RLNN_Agent::learnWithDQN() {
     cout<<"RLNN_Agent::learn"<<endl;
     // start learning after the replay buffer is partially filled
     if (memory.getBufferSize() < MIN_BUFFERED_EXPERIENCE_FOR_LEARNING) {
         cout<<"Ignoring learning attempt due to insufficient samples";
-        return;
+        return 0;
     }
     if (stopLearning) {
         cout<<"Ignoring learning attempt due to finished training";
-        return;
+        return 0;
     }
     // select n samples picked uniformly at random from the experience replay memory, such that n=batchsize
     memory.sampleBatch(batchSize);
@@ -86,7 +86,7 @@ void RLNN_Agent::learnWithDQN() {
     auto y = discounted_reward + q_target;
 
     // calculate the loss as the mean-squared error of y and qpred
-    policyNet->computeLossAndBackPropagate(y, q_pred);
+    return policyNet->computeLossAndBackPropagate(y, q_pred);
 }
 
 

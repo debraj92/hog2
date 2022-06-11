@@ -12,7 +12,7 @@ using namespace xt;
 using namespace std;
 
 void ReplayMemory::sampleBatch(const int batchSize) {
-    cout<<"ReplayMemory::sampleBatch"<<endl;
+    logger->logDebug("ReplayMemory::sampleBatch")->endLineDebug();
     if (buffer_states.size() == 0) {
         return;
     }
@@ -49,7 +49,7 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 }
 
 void ReplayMemory::storeExperience(observation &current, observation &next, int action, float reward, bool done) {
-    cout<<"ReplayMemory::storeExperience"<<endl;
+    logger->logDebug("ReplayMemory::storeExperience")->endLineDebug();
 
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
