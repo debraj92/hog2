@@ -34,8 +34,6 @@ class RLNN_Agent : public DQN_interface {
     bool isTrainingMode;
     bool startEpsilonDecay;
 
-    bool stopLearning = false;
-
     bool isExplore(int episodeCount);
 
 public:
@@ -56,7 +54,7 @@ public:
 
     int selectAction(observation& currentState, int episodeCount, bool *explore);
 
-    void learnWithDQN();
+    double learnWithDQN();
 
     void memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done);
 

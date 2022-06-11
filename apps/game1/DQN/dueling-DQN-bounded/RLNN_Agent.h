@@ -37,8 +37,6 @@ class RLNN_Agent : public DQN_interface {
     bool isTrainingMode;
     bool startEpsilonDecay;
 
-    bool stopLearning = false;
-
     bool isExplore(int episodeCount);
 
 public:

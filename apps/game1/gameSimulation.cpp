@@ -71,7 +71,9 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     }
     double avg_loss = loss_sum / loss_count;
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
-    logger->logInfo("Network Loss after episode completion ")->logInfo(avg_loss)->endLineInfo();
+    if (not player1->stopLearning) {
+        logger->logInfo("Network Loss after episode completion ")->logInfo(avg_loss)->endLineInfo();
+    }
 }
 
 

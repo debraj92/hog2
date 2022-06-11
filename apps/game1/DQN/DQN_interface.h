@@ -10,6 +10,9 @@
 class DQN_interface {
 
 public:
+
+    bool stopLearning = false;
+
     DQN_interface(){}
     virtual ~DQN_interface(){}
 

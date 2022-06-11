@@ -48,12 +48,12 @@ double RLNN_Agent::learnWithDQN() {
     if (memory.getBufferSize() < MIN_BUFFERED_EXPERIENCE_FOR_LEARNING) {
         logger->logDebug("Ignoring learning attempt due to insufficient samples")->endLineDebug();
         // Dummy
-        return 100;
+        return 0;
     }
     if (stopLearning) {
         logger->logDebug("Ignoring learning attempt due to finished training")->endLineDebug();
         // Dummy
-        return 100;
+        return 0;
     }
     // select n samples picked uniformly at random from the experience replay memory, such that n=batchsize
     memory.sampleBatch(batchSize);
