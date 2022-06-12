@@ -32,6 +32,8 @@ class ReplayMemory {
     vector<bool> dones;
     int idx = 0;
 
+    bool isBufferFull = false;
+
 public:
 
     torch::Tensor tensor_states;
@@ -53,6 +55,7 @@ public:
     void storeExperience(observation &current, observation &next, int action, float reward, bool done);
 
     int getBufferSize();
+
 };
 
 

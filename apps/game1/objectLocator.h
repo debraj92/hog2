@@ -26,7 +26,8 @@ class objectLocator {
 
     float object_l;
     float object_p;
-    float object_distance;
+    float object_radius;
+    float object_walking_distance;
     float object_angle;
     int quadrant;
     float risk_distance;
@@ -37,7 +38,7 @@ class objectLocator {
 
     float calculateDeterminant(int direction);
 
-    void computeDistance();
+    void computeDistance(int x_diff, int y_diff);
 
     void computeCosine();
 
@@ -51,8 +52,6 @@ class objectLocator {
 
     void calculateRiskFeatures();
 
-
-
     static float round_values(float value);
 
 public:
@@ -63,6 +62,8 @@ public:
     }
 
     void locateObject(int player_x, int player_y, int direction, int object_x, int object_y);
+
+    void measureRiskAndObjectAngle();
 
     float getObjectDistance();
 

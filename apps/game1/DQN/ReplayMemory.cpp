@@ -13,7 +13,7 @@ using namespace std;
 
 void ReplayMemory::sampleBatch(const int batchSize) {
     logger->logDebug("ReplayMemory::sampleBatch")->endLineDebug();
-    if (buffer_states.size() == 0) {
+    if ((not isBufferFull) and idx == 0) {
         return;
     }
     random::seed(time(nullptr));
@@ -49,8 +49,10 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 }
 
 void ReplayMemory::storeExperience(observation &current, observation &next, int action, float reward, bool done) {
+    if((not isBufferFull) and (idx + 1) == MAX_CAPACITY_REPLAY_BUFFER) {
+        isBufferFull = true;
+    }
     logger->logDebug("ReplayMemory::storeExperience")->endLineDebug();
-
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
     buffer_states[idx].assign(observation_vector, observation_vector + MAX_ABSTRACT_OBSERVATIONS);
@@ -65,8 +67,8 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
 }
 
 int ReplayMemory::getBufferSize() {
-    if (buffer_states.size() <= MAX_CAPACITY_REPLAY_BUFFER) {
-        return idx + 1;
+    if (not isBufferFull) {
+        return idx;
     }
     return MAX_CAPACITY_REPLAY_BUFFER;
 }

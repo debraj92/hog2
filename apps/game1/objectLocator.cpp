@@ -54,42 +54,42 @@ void objectLocator::init() {
 
 void objectLocator::locateObject(int player_x, int player_y, int direction, int object_x, int object_y) {
     logger->logDebug("Unit direction")->logDebug(direction)->endLineDebug();
+    logger->logDebug("Object position: ")->logDebug(object_x)->logDebug(", ")->logDebug(object_y)->endLineDebug();
     float det = calculateDeterminant(direction);
     int diff1 = object_x - player_x;
     int diff2 = object_y - player_y;
     object_l = (p2[direction] * static_cast< float >(diff1) - p1[direction] * static_cast< float >(diff2)) / det;
     object_p = (-l2[direction] * static_cast< float >(diff1) + l1[direction] * static_cast< float >(diff2)) / det;
-    computeDistance();
-    findQuadrant();
-    measureUniqueAngle();
-    calculateRiskFromDistance();
-    calculateRiskFeatures();
+
+    computeDistance(diff1, diff2);
 }
 
 float objectLocator::calculateDeterminant(int direction) {
     return l1[direction]*p2[direction] - p1[direction]*l2[direction];
 }
 
-void objectLocator::computeDistance() {
-    object_distance = sqrtf(powf(object_l, 2) + powf(object_p, 2));
+void objectLocator::computeDistance(int x_diff, int y_diff) {
+    object_radius = sqrtf(powf(object_l, 2) + powf(object_p, 2));
+    object_walking_distance = max(abs(x_diff), abs(y_diff));
+    logger->logDebug("object distance ")->logDebug(object_radius)->endLineDebug();
+    logger->logDebug("object distance R ")->logDebug(object_walking_distance)->endLineDebug();
 }
 
 void objectLocator::computeCosine() {
-    if(object_distance != 0) {
-        object_angle = object_l / object_distance;
+    if(object_radius != 0) {
+        object_angle = object_l / object_radius;
     }
 }
 
 void objectLocator::computeSine() {
-    if(object_distance != 0) {
-        object_angle = object_p / object_distance;
+    if(object_radius != 0) {
+        object_angle = object_p / object_radius;
     }
 }
 
 float objectLocator::getObjectDistance() {
-    //cout<<"getObjectDistance"<<endl;
     logger->logDebug("getObjectDistance")->endLineDebug();
-    return round_values(object_distance);
+    return object_walking_distance;
 }
 
 float objectLocator::round_values(float value) {
@@ -130,12 +130,12 @@ void objectLocator::measureUniqueAngle() {
 }
 
 void objectLocator::calculateRiskFromDistance() {
-    risk_distance = RISK_DISTANCE_MAX_MAGNITUDE * exp(-object_distance);
+    risk_distance = static_cast<float> (exp(-object_walking_distance * 0.9)); // 1.1 if distance to be given more weight
     logger->logDebug("calculateRiskFromDistance ")->logDebug(risk_distance)->endLineDebug();
 }
 
 void objectLocator::calculateRiskFeatures() {
-    risk_feature = risk_distance * object_angle;
+    risk_feature = risk_distance * abs(object_angle);
     logger->logDebug("calculateRiskFeatures ")->logDebug(risk_feature)->endLineDebug();
 }
 
@@ -147,4 +147,12 @@ float objectLocator::getObjectRiskFeature() {
 float objectLocator::getObjectAngle() {
     logger->logDebug("objectLocator::getObjectAngle")->endLineDebug();
     return object_angle;
+}
+
+void objectLocator::measureRiskAndObjectAngle() {
+    logger->logDebug("objectLocator::measureRiskAndObjectAngle")->endLineDebug();
+    findQuadrant();
+    measureUniqueAngle();
+    calculateRiskFromDistance();
+    calculateRiskFeatures();
 }

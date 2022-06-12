@@ -214,8 +214,9 @@ void observation::locateEnemies(std::vector<enemy> &enemies) {
     for(const enemy& e: enemies) {
         ol.locateObject(playerX, playerY, direction, e.current_x, e.current_y);
         double distance = ol.getObjectDistance();
-        if (distance <= VISION_RADIUS * sqrt(2)) {
-            enemy_properties.push_back({ol.getObjectDistance(), ol.getObjectAngle(), ol.getObjectRiskFeature()});
+        if (distance <= VISION_RADIUS) {
+            ol.measureRiskAndObjectAngle();
+            enemy_properties.push_back({ol.getObjectDistance(), ol.getObjectAngle(), ol.getObjectRiskFeature(), e.id});
         }
     }
 
@@ -224,7 +225,7 @@ void observation::locateEnemies(std::vector<enemy> &enemies) {
     sort(enemy_properties.begin(), enemy_properties.end(),
          [](const enemy_attributes &e1, const enemy_attributes &e2) -> bool
          {
-            return e1.risk_measure > e2.risk_measure;
+             return e1.risk_measure > e2.risk_measure;
          });
 
     updateEnemyDistanceAndAngles(enemy_properties);
@@ -265,59 +266,56 @@ void observation::setDirectionAngles(int (&angles)[9]) {
 }
 
 void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties) {
-    // Ignoring enemy count above 4
-    if(enemy_properties.size() >= 4) {
-        enemy_distance_4 = enemy_properties[3].distance;
-        enemy_angle_4 = enemy_properties[3].angle;
-        enemy_risk_4 = enemy_properties[3].risk_measure;
-        enemy_properties.pop_back();
-    } else {
-        enemy_distance_4 = MAX_DISTACE;
-        enemy_angle_4 = -1; // cos theta
-        enemy_risk_4 = 0;
-    }
+    // Ignoring enemy count above 3
 
-    if(enemy_properties.size() == 3) {
+    if(enemy_properties.size() >= 3) {
         enemy_distance_3 = enemy_properties[2].distance;
         enemy_angle_3 = enemy_properties[2].angle;
         enemy_risk_3 = enemy_properties[2].risk_measure;
+        enemy_id_3 = enemy_properties[2].id;
         enemy_properties.pop_back();
     } else {
-        enemy_distance_3 = MAX_DISTACE;
-        enemy_angle_3 = -1; // cos theta
+        enemy_distance_3 = MAX_DISTANCE;
+        enemy_angle_3 = 0;
         enemy_risk_3 = 0;
+        enemy_id_3 = -1;
     }
 
-    if(enemy_properties.size() == 2) {
+    if(enemy_properties.size() >= 2) {
         enemy_distance_2 = enemy_properties[1].distance;
         enemy_angle_2 = enemy_properties[1].angle;
         enemy_risk_2 = enemy_properties[1].risk_measure;
+        enemy_id_2 = enemy_properties[1].id;
         enemy_properties.pop_back();
     } else {
-        enemy_distance_2 = MAX_DISTACE;
-        enemy_angle_2 = -1; // cos theta
+        enemy_distance_2 = MAX_DISTANCE;
+        enemy_angle_2 = 0;
         enemy_risk_2 = 0;
+        enemy_id_2 = -1;
     }
 
-    if(enemy_properties.size() == 1) {
+    if(enemy_properties.size() >= 1) {
         enemy_distance_1 = enemy_properties[0].distance;
         enemy_angle_1 = enemy_properties[0].angle;
         enemy_risk_1 = enemy_properties[0].risk_measure;
+        enemy_id_1 = enemy_properties[0].id;
         enemy_properties.pop_back();
     } else {
-        enemy_distance_1 = MAX_DISTACE;
-        enemy_angle_1 = -1; // cos theta
+        enemy_distance_1 = MAX_DISTANCE;
+        enemy_angle_1 = 0;
         enemy_risk_1 = 0;
+        enemy_id_1 = -1;
     }
 }
+
 
 void observation::resetRerouteDistance() {
     rerouteDistance = 1000;
 }
 
-/*
 void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
     int nextPosOffset = 0;
+
     // ONE HOT
     if (direction > 0) {
         // set direction [first 8 positions taken]
@@ -336,61 +334,27 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
         }
     }
     nextPosOffset += 9;
-    // Real Number values next
+
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
-
-    observation_vector[nextPosOffset++] = static_cast< float >(rerouteDistance);
 
     observation_vector[nextPosOffset++] = enemy_distance_1;
-    observation_vector[nextPosOffset++] = enemy_angle_1;
-    observation_vector[nextPosOffset++] = enemy_risk_1;
+    int offset = enemy_angle_1 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_1) * 10;
+    nextPosOffset += 2;
 
     observation_vector[nextPosOffset++] = enemy_distance_2;
-    observation_vector[nextPosOffset++] = enemy_angle_2;
-    observation_vector[nextPosOffset++] = enemy_risk_2;
+    offset = enemy_angle_2 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_2) * 10;
+    nextPosOffset += 2;
 
     observation_vector[nextPosOffset++] = enemy_distance_3;
-    observation_vector[nextPosOffset++] = enemy_angle_3;
-    observation_vector[nextPosOffset++] = enemy_risk_3;
-
-    observation_vector[nextPosOffset++] = enemy_distance_4;
-    observation_vector[nextPosOffset++] = enemy_angle_4;
-    observation_vector[nextPosOffset] = enemy_risk_4;
-
-}
- */
-
-void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
-    int nextPosOffset = 0;
-
-    // ONE HOT
-    if (direction > 0) {
-        // set direction [first 8 positions taken]
-        observation_vector[direction % 8] = 1;
-    }
-    nextPosOffset += 8;
-    // set trajectory. Takes 9 positions
-    // ONE HOT
-    if (trajectory >= 10) {
-        if (trajectory < 20) {
-            // indices : 0, 1, 2, 3, 4
-            observation_vector[nextPosOffset + trajectory - 10] = 1;
-        } else {
-            // indices : 5, 6, 7, 8
-            observation_vector[nextPosOffset + trajectory - 20 + 4] = 1;
-        }
-    }
-    nextPosOffset += 9;
-
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
+    offset = enemy_angle_3 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_3) * 10;
+    nextPosOffset += 2;
 
 }
 

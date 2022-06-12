@@ -58,8 +58,8 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
         logger->printBoard(grid);
         moveEnemies(enemies);
-        observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
         fight(enemies);
+        observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
         auto reward = calculateReward(enemies, nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isEpisodeComplete());
