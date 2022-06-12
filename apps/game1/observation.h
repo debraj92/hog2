@@ -59,6 +59,12 @@ public:
     float enemy_risk_3 = 0;
     int enemy_id_3 = -1;
 
+    // For backward compatibility with table based rl
+    float enemy_distance_4 = MAX_DISTANCE;
+    float enemy_angle_4 = 0;
+    float enemy_risk_4 = 0;
+    int enemy_id_4 = -1;
+
     int rerouteDistance = MAX_DISTANCE;
 
     int trajectory = 0; // one hot (8 values, 4 one deviation another 4 two deviations)
