@@ -42,18 +42,18 @@ Tensor DQNNet::forwardPassAdvantage(const Tensor &inputs) {
     return m_advantage(inputs);
 }
 
-void DQNNet::saveModel(string &file) {
+void DQNNet::saveModel(const string &file) {
     logger->logDebug("DQNNet::saveModel from file")->endLineDebug();
-    torch::save(m_sequential, file + "/m_sequential.pt");
-    torch::save(m_value, file + "/m_value.pt");
-    torch::save(m_advantage, file + "/m_adv.pt");
+    torch::save(m_sequential, file + "/dueling-DQN/model/m_sequential.pt");
+    torch::save(m_value, file + "/dueling-DQN/model/m_value.pt");
+    torch::save(m_advantage, file + "/dueling-DQN/model/m_adv.pt");
 }
 
-void DQNNet::loadModel(string &file) {
+void DQNNet::loadModel(const string &file) {
     logger->logDebug("DQNNet::loadModel from file")->endLineDebug();
-    torch::load(m_sequential, file + "/m_sequential.pt");
-    torch::load(m_value, file + "/m_value.pt");
-    torch::load(m_advantage, file + "/m_adv.pt");
+    torch::load(m_sequential, file + "/dueling-DQN/model/m_sequential.pt");
+    torch::load(m_value, file + "/dueling-DQN/model/m_value.pt");
+    torch::load(m_advantage, file + "/dueling-DQN/model/m_adv.pt");
 }
 
 

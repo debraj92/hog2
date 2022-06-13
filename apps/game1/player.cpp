@@ -99,7 +99,7 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 
         game.learnToPlay(grid, tempEnemies);
         train_step++;
-        logger->printBoard(grid);
+        logger->printBoardDebug(grid);
         logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
         if (not resumed) {
             rewards.push_back(game.getTotalRewardsCollected());
@@ -108,6 +108,9 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 
         decayEpsilon();
     }
+
+    // Save Model
+    saveModel(DQN_MODEL_PATH);
 
     plotLosses();
     plotRewards(rewards);
@@ -121,13 +124,12 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
             ->endLineInfo();
     this->initialize(src_x, src_y, dest_x, dest_y);
     game.play(grid, enemies);
-    logger->printBoard(grid);
+    logger->printBoardInfo(grid);
     result.final_x = game.player1->current_x;
     result.final_y = game.player1->current_y;
     result.destination_x = game.player1->destination_x;
     result.destination_y = game.player1->destination_y;
     result.total_rewards = game.player1->total_rewards;
-    reset(grid);
     game.reset(grid);
 }
 
@@ -146,12 +148,6 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
         ob.locateEnemies(enemies);
         ob.updateObstacleDistances(grid);
     }
-}
-
-void player::reset(std::vector<std::vector<int>> &grid) {
-    current_x = source_x;
-    current_y = source_y;
-    life_left = MAX_LIFE;
 }
 
 int player::getDirection() {

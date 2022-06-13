@@ -8,34 +8,34 @@ using namespace std;
 
 void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     logger->logDebug("gameSimulation::play")->endLineDebug();
-/*
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     grid[player1->current_x][player1->current_y] = 9;
+    logger->printBoardInfo(grid);
     int time = 1;
     int actionError = 0;
-    observation ob;
-    player1->observe(ob, grid, enemies, false);
+    observation currentObservation;
+    player1->observe(currentObservation, grid, enemies, false);
     while(!isDestinationReached() && player1->life_left > 0 && time < SESSION_TIMEOUT) {
-        std::cout<<"Time "<<time<<endl;
-        std::cout<<"player ("<<player1->current_x<<","<<player1->current_y<<")"<<endl;
-        // Observe the state and take an action
-        player1->getNextStateForInference(ob);
-        player1->cur_state->x = player1->current_x;
-        player1->cur_state->y = player1->current_y;
+        logger->logDebug("Time ")->logDebug(time)->endLineDebug();
+        logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
         // Next Action
-        int action = movePlayer(grid, enemies, ob, &actionError, true);
-        grid[player1->current_x][player1->current_y] = 9;
-        player1->printBoard(grid);
+        int action = movePlayer(grid, enemies, currentObservation, &actionError);
+        logger->printBoardInfo(grid);
+        // Enemy operations
         moveEnemies(enemies);
-        ob = createObservationAfterAction(grid, enemies, ob, action);
         fight(enemies);
-        int reward = calculateReward(enemies, ob, action, actionError);
-        player1->total_rewards += reward;
+        // Observe next State
+        observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
+        // Next state reward
+        auto reward = calculateReward(enemies, nextObservation, action, actionError);
+        logger->logInfo("Reward received ")->logInfo(reward)->endLineInfo();
+
+        currentObservation = nextObservation;
         time++;
+        player1->total_rewards += reward;
     }
-    std::cout<<"Player 1 life left "<<player1->life_left<<"\n";
-*/
+    logger->logInfo("Player 1 life left ")->logInfo(player1->life_left)->endLineInfo();
 }
 
 
@@ -44,7 +44,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     populateEnemies(grid, enemies);
     player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     grid[player1->current_x][player1->current_y] = 9;
-    logger->printBoard(grid);
+    logger->printBoardDebug(grid);
     observation currentObservation;
     player1->observe(currentObservation, grid, enemies, false);
     int time = 1;
@@ -56,7 +56,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         int actionError = 0;
         // Next Action
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
-        logger->printBoard(grid);
+        logger->printBoardDebug(grid);
         moveEnemies(enemies);
         fight(enemies);
         observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
@@ -88,8 +88,6 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
     int oldLocationX = player1->current_x;
     int oldLocationY = player1->current_y;
 
-    //std::cout<<"NEXT ACTION ";
-    logger->logDebug("NEXT ACTION: ")->endLineDebug();
     int nextAction = player1->selectAction(currentObservation);
     if (nextAction != ACTION_SWITCH) {
         currentObservation.resetRerouteDistance();

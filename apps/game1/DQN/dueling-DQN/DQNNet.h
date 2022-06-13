@@ -48,9 +48,9 @@ public:
 
     Tensor forwardPassAdvantage(const Tensor& inputs);
 
-    void saveModel(string &file);
+    void saveModel(const string &file);
 
-    void loadModel(string &file);
+    void loadModel(const string &file);
 
     void saveModel(stringstream &stream, const MODEL_TYPE &model_type);
 

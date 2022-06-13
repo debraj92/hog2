@@ -47,9 +47,6 @@ public:
         targetNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "targetNet");
         // since no learning is performed on the target net
         targetNet->eval();
-        if (!isTrainingMode) {
-            policyNet->eval();
-        }
         startEpsilonDecay = false;
         logger = std::make_unique<Logger>(LogLevel);
     }
@@ -64,10 +61,10 @@ public:
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring);
 
     /// provide file path
-    void saveModel(string &file);
+    void saveModel(const string &file);
 
     /// provide file path
-    void loadModel(string &file);
+    void loadModel(const string &file);
 
     void updateTargetNet();
 

@@ -18,7 +18,7 @@ float AStar_::findShortestDistance(pair<int, int> src, pair<int, int> dst) {
 }
 
 bool AStar_::findPathToDestination() {
-    logger->printBoard(grid);
+    logger->printBoardDebug(grid);
     reset();
     node_ root(source.first, source.second);
     root.computeF(0, findShortestDistance(source, destination));

@@ -26,10 +26,10 @@ public:
     virtual void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring) = 0;
 
     /// provide file path
-    virtual void saveModel(string &file) = 0;
+    virtual void saveModel(const string &file) = 0;
 
     /// provide file path
-    virtual void loadModel(string &file) = 0;
+    virtual void loadModel(const string &file) = 0;
 
     virtual void updateTargetNet() = 0;
 

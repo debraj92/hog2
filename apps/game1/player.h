@@ -25,6 +25,8 @@ class player : public RLNN_Agent {
 
     const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
 
+    const std::string DQN_MODEL_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/clean-code/hog2/apps/game1/DQN";
+
     shared_ptr<findPath> fp;
     shared_ptr<findPath> fp_temp_reroute;
 
@@ -33,9 +35,6 @@ class player : public RLNN_Agent {
     int dqnTargetUpdateNextEpisode = MAX_EPISODES / 8;
 
     std::unique_ptr<Logger> logger;
-
-    //state cur_state;
-    void reset(std::vector<std::vector<int>> &grid);
 
 public:
 
@@ -61,6 +60,9 @@ public:
 
     player(bool isTrainingMode) {
         RLNN_Agent::setTrainingMode(isTrainingMode);
+        if(not isTrainingMode) {
+            RLNN_Agent::loadModel(DQN_MODEL_PATH);
+        }
         logger = std::make_unique<Logger>(LogLevel);
     }
 

@@ -14,7 +14,7 @@ using namespace RTS;
 
 class Logger {
 
-    void printBoard_DEBUG(std::vector<std::vector<int>> &grid);
+    void printBoard_(std::vector<std::vector<int>> &grid);
 
 public:
 
@@ -37,7 +37,9 @@ public:
 
     Logger* endLineInfo();
 
-    Logger* printBoard(std::vector<std::vector<int>> &grid);
+    Logger* printBoardDebug(std::vector<std::vector<int>> &grid);
+
+    Logger* printBoardInfo(std::vector<std::vector<int>> &grid);
 
 };
 

@@ -24,7 +24,6 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
         re.seed(std::chrono::system_clock::now().time_since_epoch().count());
         action = distri(re);
     } else {
-
         logger->logDebug("Selecting max action")->endLineDebug();
         float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
         currentState.flattenObservationToVector(observation_vector);
@@ -92,11 +91,11 @@ double RLNN_Agent::learnWithDQN() {
 }
 
 
-void RLNN_Agent::loadModel(string &file) {
+void RLNN_Agent::loadModel(const string &file) {
     policyNet->loadModel(file);
 }
 
-void RLNN_Agent::saveModel(string &file) {
+void RLNN_Agent::saveModel(const string &file) {
     policyNet->saveModel(file);
 }
 
@@ -179,4 +178,7 @@ bool RLNN_Agent::isExplore(int episodeCount) {
 
 void RLNN_Agent::setTrainingMode(bool value) {
     isTrainingMode = value;
+    if (!isTrainingMode) {
+        policyNet->eval();
+    }
 }
