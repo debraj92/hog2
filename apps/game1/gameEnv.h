@@ -38,6 +38,8 @@ public:
 
     void createMap4();
 
+    void createMap5();
+
     void createMapEasiest();
 
     //void startGame(int mapNo);

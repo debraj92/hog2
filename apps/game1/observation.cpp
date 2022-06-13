@@ -315,14 +315,7 @@ void observation::resetRerouteDistance() {
 
 void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
     int nextPosOffset = 0;
-
-    // ONE HOT
-    if (direction > 0) {
-        // set direction [first 8 positions taken]
-        observation_vector[direction % 8] = 1;
-    }
-    nextPosOffset += 8;
-    // set trajectory. Takes 9 positions
+    /// set trajectory. Takes 9 positions
     // ONE HOT
     if (trajectory >= 10) {
         if (trajectory < 20) {
@@ -342,6 +335,10 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
 
     observation_vector[nextPosOffset++] = enemy_distance_1;
+    /// Angle is represented with ONE HOT.
+    /// Enemies to the left have +ve angles and represented by 0 <value>
+    /// Enemies to the right have -ve angles and represented by <value> 0
+    /// Angle value decreases from front to back
     int offset = enemy_angle_1 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_1) * 10;
     nextPosOffset += 2;

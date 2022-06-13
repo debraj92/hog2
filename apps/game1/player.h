@@ -55,6 +55,8 @@ public:
 
     float total_rewards = 0;
 
+    bool resumed = false;
+
     int train_step = 0;
 
     player(bool isTrainingMode) {
@@ -91,6 +93,10 @@ public:
     double learnWithDQN();
 
     void recordDeathLocation();
+
+    void plotRewards(vector<double> &rewards);
+
+    bool isResuming();
 };
 
 

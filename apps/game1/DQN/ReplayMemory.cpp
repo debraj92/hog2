@@ -73,3 +73,30 @@ int ReplayMemory::getBufferSize() {
     return MAX_CAPACITY_REPLAY_BUFFER;
 }
 
+void ReplayMemory::storeExperience(observation &current, observation &next, int action, float reward, bool done,
+                                   bool isExploring) {
+    if(isExploring) {
+        storeExperience(current, next, action, reward, done);
+        return;
+    }
+
+    /// Case when this action is due to exploitation
+    /**
+     * Check if a random number generated from an exponential distribution is within a moving sliding window
+     */
+    double const exp_dist_mean   = 1;
+    double const exp_dist_lambda = 1 / exp_dist_mean;
+
+    std::random_device rd;
+
+    std::exponential_distribution<> rng (exp_dist_lambda);
+    std::mt19937 rnd_gen (rd ());
+    double random_number = rng (rnd_gen);
+    if (random_number > exploitation_window_start) {
+        logger->logDebug("Saving Exploitation")->endLineDebug();
+        storeExperience(current, next, action, reward, done);
+    }
+
+    exploitation_window_start += (10.00 - MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY) / MAX_EPISODES;
+}
+

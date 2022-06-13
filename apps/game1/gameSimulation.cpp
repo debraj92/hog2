@@ -184,7 +184,6 @@ void gameSimulation::reset(std::vector<std::vector<int>> &grid) {
             }
         }
     }
-    player1->total_rewards = 0;
 }
 
 void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, vector<enemy> &enemies) {

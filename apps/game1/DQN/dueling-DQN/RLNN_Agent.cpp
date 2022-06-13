@@ -118,8 +118,8 @@ void RLNN_Agent::decayEpsilon() {
     epsilon = max(epsilon_min, epsilon * epsilon_decay);
 }
 
-void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done) {
-    memory.storeExperience(current, next, action, reward, done);
+void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring) {
+    memory.storeExperience(current, next, action, reward, done, isExploring);
 }
 
 void RLNN_Agent::printAction(int action) {

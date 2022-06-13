@@ -18,7 +18,6 @@ void player::takeDamage(int points) {
 
 void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     vector<double> rewards;
-    vector<double> episodes;
     gameSimulation game(grid);
     game.player1 = this;
 
@@ -65,13 +64,25 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
      */
 
     train_step = 0;
+    vector<enemy> tempEnemies;
+    int src_x, src_y, dest_x, dest_y;
+    int storyIndex = 0;
 
     for(episodeCount = 1; episodeCount < MAX_EPISODES; episodeCount++) {
         // pick a random source and destination
-        int src_x, src_y, dest_x, dest_y;
+
+        if (not isResuming()) {
+            /// If resumed, then do not change previous episode's source and destination.
+            src_x = sources[storyIndex][0];
+            src_y = sources[storyIndex][1];
+            dest_x = destinations[storyIndex][0];
+            dest_y = destinations[storyIndex][1];
+            /// Rotate stories when a fresh episode starts with no resume.
+            //storyIndex++;
+        }
 
         //game.player1->initialize(sources[i%14][0], sources[i%14][1], destinations[i%14][0], destinations[i%14][1]);
-        game.player1->initialize(sources[0][0], sources[0][1], destinations[0][0], destinations[0][1]);
+        game.player1->initialize(src_x, src_y, dest_x, dest_y);
         //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
         //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
@@ -80,33 +91,26 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
         if (train_step % dqnTargetUpdateNextEpisode == 0) {
             updateTargetNet();
         }
-        game.learnToPlay(grid, enemies);
+        if (not resumed) {
+            /// If resumed, then do not change enemy positions from last episode
+            /// else reset enemy positions to start of game
+            tempEnemies = enemies;
+        }
+
+        game.learnToPlay(grid, tempEnemies);
         train_step++;
         logger->printBoard(grid);
         logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
-        rewards.push_back(game.getTotalRewardsCollected());
-        episodes.push_back(episodeCount);
-        reset(grid);
-        game.reset(grid);
+        if (not resumed) {
+            rewards.push_back(game.getTotalRewardsCollected());
+            game.reset(grid);
+        }
+
         decayEpsilon();
     }
 
     plotLosses();
-
-    RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
-    StringReference *errorMessage = new StringReference();
-    auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &rewards, errorMessage);
-    if(success){
-        vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot/episode_rewards.png");
-        DeleteImage(imageReference->image);
-    }else{
-        cerr << "Error: ";
-        for(wchar_t c : *errorMessage->string){
-            wcerr << c;
-        }
-        cerr << endl;
-    }
+    plotRewards(rewards);
 
 }
 
@@ -174,18 +178,20 @@ bool player::isOnTrack() {
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
 
-    if ((not stopLearning) and playerDiedInPreviousEpisode and resumeCount < MAX_RESUME) {
+    if (isResuming()) {
         current_x = deathCellX;
         current_y = deathCellY;
         source_x = deathCellX;
         source_y = deathCellY;
         resumeCount++;
+        resumed = true;
     } else {
         source_x = src_x;
         source_y = src_y;
         current_x = source_x;
         current_y = source_y;
         resumeCount = resumeCount == MAX_RESUME? 0 : resumeCount;
+        resumed = false;
     }
 
     destination_x = dest_x;
@@ -220,12 +226,10 @@ int player::selectAction(observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    if (isExploring) {
-        if (playerDiedInPreviousEpisode and deathCellX == current.playerX and deathCellY == current.playerY) {
-            return;
-        }
-        RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done);
+    if (playerDiedInPreviousEpisode and deathCellX == current.playerX and deathCellY == current.playerY) {
+        return;
     }
+    RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
 }
 
 double player::learnWithDQN() {
@@ -235,6 +239,41 @@ double player::learnWithDQN() {
 void player::recordDeathLocation() {
     deathCellX = current_x;
     deathCellY = current_y;
+}
+
+void player::plotRewards(vector<double> &rewards) {
+
+    vector<double> rewards_averaged;
+    vector<double> episodes;
+    int avg_window_size = rewards.size() / MAX_REWARD_POINTS_IN_PLOT;
+    for(int i=0; i<rewards.size(); i+=avg_window_size) {
+        double sum = 0;
+        for(int j=i; j<i+avg_window_size and j<rewards.size(); j++) {
+            sum += rewards[j];
+        }
+        rewards_averaged.push_back(sum/avg_window_size);
+        episodes.push_back(i+1);
+    }
+
+
+    RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
+    StringReference *errorMessage = new StringReference();
+    auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &rewards_averaged, errorMessage);
+    if(success){
+        vector<double> *pngdata = ConvertToPNG(imageReference->image);
+        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot/episode_rewards.png");
+        DeleteImage(imageReference->image);
+    }else{
+        cerr << "Error: ";
+        for(wchar_t c : *errorMessage->string){
+            wcerr << c;
+        }
+        cerr << endl;
+    }
+}
+
+bool player::isResuming() {
+    return (not stopLearning) and playerDiedInPreviousEpisode and resumeCount < MAX_RESUME;
 }
 
 

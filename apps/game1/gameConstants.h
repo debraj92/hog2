@@ -12,10 +12,10 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 4000;   /// Must be greater than 8
-const int SESSION_TIMEOUT = 30;
+const int MAX_EPISODES = 6000;   /// Must be greater than 8
+const int SESSION_TIMEOUT = 50;
 
-const int GRID_SPAN=4; /// >= 10 when running unit tests
+const int GRID_SPAN=6; /// >= 10 when running unit tests
 
 static const int MAX_STATES = 20000;
 
@@ -107,14 +107,14 @@ const float REWARD_TRACK_FOLLOW = -0.01 * REWARD_FACTOR;
 const float REWARD_TRACK_ONE_DIV = -0.01 * REWARD_FACTOR;
 const float REWARD_TRACK_TWO_DIV = -0.01 * REWARD_FACTOR;
 const float REWARD_OFFTRACK = -0.3 * REWARD_FACTOR;
-const float REWARD_DEATH = -0.1 * REWARD_FACTOR;;//-50;
+const float REWARD_DEATH = -0.1 * REWARD_FACTOR;
 
 
 const int MAX_LIFE = 10;
 
 const int MAX_DISTANCE = 100;
 
-const int MAX_ABSTRACT_OBSERVATIONS = 31;//28;//34;//22;//35;
+const int MAX_ABSTRACT_OBSERVATIONS = 23;
 
 const int MAX_CAPACITY_REPLAY_BUFFER = 10000;
 
@@ -123,6 +123,10 @@ const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = MAX_EPISODES * SESSION_TIMEOUT 
 const int SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 90;
 
 const int MAX_RESUME = 5;
+
+const double MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY = 0.5;
+
+const int MAX_REWARD_POINTS_IN_PLOT = 500;
 
 namespace RTS {
     enum LOG_LEVEL {
