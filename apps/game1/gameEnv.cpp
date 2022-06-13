@@ -22,31 +22,33 @@ void GameEnv::createEmptyGrid() {
 
 void GameEnv::createMapEasiest() {
     createEmptyGrid();
+    /// Grid 6X6
+    fixedEnemy f1(3, 2, 1);
+    fixedEnemy f2(4, 1, 2);
+    fixedEnemy f3(3, 0, 3);
+    fixedEnemy f4(4, 5, 4);
+    enemies.push_back(f1);
+    enemies.push_back(f2);
+    enemies.push_back(f3);
+    enemies.push_back(f4);
 
-    //fixedEnemy f1(GRID_SPAN/2+1, GRID_SPAN/2+1, 1);
-    //enemies.push_back(f1);
-    //fixedEnemy f2(GRID_SPAN - 1, GRID_SPAN - 2, 2);
-    //enemies.push_back(f2);
 
-
-    const int TOTAL_FIXED_OBSTACLES = 5;
+    const int TOTAL_FIXED_OBSTACLES = 3;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
             //x_s, x_e, y_s, y_e
-            {3, 3, 3, 3},
-            {1, 1, 1, 1},
-            {3, 3, 1, 1},
-            {0, 0, 2, 2},
-            {2, 2, 3, 3}
+            {0, 3, 3, 5},
+            {2, 2, 2, 2},
+            {4, 4, 3, 3}
 
     };
 
     // fill with static obstacles
     FixedObstacles fixedObstacles;
-    for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
-        int x_s = blockObstacles[obstacle][0];
-        int x_e = blockObstacles[obstacle][1];
-        int y_s = blockObstacles[obstacle][2];
-        int y_e = blockObstacles[obstacle][3];
+    for(auto & blockObstacle : blockObstacles) {
+        int x_s = blockObstacle[0];
+        int x_e = blockObstacle[1];
+        int y_s = blockObstacle[2];
+        int y_e = blockObstacle[3];
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
 
@@ -202,6 +204,38 @@ void GameEnv::createAllFixedObstacles(int TOTAL_FIXED_OBSTACLES, int blockObstac
         int x_e = blockObstacles[obstacle][1];
         int y_s = blockObstacles[obstacle][2];
         int y_e = blockObstacles[obstacle][3];
+        fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
+    }
+}
+
+void GameEnv::createMap5() {
+    /// Grid 7X7
+    fixedEnemy f1(2, 1, 1);
+    fixedEnemy f2(3, 3, 2);
+    fixedEnemy f3(4, 4, 3);
+    fixedEnemy f4(3, 1, 4);
+    enemies.push_back(f1);
+    enemies.push_back(f2);
+    enemies.push_back(f3);
+    enemies.push_back(f4);
+
+
+    const int TOTAL_FIXED_OBSTACLES = 3;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {0, 4, 3, 4},
+            {2, 3, 5, 6},
+            {5, 6, 0, 1}
+
+    };
+
+    // fill with static obstacles
+    FixedObstacles fixedObstacles;
+    for(auto & blockObstacle : blockObstacles) {
+        int x_s = blockObstacle[0];
+        int x_e = blockObstacle[1];
+        int y_s = blockObstacle[2];
+        int y_e = blockObstacle[3];
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
 }

@@ -18,14 +18,14 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
     *explore = isTrainingMode and isExplore(episodeCount);
     if (*explore) {
         // random action
-        cout<<"Selecting random action"<<endl;
+        logger->logDebug("Selecting random action")->endLineDebug();
         std::uniform_int_distribution<> distri(0, ACTION_SPACE-1);
         std::default_random_engine re;
         re.seed(std::chrono::system_clock::now().time_since_epoch().count());
         action = distri(re);
     } else {
 
-        cout<<"Selecting max action"<<endl;
+        logger->logDebug("Selecting max action")->endLineDebug();
         float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
         currentState.flattenObservationToVector(observation_vector);
         auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
@@ -35,7 +35,7 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
             auto fp1 = policyNet->forwardPass(stateTensor.unsqueeze(0));
             auto actions = policyNet->forwardPassAdvantage(fp1);
             action = torch::argmax(actions).detach().item<int>();
-            cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
+            //cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
         }
     }
     printAction(action);
@@ -43,14 +43,14 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
 }
 
 double RLNN_Agent::learnWithDQN() {
-    cout<<"RLNN_Agent::learn"<<endl;
+    logger->logDebug("RLNN_Agent::learn")->endLineDebug();
     // start learning after the replay buffer is partially filled
     if (memory.getBufferSize() < MIN_BUFFERED_EXPERIENCE_FOR_LEARNING) {
-        cout<<"Ignoring learning attempt due to insufficient samples";
+        logger->logDebug("Ignoring learning attempt due to insufficient samples")->endLineDebug();
         return 0;
     }
     if (stopLearning) {
-        cout<<"Ignoring learning attempt due to finished training";
+        logger->logDebug("Ignoring learning attempt due to finished training")->endLineDebug();
         return 0;
     }
     // select n samples picked uniformly at random from the experience replay memory, such that n=batchsize
@@ -86,7 +86,9 @@ double RLNN_Agent::learnWithDQN() {
     auto y = discounted_reward + q_target;
 
     // calculate the loss as the mean-squared error of y and qpred
-    return policyNet->computeLossAndBackPropagate(y, q_pred);
+    double loss = policyNet->computeLossAndBackPropagate(y, q_pred);
+
+    return loss;
 }
 
 
@@ -116,39 +118,39 @@ void RLNN_Agent::decayEpsilon() {
     epsilon = max(epsilon_min, epsilon * epsilon_decay);
 }
 
-void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done) {
-    memory.storeExperience(current, next, action, reward, done);
+void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring) {
+    memory.storeExperience(current, next, action, reward, done, isExploring);
 }
 
 void RLNN_Agent::printAction(int action) {
-    cout<<"RLNN_Agent::printAction"<<endl;
+    logger->logDebug("RLNN_Agent::printAction ");
     switch(action) {
         case ACTION_DODGE_LEFT:
-            cout<<"ACTION_DODGE_LEFT"<<endl;
+            logger->logDebug("ACTION_DODGE_LEFT")->endLineDebug();
             break;
         case ACTION_DODGE_RIGHT:
-            cout<<"ACTION_DODGE_RIGHT"<<endl;
+            logger->logDebug("ACTION_DODGE_RIGHT")->endLineDebug();
             break;
         case ACTION_DODGE_DIAGONAL_LEFT:
-            cout<<"ACTION_DODGE_DIAGONAL_LEFT"<<endl;
+            logger->logDebug("ACTION_DODGE_DIAGONAL_LEFT")->endLineDebug();
             break;
         case ACTION_DODGE_DIAGONAL_RIGHT:
-            cout<<"ACTION_DODGE_DIAGONAL_RIGHT"<<endl;
+            logger->logDebug("ACTION_DODGE_DIAGONAL_RIGHT")->endLineDebug();
             break;
         case ACTION_STRAIGHT:
-            cout<<"ACTION_STRAIGHT"<<endl;
+            logger->logDebug("ACTION_STRAIGHT")->endLineDebug();
             break;
         case ACTION_REROUTE:
-            cout<<"ACTION_REROUTE"<<endl;
+            logger->logDebug("ACTION_REROUTE")->endLineDebug();
             break;
         case ACTION_REDIRECT:
-            cout<<"ACTION_REDIRECT"<<endl;
+            logger->logDebug("ACTION_REDIRECT")->endLineDebug();
             break;
         case ACTION_SWITCH:
-            cout<<"ACTION_SWITCH"<<endl;
+            logger->logDebug("ACTION_SWITCH")->endLineDebug();
             break;
         default:
-            cout<<"INVALID ACTION "<<action<<endl;
+            logger->logDebug("INVALID ACTION")->endLineDebug();
     }
 }
 

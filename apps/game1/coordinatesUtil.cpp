@@ -225,6 +225,6 @@ int coordinatesUtil::setDodgeDiagonalRightActionCoordinates(int &x, int &y, int 
 
 /// True if no obstacle
 bool coordinatesUtil::verifyObstacle(int x, int y) {
-    return grid[x][y] == 0;
+    return grid[x][y] >= 0;
 }
 

@@ -23,6 +23,7 @@ class observation {
         float distance;
         float angle;
         float risk_measure;
+        int id;
     };
 
     void setDirectionAngles(int (&angles)[9]);
@@ -43,34 +44,39 @@ public:
     /**
      * Assumption: Maximum 4 enemies within the vision radius
      */
-    float enemy_distance_1 = MAX_DISTACE;
-    float enemy_angle_1 = -1;
+    float enemy_distance_1 = MAX_DISTANCE;
+    float enemy_angle_1 = 0;
     float enemy_risk_1 = 0;
+    int enemy_id_1 = -1;
 
-    float enemy_distance_2 = MAX_DISTACE;
-    float enemy_angle_2 = -1;
+    float enemy_distance_2 = MAX_DISTANCE;
+    float enemy_angle_2 = 0;
     float enemy_risk_2 = 0;
+    int enemy_id_2 = -1;
 
-    float enemy_distance_3 = MAX_DISTACE;
-    float enemy_angle_3 = -1;
+    float enemy_distance_3 = MAX_DISTANCE;
+    float enemy_angle_3 = 0;
     float enemy_risk_3 = 0;
+    int enemy_id_3 = -1;
 
-    float enemy_distance_4 = MAX_DISTACE;
-    float enemy_angle_4 = -1;
+    // For backward compatibility with table based rl
+    float enemy_distance_4 = MAX_DISTANCE;
+    float enemy_angle_4 = 0;
     float enemy_risk_4 = 0;
+    int enemy_id_4 = -1;
 
-    int rerouteDistance = MAX_DISTACE;
+    int rerouteDistance = MAX_DISTANCE;
 
     int trajectory = 0; // one hot (8 values, 4 one deviation another 4 two deviations)
 
     double destination_distance = 1000;
     double destination_cosine = -1;
 
-    int obstacle_front = 1000; // default at infinity
-    int obstacle_left = 1000;
-    int obstacle_right = 1000;
-    int obstacle_front_left = 1000;
-    int obstacle_front_right = 1000;
+    int obstacle_front = MAX_DISTANCE; // default at infinity
+    int obstacle_left = MAX_DISTANCE;
+    int obstacle_right = MAX_DISTANCE;
+    int obstacle_front_left = MAX_DISTANCE;
+    int obstacle_front_right = MAX_DISTANCE;
 
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int destination_x, int destination_y);
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);

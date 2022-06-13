@@ -58,8 +58,8 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
         logger->printBoard(grid);
         moveEnemies(enemies);
-        observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
         fight(enemies);
+        observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
         auto reward = calculateReward(enemies, nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isEpisodeComplete());
@@ -73,6 +73,12 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
     if (not player1->stopLearning) {
         logger->logInfo("Network Loss after episode completion ")->logInfo(avg_loss)->endLineInfo();
+    }
+    if (player1->life_left <= 0 and not player1->stopLearning) {
+        player1->recordDeathLocation();
+        player1->playerDiedInPreviousEpisode = true;
+    } else {
+        player1->playerDiedInPreviousEpisode = false;
     }
 }
 
@@ -178,7 +184,6 @@ void gameSimulation::reset(std::vector<std::vector<int>> &grid) {
             }
         }
     }
-    player1->total_rewards = 0;
 }
 
 void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, vector<enemy> &enemies) {

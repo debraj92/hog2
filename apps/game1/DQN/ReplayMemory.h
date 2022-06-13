@@ -32,6 +32,12 @@ class ReplayMemory {
     vector<bool> dones;
     int idx = 0;
 
+    bool isBufferFull = false;
+
+    double exploitation_window_start = MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY;
+
+    void storeExperience(observation &current, observation &next, int action, float reward, bool done);
+
 public:
 
     torch::Tensor tensor_states;
@@ -50,9 +56,10 @@ public:
     }
     void sampleBatch(int batchSize);
 
-    void storeExperience(observation &current, observation &next, int action, float reward, bool done);
+    void storeExperience(observation &current, observation &next, int action, float reward, bool done, bool isExploring);
 
     int getBufferSize();
+
 };
 
 

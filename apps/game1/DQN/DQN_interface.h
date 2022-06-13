@@ -23,7 +23,7 @@ public:
     /// Returns the network loss
     virtual double learnWithDQN() = 0;
 
-    virtual void memorizeExperienceForReplay(observation &current, observation &next, int action, int reward, bool done) = 0;
+    virtual void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring) = 0;
 
     /// provide file path
     virtual void saveModel(string &file) = 0;

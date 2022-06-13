@@ -13,7 +13,7 @@ using namespace std;
 
 void ReplayMemory::sampleBatch(const int batchSize) {
     logger->logDebug("ReplayMemory::sampleBatch")->endLineDebug();
-    if (buffer_states.size() == 0) {
+    if ((not isBufferFull) and idx == 0) {
         return;
     }
     random::seed(time(nullptr));
@@ -49,8 +49,10 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 }
 
 void ReplayMemory::storeExperience(observation &current, observation &next, int action, float reward, bool done) {
+    if((not isBufferFull) and (idx + 1) == MAX_CAPACITY_REPLAY_BUFFER) {
+        isBufferFull = true;
+    }
     logger->logDebug("ReplayMemory::storeExperience")->endLineDebug();
-
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
     buffer_states[idx].assign(observation_vector, observation_vector + MAX_ABSTRACT_OBSERVATIONS);
@@ -65,9 +67,36 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
 }
 
 int ReplayMemory::getBufferSize() {
-    if (buffer_states.size() <= MAX_CAPACITY_REPLAY_BUFFER) {
-        return idx + 1;
+    if (not isBufferFull) {
+        return idx;
     }
     return MAX_CAPACITY_REPLAY_BUFFER;
+}
+
+void ReplayMemory::storeExperience(observation &current, observation &next, int action, float reward, bool done,
+                                   bool isExploring) {
+    if(isExploring) {
+        storeExperience(current, next, action, reward, done);
+        return;
+    }
+
+    /// Case when this action is due to exploitation
+    /**
+     * Check if a random number generated from an exponential distribution is within a moving sliding window
+     */
+    double const exp_dist_mean   = 1;
+    double const exp_dist_lambda = 1 / exp_dist_mean;
+
+    std::random_device rd;
+
+    std::exponential_distribution<> rng (exp_dist_lambda);
+    std::mt19937 rnd_gen (rd ());
+    double random_number = rng (rnd_gen);
+    if (random_number > exploitation_window_start) {
+        logger->logDebug("Saving Exploitation")->endLineDebug();
+        storeExperience(current, next, action, reward, done);
+    }
+
+    exploitation_window_start += (10.00 - MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY) / MAX_EPISODES;
 }
 
