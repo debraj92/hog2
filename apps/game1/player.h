@@ -14,10 +14,10 @@
 #include "Logger.h"
 
 ///// Change header-folder to load different RL models
-//#include "DQN/dueling-DQN/RLNN_Agent.h"
+#include "DQN/dueling-DQN/RLNN_Agent.h"
 //#include "DQN/DDQN/RLNN_Agent.h"
 //#include "DQN/Vanilla-DQN/RLNN_Agent.h"
-#include "DQN/dueling-DQN-bounded/RLNN_Agent.h"
+//#include "DQN/dueling-DQN-bounded/RLNN_Agent.h"
 
 using namespace RTS;
 
@@ -47,6 +47,11 @@ public:
     int destination_y;
     int life_left;
     bool isExploring = false;
+
+    bool playerDiedInPreviousEpisode = false;
+    int resumeCount = 0;
+    int deathCellX;
+    int deathCellY;
 
     float total_rewards = 0;
 
@@ -84,6 +89,8 @@ public:
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done);
 
     double learnWithDQN();
+
+    void recordDeathLocation();
 };
 
 

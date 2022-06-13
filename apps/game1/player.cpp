@@ -65,6 +65,7 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
      */
 
     train_step = 0;
+
     for(episodeCount = 1; episodeCount < MAX_EPISODES; episodeCount++) {
         // pick a random source and destination
         int src_x, src_y, dest_x, dest_y;
@@ -156,7 +157,8 @@ int player::getDirection() {
 void player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
     logger->logDebug("Find path to destination")->endLineDebug();
     fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    fp->populateEnemyObstacles(enemies);
+    // TODO: Enable when enemy handling is perfect
+    //fp->populateEnemyObstacles(enemies);
     fp->findPathToDestination();
 }
 
@@ -171,13 +173,24 @@ bool player::isOnTrack() {
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
-    source_x = src_x;
-    source_y = src_y;
+
+    if ((not stopLearning) and playerDiedInPreviousEpisode and resumeCount < MAX_RESUME) {
+        current_x = deathCellX;
+        current_y = deathCellY;
+        source_x = deathCellX;
+        source_y = deathCellY;
+        resumeCount++;
+    } else {
+        source_x = src_x;
+        source_y = src_y;
+        current_x = source_x;
+        current_y = source_y;
+        resumeCount = resumeCount == MAX_RESUME? 0 : resumeCount;
+    }
+
     destination_x = dest_x;
     destination_y = dest_y;
     life_left = MAX_LIFE;
-    current_x = source_x;
-    current_y = source_y;
     total_rewards = 0;
 
 }
@@ -208,12 +221,20 @@ int player::selectAction(observation& currentState) {
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
     if (isExploring) {
+        if (playerDiedInPreviousEpisode and deathCellX == current.playerX and deathCellY == current.playerY) {
+            return;
+        }
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done);
     }
 }
 
 double player::learnWithDQN() {
     return RLNN_Agent::learnWithDQN();
+}
+
+void player::recordDeathLocation() {
+    deathCellX = current_x;
+    deathCellY = current_y;
 }
 
 

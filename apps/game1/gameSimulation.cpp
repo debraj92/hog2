@@ -74,6 +74,12 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     if (not player1->stopLearning) {
         logger->logInfo("Network Loss after episode completion ")->logInfo(avg_loss)->endLineInfo();
     }
+    if (player1->life_left <= 0 and not player1->stopLearning) {
+        player1->recordDeathLocation();
+        player1->playerDiedInPreviousEpisode = true;
+    } else {
+        player1->playerDiedInPreviousEpisode = false;
+    }
 }
 
 
