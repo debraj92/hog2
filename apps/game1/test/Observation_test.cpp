@@ -135,7 +135,14 @@ TEST(ObservationDirectionTrajectory, BasicAssertions) {
     ob.locateTrajectoryAndDirection(fp, 5, 0);
 
     assert(ob.direction == SW);
-    assert(ob.trajectory == one_deviation_S);
+    assert(ob.trajectory == one_deviation_W);
+
+    ob.locateRelativeTrajectory();
+    assert(ob.trajectory_right == 1);
+    assert(ob.trajectory_left == 0);
+    assert(ob.trajectory_front == 0);
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_off_track == 0);
 
     ob.direction = 0;
     ob.trajectory = 0;
@@ -149,7 +156,7 @@ TEST(ObservationDirectionTrajectory, BasicAssertions) {
 }
 
 TEST(ObservationDirectionTrajectory2, BasicAssertions) {
-
+/*
     vector<vector<int>> grid;
     for (int i=0; i<2; i++) {
         std::vector<int> row(2, 0);
@@ -211,4 +218,96 @@ TEST(ObservationDirectionTrajectory2, BasicAssertions) {
     for(int i=0; i<MAX_ABSTRACT_OBSERVATIONS; i++) {
         assert(expected_result3[i] == observation_vector[i]);
     }
+    */
+}
+
+TEST(ObservationRelativeTrajectory, BasicAssertions) {
+    observation ob;
+    ob.trajectory = on_track;
+    for (int d=1; d<=8; d++) {
+        ob.direction = d;
+        ob.locateRelativeTrajectory();
+
+        assert(ob.trajectory_on_track == 1);
+        assert(ob.trajectory_left == 0);
+        assert(ob.trajectory_right == 0);
+        assert(ob.trajectory_front == 0);
+        assert(ob.trajectory_off_track == 0);
+    }
+
+    ob = observation();
+    ob.trajectory = 11;
+    ob.direction = 5;
+    ob.locateRelativeTrajectory();
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_left == 1);
+    assert(ob.trajectory_right == 0);
+    assert(ob.trajectory_front == 0);
+    assert(ob.trajectory_off_track == 0);
+
+    ob = observation();
+    ob.trajectory = 13;
+    ob.direction = 8;
+    ob.locateRelativeTrajectory();
+
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_left == 0);
+    assert(ob.trajectory_right == 1);
+    assert(ob.trajectory_front == 0);
+    assert(ob.trajectory_off_track == 0);
+
+    ob = observation();
+    ob.trajectory = 22;
+    ob.direction = 4;
+    ob.locateRelativeTrajectory();
+
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_left == 2);
+    assert(ob.trajectory_right == 0);
+    assert(ob.trajectory_front == 0);
+    assert(ob.trajectory_off_track == 0);
+
+    ob = observation();
+    ob.trajectory = 24;
+    ob.direction = 5;
+    ob.locateRelativeTrajectory();
+
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_left == 0);
+    assert(ob.trajectory_right == 2);
+    assert(ob.trajectory_front == 0);
+    assert(ob.trajectory_off_track == 0);
+
+    ob = observation();
+    ob.trajectory = 24;
+    ob.direction = 3;
+    ob.locateRelativeTrajectory();
+
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_left == 0);
+    assert(ob.trajectory_right == 0);
+    assert(ob.trajectory_front == 2);
+    assert(ob.trajectory_off_track == 0);
+
+    ob = observation();
+    ob.trajectory = 12;
+    ob.direction = 2;
+    ob.locateRelativeTrajectory();
+
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_left == 0);
+    assert(ob.trajectory_right == 0);
+    assert(ob.trajectory_front == 1);
+    assert(ob.trajectory_off_track == 0);
+
+    ob = observation();
+    ob.trajectory = 0;
+    ob.direction = 0;
+    ob.locateRelativeTrajectory();
+    assert(ob.trajectory_on_track == 0);
+    assert(ob.trajectory_left == 0);
+    assert(ob.trajectory_right == 0);
+    assert(ob.trajectory_front == 0);
+    assert(ob.trajectory_off_track == 1);
+
 }

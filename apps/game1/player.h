@@ -40,6 +40,8 @@ public:
 
     int current_x;
     int current_y;
+    int previous_x_on_track;
+    int previous_y_on_track;
     int source_x;
     int source_y;
     int destination_x;
@@ -49,14 +51,10 @@ public:
 
     bool playerDiedInPreviousEpisode = false;
     int resumeCount = 0;
-    int deathCellX;
-    int deathCellY;
+    int restoreCellX;
+    int restoreCellY;
 
     float total_rewards = 0;
-
-    bool resumed = false;
-
-    int train_step = 0;
 
     player(bool isTrainingMode) {
         RLNN_Agent::setTrainingMode(isTrainingMode);
@@ -94,11 +92,13 @@ public:
 
     double learnWithDQN();
 
-    void recordDeathLocation();
+    void recordRestoreLocation();
 
     void plotRewards(vector<double> &rewards);
 
     bool isResuming();
+
+    void savePreviousOnTrackCoordinates(int x, int y);
 };
 
 

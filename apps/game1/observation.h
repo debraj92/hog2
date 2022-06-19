@@ -68,6 +68,11 @@ public:
     int rerouteDistance = MAX_DISTANCE;
 
     int trajectory = 0; // one hot (8 values, 4 one deviation another 4 two deviations)
+    int trajectory_left = 0;
+    int trajectory_right = 0;
+    int trajectory_front = 0;
+    int trajectory_on_track = 0;
+    int trajectory_off_track = 0;
 
     double destination_distance = 1000;
     double destination_cosine = -1;
@@ -79,6 +84,7 @@ public:
     int obstacle_front_right = MAX_DISTANCE;
 
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int destination_x, int destination_y);
+    void locateRelativeTrajectory();
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);
     void locateEnemies(std::vector<enemy>& enemies);
 

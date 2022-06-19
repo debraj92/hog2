@@ -22,23 +22,25 @@ void GameEnv::createEmptyGrid() {
 
 void GameEnv::createMapEasiest() {
     createEmptyGrid();
+
     /// Grid 6X6
     fixedEnemy f1(3, 2, 1);
-    fixedEnemy f2(4, 1, 2);
-    fixedEnemy f3(3, 0, 3);
-    fixedEnemy f4(4, 5, 4);
+    fixedEnemy f2(4, 3, 2);
+    fixedEnemy f3(4, 1, 3);
+    fixedEnemy f4(2, 1, 4);
+    fixedEnemy f5(1, 3, 5);
     enemies.push_back(f1);
     enemies.push_back(f2);
     enemies.push_back(f3);
     enemies.push_back(f4);
+    enemies.push_back(f5);
 
 
-    const int TOTAL_FIXED_OBSTACLES = 3;
+    const int TOTAL_FIXED_OBSTACLES = 2;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
             //x_s, x_e, y_s, y_e
-            {0, 3, 3, 5},
-            {2, 2, 2, 2},
-            {4, 4, 3, 3}
+            {2, 2, 2, 3},
+            {2, 3, 4, 4}
 
     };
 

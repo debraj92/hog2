@@ -105,100 +105,114 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
         return;
     }
 
-    int angles[9];
-    setDirectionAngles(angles);
-    redirect(current_x, current_y, destination_x, destination_y);
     bool pathFound = false;
-    int direction_dest = direction;
-    int min_angle = 1000;
     int row, col;
+    int matches = 0;
+    int direction_continued = 0;
+    int max_matches = 0;
+    int max_direction_continued = 0;
+    int temp_direction = 0;
+    int temp_trajectory = 0;
     for (int i=1; i<=VISION_RADIUS; i++) {
         row = current_x - i;
         if (row >= 0) {
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
-                        direction = fp->pathDirection(row, col);
-                        trajectory = (i*10) + 1;
-                        int diff = abs(angles[direction_dest] - angles[direction]);
-                        min_angle = diff;
+                        temp_direction = fp->pathDirection(row, col);
+                        temp_trajectory = (i * 10) + 1;
                         pathFound = true;
-                        break;
+                        matches++;
+                        if(col > current_y - i and fp->isOnTrack(row, col - 1)
+                        and temp_direction == fp->pathDirection(row, col - 1)) {
+                            direction_continued++;
+                        }
                     }
                 }
             }
+            if (matches > max_matches) {
+                max_matches = matches;
+                max_direction_continued = direction_continued;
+                direction = temp_direction;
+                trajectory = temp_trajectory;
+            }
+            matches = 0;
+            direction_continued = 0;
         }
         row = current_x + i;
         if (row <= GRID_SPAN - 1) {
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
-                        if (min_angle == 1000) {
-                            direction = fp->pathDirection(row, col);
-                            trajectory = (i*10) + 2;
-                            int diff = abs(angles[direction_dest] - angles[direction]);
-                            min_angle = diff;
-                        } else {
-                            int temp_direction = fp->pathDirection(row, col);
-                            int diff = abs(angles[direction_dest] - angles[temp_direction]);
-                            if (diff < min_angle) {
-                                min_angle = diff;
-                                direction = temp_direction;
-                                trajectory = (i*10) + 2;
-                            }
-                        }
+                        temp_direction = fp->pathDirection(row, col);
+                        temp_trajectory = (i * 10) + 2;
+                        matches++;
                         pathFound = true;
-                        break;
+                        if(col > current_y - i and fp->isOnTrack(row, col - 1)
+                           and temp_direction == fp->pathDirection(row, col - 1)) {
+                            direction_continued++;
+                        }
                     }
                 }
             }
+            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+                max_matches = matches;
+                max_direction_continued = direction_continued;
+                direction = temp_direction;
+                trajectory = temp_trajectory;
+            }
+            matches = 0;
+            direction_continued = 0;
         }
         col = current_y - i;
         if (col >= 0) {
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
-                        if (min_angle == 1000) {
-                            direction = fp->pathDirection(row, col);
-                            trajectory = (i * 10) + 3;
-                            int diff = abs(angles[direction_dest] - angles[direction]);
-                            min_angle = diff;
-                        } else {
-                            int temp_direction = fp->pathDirection(row, col);
-                            int diff = abs(angles[direction_dest] - angles[temp_direction]);
-                            if (diff < min_angle) {
-                                min_angle = diff;
-                                direction = temp_direction;
-                                trajectory = (i * 10) + 3;
-                            }
-                        }
+                        temp_direction = fp->pathDirection(row, col);
+                        temp_trajectory = (i * 10) + 3;
+                        matches++;
                         pathFound = true;
-                        break;
+                        if(row > current_x - i and fp->isOnTrack(row - 1, col)
+                           and temp_direction == fp->pathDirection(row - 1, col)) {
+                            direction_continued++;
+                        }
                     }
                 }
             }
+            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+                max_matches = matches;
+                max_direction_continued = direction_continued;
+                direction = temp_direction;
+                trajectory = temp_trajectory;
+            }
+            matches = 0;
+            direction_continued = 0;
         }
         col = current_y + i;
         if (col <= GRID_SPAN - 1) {
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
                     if (fp->isOnTrack(row, col)) {
-                        if (min_angle == 1000) {
-                            direction = fp->pathDirection(row, col);
-                            trajectory = (i * 10) + 4;
-                        } else {
-                            int temp_direction = fp->pathDirection(row, col);
-                            int diff = abs(angles[direction_dest] - angles[temp_direction]);
-                            if (diff < min_angle) {
-                                direction = temp_direction;
-                                trajectory = (i * 10) + 4;
-                            }
-                        }
+                        temp_direction = fp->pathDirection(row, col);
+                        temp_trajectory = (i * 10) + 4;
+                        matches++;
                         pathFound = true;
-                        break;
+                        if(row > current_x - i and fp->isOnTrack(row - 1, col)
+                           and temp_direction == fp->pathDirection(row - 1, col)) {
+                            direction_continued++;
+                        }
                     }
                 }
             }
+            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+                max_matches = matches;
+                max_direction_continued = direction_continued;
+                direction = temp_direction;
+                trajectory = temp_trajectory;
+            }
+            matches = 0;
+            direction_continued = 0;
         }
         if(pathFound) {
             return;
@@ -315,18 +329,13 @@ void observation::resetRerouteDistance() {
 
 void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
     int nextPosOffset = 0;
-    /// set trajectory. Takes 9 positions
+    /// set trajectory. Takes 5 positions - on track, Left, Right, Front, off track
     // ONE HOT
-    if (trajectory >= 10) {
-        if (trajectory < 20) {
-            // indices : 0, 1, 2, 3, 4
-            observation_vector[nextPosOffset + trajectory - 10] = 1;
-        } else {
-            // indices : 5, 6, 7, 8
-            observation_vector[nextPosOffset + trajectory - 20 + 4] = 1;
-        }
-    }
-    nextPosOffset += 9;
+    observation_vector[nextPosOffset++] = static_cast< float >(trajectory_on_track);
+    observation_vector[nextPosOffset++] = static_cast< float >(trajectory_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(trajectory_right);
+    observation_vector[nextPosOffset++] = static_cast< float >(trajectory_front);
+    observation_vector[nextPosOffset++] = static_cast< float >(trajectory_off_track);
 
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
@@ -353,6 +362,72 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_3) * 10;
     nextPosOffset += 2;
 
+}
+
+void observation::locateRelativeTrajectory() {
+    trajectory_on_track = trajectory == on_track;
+    if(trajectory_on_track) {
+        return;
+    }
+    trajectory_off_track = (direction == 0) and (trajectory == 0);
+    if(trajectory_off_track) {
+        return;
+    }
+    switch(trajectory) {
+        case one_deviation_N:
+            trajectory_front = direction == N;
+            trajectory_left = (direction == E) or (direction == NE) or (direction == SE);
+            trajectory_right = (direction != S) and (not trajectory_front) and (not trajectory_left);
+            break;
+        case one_deviation_S:
+            trajectory_front = direction == S;
+            trajectory_left = (direction == W) or (direction == NW) or (direction == SW);
+            trajectory_right = (direction != N) and (not trajectory_front) and (not trajectory_left);
+            break;
+        case one_deviation_E:
+            trajectory_front = direction == E;
+            trajectory_left = (direction == S) or (direction == SW) or (direction == SE);
+            trajectory_right = (direction != W) and (not trajectory_front) and (not trajectory_left);
+            break;
+        case one_deviation_W:
+            trajectory_front = direction == W;
+            trajectory_left = (direction == N) or (direction == NW) or (direction == NE);
+            trajectory_right = (direction != E) and (not trajectory_front) and (not trajectory_left);
+            break;
+
+        case two_deviation_N:
+            trajectory_front = direction == N;
+            trajectory_left = (direction == E) or (direction == NE) or (direction == SE);
+            trajectory_right = (direction != S) and (not trajectory_front) and (not trajectory_left);
+            trajectory_front *= 2;
+            trajectory_left *= 2;
+            trajectory_right *= 2;
+            break;
+        case two_deviation_S:
+            trajectory_front = direction == S;
+            trajectory_left = (direction == W) or (direction == NW) or (direction == SW);
+            trajectory_right = (direction != N) and (not trajectory_front) and (not trajectory_left);
+            trajectory_front *= 2;
+            trajectory_left *= 2;
+            trajectory_right *= 2;
+            break;
+        case two_deviation_E:
+            trajectory_front = direction == E;
+            trajectory_left = (direction == S) or (direction == SW) or (direction == SE);
+            trajectory_right = (direction != W) and (not trajectory_front) and (not trajectory_left);
+            trajectory_front *= 2;
+            trajectory_left *= 2;
+            trajectory_right *= 2;
+            break;
+        case two_deviation_W:
+            trajectory_front = direction == W;
+            trajectory_left = (direction == N) or (direction == NW) or (direction == NE);
+            trajectory_right = (direction != E) and (not trajectory_front) and (not trajectory_left);
+            trajectory_front *= 2;
+            trajectory_left *= 2;
+            trajectory_right *= 2;
+            break;
+    }
 }
 
 

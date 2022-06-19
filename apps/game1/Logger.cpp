@@ -135,4 +135,46 @@ Logger *Logger::printBoardInfo(vector<std::vector<int>> &grid) {
     }
 }
 
+Logger *Logger::logToFileInfo(string output) {
+    switch (GLOBAL_LOG_LEVEL) {
+        case DEBUG:
+            if (level != OFF) {
+                logfile<<output;
+                std::flush(logfile);
+            }
+            return this;
+        case INFO:
+            switch (level) {
+                case DEBUG:
+                case INFO:
+                    logfile<<output;
+                    std::flush(logfile);
+                    return this;
+                case OFF:
+                    return this;
+            }
+            return this;
+        case OFF:
+            return this;
+    }
+}
+
+Logger *Logger::logToFileInfo(double output) {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2) << output;
+    return logToFileInfo(ss.str());
+}
+
+Logger *Logger::endLineInfoFile() {
+    return logToFileInfo("\n");
+}
+
+void Logger::openLogFile() {
+    logfile.open(LOG_FILE);
+}
+
+void Logger::closeLogFile() {
+    logfile.close();
+}
+
 

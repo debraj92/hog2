@@ -53,12 +53,19 @@ public:
                      dones(MAX_CAPACITY_REPLAY_BUFFER)
     {
         logger = std::make_unique<Logger>(LogLevel);
+        //logger->openLogFile();
+    }
+
+    ~ReplayMemory() {
+        //logger->closeLogFile();
     }
     void sampleBatch(int batchSize);
 
     void storeExperience(observation &current, observation &next, int action, float reward, bool done, bool isExploring);
 
     int getBufferSize();
+
+    void logStateVector(observation &ob);
 
 };
 

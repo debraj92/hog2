@@ -60,6 +60,10 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         moveEnemies(enemies);
         fight(enemies);
         observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
+        if (nextObservation.trajectory_off_track) {
+            // poisoned if off track
+            player1->life_left = 0;
+        }
         auto reward = calculateReward(enemies, nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isEpisodeComplete());
@@ -75,7 +79,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         logger->logInfo("Network Loss after episode completion ")->logInfo(avg_loss)->endLineInfo();
     }
     if (player1->life_left <= 0 and not player1->stopLearning) {
-        player1->recordDeathLocation();
+        player1->recordRestoreLocation();
         player1->playerDiedInPreviousEpisode = true;
     } else {
         player1->playerDiedInPreviousEpisode = false;
@@ -87,7 +91,7 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
 
     int oldLocationX = player1->current_x;
     int oldLocationY = player1->current_y;
-
+    bool isOldLocationOnTrack = player1->isOnTrack();
     int nextAction = player1->selectAction(currentObservation);
     if (nextAction != ACTION_SWITCH) {
         currentObservation.resetRerouteDistance();
@@ -118,6 +122,9 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
             *error = player1->switchToNewRoute(currentObservation);
             currentObservation.resetRerouteDistance();
             break;
+    }
+    if (isOldLocationOnTrack and ((oldLocationX != player1->current_x) or (oldLocationY != player1->current_y))) {
+        player1->savePreviousOnTrackCoordinates(oldLocationX, oldLocationY);
     }
     grid[oldLocationX][oldLocationY] = 0;
     grid[player1->current_x][player1->current_y] = 9;

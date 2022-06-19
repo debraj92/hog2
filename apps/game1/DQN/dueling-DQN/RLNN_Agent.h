@@ -28,7 +28,7 @@ class RLNN_Agent : public DQN_interface {
     const double alpha = 0.7;
     const int epsilon_annealing_percent = 60;
 
-    int batchSize = 2000;
+    int batchSize = 4000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;

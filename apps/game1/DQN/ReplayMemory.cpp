@@ -53,6 +53,7 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
         isBufferFull = true;
     }
     logger->logDebug("ReplayMemory::storeExperience")->endLineDebug();
+    //logStateVector(current);
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
     buffer_states[idx].assign(observation_vector, observation_vector + MAX_ABSTRACT_OBSERVATIONS);
@@ -98,5 +99,76 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
     }
 
     exploitation_window_start += (10.00 - MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY) / MAX_EPISODES;
+}
+
+void ReplayMemory::logStateVector(observation &ob) {
+    string state="(" + to_string(ob.playerX) + "," + to_string(ob.playerY) +") dir: ";
+    if (ob.direction == N) {
+        state += "N";
+    }
+    if (ob.direction == S) {
+        state += "S";
+    }
+    if (ob.direction == E) {
+        state += "E";
+    }
+    if (ob.direction == W) {
+        state += "W";
+    }
+    if (ob.direction == NE) {
+        state += "NE";
+    }
+    if (ob.direction == NW) {
+        state += "NW";
+    }
+    if (ob.direction == SE) {
+        state += "SE";
+    }
+    if (ob.direction == SW) {
+        state += "SW";
+    }
+    state += " tra: ";
+    if(ob.trajectory_off_track) {
+        state += "off";
+    }
+    if (ob.trajectory_on_track) {
+        state += "on";
+    }
+    if (ob.trajectory_front) {
+        state += "F";
+    }
+    if (ob.trajectory_left) {
+        state += "L";
+    }
+    if (ob.trajectory_right) {
+        state += "R";
+    }
+    state += " obs: ";
+    if(ob.obstacle_front <= VISION_RADIUS) {
+        state += "F |";
+    }
+    if(ob.obstacle_front_left <= VISION_RADIUS) {
+        state += "FL |";
+    }
+    if (ob.obstacle_front_right <= VISION_RADIUS) {
+        state += "FR |";
+    }
+    if (ob.obstacle_left <= VISION_RADIUS) {
+        state += "L |";
+    }
+    if (ob.obstacle_right <= VISION_RADIUS) {
+        state += "R";
+    }
+    state += " Enmy: ";
+    if (ob.enemy_distance_1 < MAX_DISTANCE) {
+        state += "1. D:"+to_string(ob.enemy_distance_1)+" A:"+to_string(ob.enemy_angle_1 * 10) + " | ";
+    }
+    if (ob.enemy_distance_2 < MAX_DISTANCE) {
+        state += "2. D:"+to_string(ob.enemy_distance_2)+" A:"+to_string(ob.enemy_angle_2 * 10) + " | ";
+    }
+    if (ob.enemy_distance_3 < MAX_DISTANCE) {
+        state += "3. D:"+to_string(ob.enemy_distance_3)+" A:"+to_string(ob.enemy_angle_3 * 10) + " | ";
+    }
+    logger->logToFileInfo(state)->endLineInfoFile();
 }
 

@@ -21,7 +21,7 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     gameSimulation game(grid);
     game.player1 = this;
 
-
+/*
     int sources[14][2] = {
             {0, 0},
             {GRID_SPAN-1, GRID_SPAN-1},
@@ -54,31 +54,44 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
             {GRID_SPAN/2, GRID_SPAN/2},
             {GRID_SPAN/2, GRID_SPAN/2}
     };
+    */
 
+    int sources[6][2] = {
+            {0, 0},
+            {GRID_SPAN-1, GRID_SPAN-1},
+            {0, (GRID_SPAN-1)/2},
+            {GRID_SPAN-1, 0},
+            {(GRID_SPAN-1)/2, GRID_SPAN-1},
+            {(GRID_SPAN-1)/2, 0},
+    };
+    int destinations[6][2] = {
+            {GRID_SPAN-1, GRID_SPAN-1},
+            {0, (GRID_SPAN-1)/2},
+            {GRID_SPAN-1, 0},
+            {(GRID_SPAN-1)/2, GRID_SPAN-1},
+            {GRID_SPAN-1, (GRID_SPAN-1)/2},
+            {GRID_SPAN/2, GRID_SPAN - 1},
+    };
 
-    /*
-     * TODO: Will work only when dodge is perfectly implemented - no getting lost
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> randomGen(0,GRID_SPAN-1);
-     */
-
-    train_step = 0;
     vector<enemy> tempEnemies;
     int src_x, src_y, dest_x, dest_y;
     int storyIndex = 0;
-
+    bool resumed;
     for(episodeCount = 1; episodeCount < MAX_EPISODES; episodeCount++) {
         // pick a random source and destination
-
-        if (not isResuming()) {
+        resumed = isResuming();
+        if (not resumed) {
             /// If resumed, then do not change previous episode's source and destination.
             src_x = sources[storyIndex][0];
             src_y = sources[storyIndex][1];
             dest_x = destinations[storyIndex][0];
             dest_y = destinations[storyIndex][1];
             /// Rotate stories when a fresh episode starts with no resume.
-            //storyIndex++;
+            storyIndex = (storyIndex+1) % 6;
+
+            /// If resumed, then do not change enemy positions from last episode
+            /// else reset enemy positions to start of game
+            tempEnemies = enemies;
         }
 
         //game.player1->initialize(sources[i%14][0], sources[i%14][1], destinations[i%14][0], destinations[i%14][1]);
@@ -88,23 +101,21 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
 
         logger->logInfo("Episode ")->logInfo(episodeCount)->endLineInfo();
 
-        if (train_step % dqnTargetUpdateNextEpisode == 0) {
+        if (episodeCount % dqnTargetUpdateNextEpisode == 0) {
             updateTargetNet();
-        }
-        if (not resumed) {
-            /// If resumed, then do not change enemy positions from last episode
-            /// else reset enemy positions to start of game
-            tempEnemies = enemies;
         }
 
         game.learnToPlay(grid, tempEnemies);
-        train_step++;
         logger->printBoardDebug(grid);
         logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
+
         if (not resumed) {
+            // Consider reward if the episode was not a resume. If there are multiple resumes, then only the 1st reward is considered.
             rewards.push_back(game.getTotalRewardsCollected());
-            game.reset(grid);
         }
+
+        // Reset grid and enemies
+        game.reset(grid);
 
         decayEpsilon();
     }
@@ -142,6 +153,7 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
 
     if (!isRedirect) {
         ob.locateTrajectoryAndDirection(fp, destination_x, destination_y);
+        ob.locateRelativeTrajectory();
     }
 
     if (ob.direction > 0) {
@@ -175,21 +187,21 @@ bool player::isOnTrack() {
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
 
     if (isResuming()) {
-        current_x = deathCellX;
-        current_y = deathCellY;
-        source_x = deathCellX;
-        source_y = deathCellY;
+        current_x = restoreCellX;
+        current_y = restoreCellY;
+        source_x = restoreCellX;
+        source_y = restoreCellY;
         resumeCount++;
-        resumed = true;
     } else {
         source_x = src_x;
         source_y = src_y;
         current_x = source_x;
         current_y = source_y;
         resumeCount = resumeCount == MAX_RESUME? 0 : resumeCount;
-        resumed = false;
     }
 
+    previous_x_on_track = current_x;
+    previous_y_on_track = current_y;
     destination_x = dest_x;
     destination_y = dest_y;
     life_left = MAX_LIFE;
@@ -222,9 +234,6 @@ int player::selectAction(observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    if (playerDiedInPreviousEpisode and deathCellX == current.playerX and deathCellY == current.playerY) {
-        return;
-    }
     RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
 }
 
@@ -232,9 +241,9 @@ double player::learnWithDQN() {
     return RLNN_Agent::learnWithDQN();
 }
 
-void player::recordDeathLocation() {
-    deathCellX = current_x;
-    deathCellY = current_y;
+void player::recordRestoreLocation() {
+    restoreCellX = previous_x_on_track;
+    restoreCellY = previous_y_on_track;
 }
 
 void player::plotRewards(vector<double> &rewards) {
@@ -270,6 +279,11 @@ void player::plotRewards(vector<double> &rewards) {
 
 bool player::isResuming() {
     return (not stopLearning) and playerDiedInPreviousEpisode and resumeCount < MAX_RESUME;
+}
+
+void player::savePreviousOnTrackCoordinates(int x, int y) {
+    previous_x_on_track = x;
+    previous_y_on_track = y;
 }
 
 
