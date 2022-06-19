@@ -53,7 +53,9 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
         isBufferFull = true;
     }
     logger->logDebug("ReplayMemory::storeExperience")->endLineDebug();
-    //logStateVector(current);
+#ifdef ENABLE_STATE_VECTOR_DUMP
+    logStateVector(current);
+#endif
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
     buffer_states[idx].assign(observation_vector, observation_vector + MAX_ABSTRACT_OBSERVATIONS);

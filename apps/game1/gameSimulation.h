@@ -47,7 +47,7 @@ public:
 
     float getTotalRewardsCollected();
 
-    void reset(std::vector<std::vector<int>> &grid);
+    void removeCharacters(std::vector<std::vector<int>> &grid);
 
 };
 

@@ -8,6 +8,7 @@
 #include "gameSimulation.h"
 #include "plot/pbPlots.hpp"
 #include "plot/supportLib.hpp"
+#include "trainingMaps.h"
 
 #include <random>
 #include <iostream>
@@ -16,88 +17,33 @@ void player::takeDamage(int points) {
     life_left -= points;
 }
 
-void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+void player::learnGame() {
+
+    vector<enemy> enemies;
+    vector<std::vector<int>> grid;
+    createEmptyGrid(grid);
+    trainingMaps train;
+
     vector<double> rewards;
     gameSimulation game(grid);
     game.player1 = this;
-
-/*
-    int sources[14][2] = {
-            {0, 0},
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {0, GRID_SPAN-1},
-            {(GRID_SPAN-1)/2, 0},
-            {(GRID_SPAN-1)/2, 0},
-            {0, (GRID_SPAN-1)/2},
-            {(GRID_SPAN-1)/2, 0},
-            {0, 0},
-            {GRID_SPAN-1, 0},
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, GRID_SPAN-1}
-    };
-    int destinations[14][2] = {
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {GRID_SPAN-1, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {0, GRID_SPAN-1},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {GRID_SPAN-1, (GRID_SPAN-1)/2},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN/2, GRID_SPAN/2},
-            {GRID_SPAN/2, GRID_SPAN/2},
-            {GRID_SPAN/2, GRID_SPAN/2},
-            {GRID_SPAN/2, GRID_SPAN/2}
-    };
-    */
-
-    int sources[6][2] = {
-            {0, 0},
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {(GRID_SPAN-1)/2, 0},
-    };
-    int destinations[6][2] = {
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {GRID_SPAN-1, (GRID_SPAN-1)/2},
-            {GRID_SPAN/2, GRID_SPAN - 1},
-    };
-
     vector<enemy> tempEnemies;
     int src_x, src_y, dest_x, dest_y;
-    int storyIndex = 0;
     bool resumed;
-    for(episodeCount = 1; episodeCount < MAX_EPISODES; episodeCount++) {
+
+    for(episodeCount = 1; episodeCount <= MAX_EPISODES; episodeCount++) {
         // pick a random source and destination
         resumed = isResuming();
         if (not resumed) {
             /// If resumed, then do not change previous episode's source and destination.
-            src_x = sources[storyIndex][0];
-            src_y = sources[storyIndex][1];
-            dest_x = destinations[storyIndex][0];
-            dest_y = destinations[storyIndex][1];
-            /// Rotate stories when a fresh episode starts with no resume.
-            storyIndex = (storyIndex+1) % 6;
+            train.generateNextMap(grid, enemies);
+            train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
 
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
             tempEnemies = enemies;
         }
-
-        //game.player1->initialize(sources[i%14][0], sources[i%14][1], destinations[i%14][0], destinations[i%14][1]);
         game.player1->initialize(src_x, src_y, dest_x, dest_y);
-        //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
-        //game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
         logger->logInfo("Episode ")->logInfo(episodeCount)->endLineInfo();
 
@@ -113,10 +59,7 @@ void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
             // Consider reward if the episode was not a resume. If there are multiple resumes, then only the 1st reward is considered.
             rewards.push_back(game.getTotalRewardsCollected());
         }
-
-        // Reset grid and enemies
-        game.reset(grid);
-
+        game.removeCharacters(grid);
         decayEpsilon();
     }
 
@@ -141,7 +84,7 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
     result.destination_x = game.player1->destination_x;
     result.destination_y = game.player1->destination_y;
     result.total_rewards = game.player1->total_rewards;
-    game.reset(grid);
+    game.removeCharacters(grid);
 }
 
 void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect) {
@@ -286,5 +229,12 @@ void player::savePreviousOnTrackCoordinates(int x, int y) {
     previous_y_on_track = y;
 }
 
+void player::createEmptyGrid(vector<std::vector<int>> &grid) {
 
+    // initialize an empty grid
+    for (int i=0; i<GRID_SPAN; i++) {
+        std::vector<int> row(GRID_SPAN, 0);
+        grid.push_back(row);
+    }
+}
 

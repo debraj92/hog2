@@ -36,6 +36,8 @@ class player : public RLNN_Agent {
 
     std::unique_ptr<Logger> logger;
 
+    void createEmptyGrid(vector<std::vector<int>> &grid);
+
 public:
 
     int current_x;
@@ -68,7 +70,7 @@ public:
 
     void takeDamage(int points);
 
-    void learnGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
+    void learnGame();
 
     void playGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 

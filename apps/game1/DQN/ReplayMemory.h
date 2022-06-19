@@ -19,6 +19,8 @@
 #include "../observation.h"
 #include "../gameConstants.h"
 
+//#define ENABLE_STATE_VECTOR_DUMP 1
+
 using namespace std;
 class ReplayMemory {
 
@@ -53,12 +55,19 @@ public:
                      dones(MAX_CAPACITY_REPLAY_BUFFER)
     {
         logger = std::make_unique<Logger>(LogLevel);
-        //logger->openLogFile();
+
+#ifdef ENABLE_STATE_VECTOR_DUMP
+        logger->openLogFile();
+#endif
+
     }
 
     ~ReplayMemory() {
-        //logger->closeLogFile();
+#ifdef ENABLE_STATE_VECTOR_DUMP
+        logger->closeLogFile();
+#endif
     }
+
     void sampleBatch(int batchSize);
 
     void storeExperience(observation &current, observation &next, int action, float reward, bool done, bool isExploring);

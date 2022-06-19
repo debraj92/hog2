@@ -181,7 +181,7 @@ float gameSimulation::getTotalRewardsCollected() {
     return player1->total_rewards;
 }
 
-void gameSimulation::reset(std::vector<std::vector<int>> &grid) {
+void gameSimulation::removeCharacters(std::vector<std::vector<int>> &grid) {
     for(int i=0; i<GRID_SPAN; i++) {
         for(int j=0; j<GRID_SPAN; j++) {
             if(grid[i][j] > 0) {

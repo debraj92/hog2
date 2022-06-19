@@ -28,7 +28,7 @@ find_package(LAPACK REQUIRED)
 find_package(xtensor REQUIRED PATHS /Users/debrajray/MyComputer/RTS/xtensor/build)
 
 find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR} "./")
 
 add_definitions(-DXTENSOR_ENABLE_XSIMD)
 add_definitions(-DXTENSOR_USE_OPENMP)
@@ -39,7 +39,7 @@ add_executable(example example.cpp gameEnv.h gameEnv.cpp fixedobstacles.h fixedo
         #DQN/DDQN/DQNNet.cpp DQN/DDQN/DQNNet.h DQN/DDQN/RLNN_Agent.cpp DQN/DDQN/RLNN_Agent.h
         #DQN/Vanilla-DQN/DQNNet.cpp DQN/Vanilla-DQN/DQNNet.h DQN/Vanilla-DQN/RLNN_Agent.cpp DQN/Vanilla-DQN/RLNN_Agent.h
         #DQN/dueling-DQN-bounded/DQNNet.cpp DQN/dueling-DQN-bounded/DQNNet.h DQN/dueling-DQN-bounded/RLNN_Agent.cpp DQN/dueling-DQN-bounded/RLNN_Agent.h
-        Logger.cpp Logger.h)
+        Logger.cpp Logger.h trainingMaps.cpp trainingMaps.h testing.h)
 
 target_include_directories(example PUBLIC ${xtensor_INCLUDE_DIRS})
 target_link_libraries(example "${TORCH_LIBRARIES}" xtensor ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${OPENGL_LIBRARY} OpenMP::OpenMP_CXX)

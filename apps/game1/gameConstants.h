@@ -12,10 +12,10 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 9000;   /// Must be greater than 8
+const int MAX_EPISODES = 15000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
-const int GRID_SPAN=6; /// >= 10 when running unit tests
+const int GRID_SPAN=12;//6; /// >= 10 when running unit tests
 
 static const int MAX_STATES = 20000;
 

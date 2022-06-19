@@ -178,7 +178,7 @@ void GameEnv::createMap2() {
 }
 
 void GameEnv::train() {
-    player1->learnGame(grid, enemies);
+    player1->learnGame();
 }
 
 void GameEnv::printMap() {
