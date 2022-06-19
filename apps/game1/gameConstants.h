@@ -12,8 +12,8 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 6000;   /// Must be greater than 8
-const int SESSION_TIMEOUT = 50;
+const int MAX_EPISODES = 9000;   /// Must be greater than 8
+const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=6; /// >= 10 when running unit tests
 
@@ -102,23 +102,23 @@ const float REWARD_REDIRECT = -0.1;//-10;
 
 const float REWARD_FACTOR = 100;
 const float REWARD_REACH =  1 * REWARD_FACTOR;
-const float REWARD_ACTION_UNAVAILABLE = -0.01 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -0.2 * REWARD_FACTOR;
 const float REWARD_TRACK_FOLLOW = -0.01 * REWARD_FACTOR;
-const float REWARD_TRACK_ONE_DIV = -0.01 * REWARD_FACTOR;
-const float REWARD_TRACK_TWO_DIV = -0.01 * REWARD_FACTOR;
-const float REWARD_OFFTRACK = -0.3 * REWARD_FACTOR;
-const float REWARD_DEATH = -0.1 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -0.05 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -0.1 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -0.4 * REWARD_FACTOR;
+const float REWARD_DEATH = -0.4 * REWARD_FACTOR;
 
 
 const int MAX_LIFE = 10;
 
 const int MAX_DISTANCE = 100;
 
-const int MAX_ABSTRACT_OBSERVATIONS = 23;
+const int MAX_ABSTRACT_OBSERVATIONS = 19;
 
 const int MAX_CAPACITY_REPLAY_BUFFER = 10000;
 
-const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = MAX_EPISODES * SESSION_TIMEOUT * 0.02;
+const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = 1000;
 
 const int SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 90;
 

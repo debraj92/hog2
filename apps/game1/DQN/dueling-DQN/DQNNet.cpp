@@ -11,14 +11,17 @@
 
 using namespace std;
 
-DQNNet::DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name) : m_value(hiddenLayer1Size, 1),
-                                                                                                                                                  m_advantage(hiddenLayer1Size, outputSize)
+DQNNet::DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name) : m_value(hiddenLayer2Size, 1),
+                                                                                                                                                  m_advantage(hiddenLayer2Size, outputSize)
 {
     logger = std::make_unique<Logger>(LogLevel);
 
     logger->logDebug("Creating DQNNet ")->logDebug(module_name)->endLineDebug();
 
+
     m_sequential = nn::Sequential(nn::Linear(inputSize, hiddenLayer1Size),
+                                  nn::Sigmoid(),
+                                  nn::Linear(hiddenLayer1Size, hiddenLayer2Size),
                                   nn::Sigmoid());
 
     register_module(module_name + "_primary", m_sequential);

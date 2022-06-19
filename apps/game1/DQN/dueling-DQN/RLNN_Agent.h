@@ -42,9 +42,10 @@ class RLNN_Agent : public DQN_interface {
 public:
 
     RLNN_Agent() {
-        int sizeHiddenLayers = (2 * (MAX_ABSTRACT_OBSERVATIONS + ACTION_SPACE)) / 3;
-        policyNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "policyNet");
-        targetNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "targetNet");
+        int sizeHiddenLayers1 = (2 * (MAX_ABSTRACT_OBSERVATIONS + ACTION_SPACE)) / 3;
+        int sizeHiddenLayers2 = (MAX_ABSTRACT_OBSERVATIONS + ACTION_SPACE) / 2;
+        policyNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers1, sizeHiddenLayers2, lr, "policyNet");
+        targetNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers1, sizeHiddenLayers2, lr, "targetNet");
         // since no learning is performed on the target net
         targetNet->eval();
         startEpsilonDecay = false;
