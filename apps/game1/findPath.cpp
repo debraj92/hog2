@@ -141,3 +141,8 @@ int findPath::findDistanceToGoal(int &x, int &y) {
     node_ givenLocation(x, y);
     return aStar.getTotalDistanceToDestination() - aStar.getNodeOrder(givenLocation);
 }
+
+int findPath::getNodeOrder(int &x, int &y) {
+    node_ givenLocation(x, y);
+    return aStar.getNodeOrder(givenLocation);
+}

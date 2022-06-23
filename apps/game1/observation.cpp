@@ -81,6 +81,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
     if (fp->isOnTrack(current_x, current_y)) {
         trajectory = on_track;
         direction = fp->pathDirection(current_x, current_y);
+        countNodeNumbersInDirection = MAX_DISTANCE;
         logger->logDebug("Direction ")->logDebug(direction)->endLineDebug();
         logger->logDebug("Trajectory ")->logDebug(trajectory)->endLineDebug();
         return;
@@ -107,7 +108,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 1;
-                        directionOccurrences[temp_direction]++;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         pathFound = true;
                         matches++;
                         if(col > current_y - i and fp->isOnTrackNoMemorizing(row, col - 1)
@@ -122,6 +123,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                 max_direction_continued = direction_continued;
                 direction = argmax(directionOccurrences)[0];
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
@@ -138,7 +140,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 2;
-                        directionOccurrences[temp_direction]++;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         matches++;
                         pathFound = true;
                         if(col > current_y - i and fp->isOnTrackNoMemorizing(row, col - 1)
@@ -148,11 +150,15 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                     }
                 }
             }
-            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+            int max_direction = argmax(directionOccurrences)[0];
+            if(matches > max_matches
+            or (matches == max_matches and direction_continued > max_direction_continued)
+            or (matches == max_matches and directionOccurrences [max_direction] > countNodeNumbersInDirection)) {
                 max_matches = matches;
                 max_direction_continued = direction_continued;
-                direction = argmax(directionOccurrences)[0];
+                direction = max_direction;
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
@@ -169,7 +175,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 3;
-                        directionOccurrences[temp_direction]++;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         matches++;
                         pathFound = true;
                         if(row > current_x - i and fp->isOnTrackNoMemorizing(row - 1, col)
@@ -179,11 +185,15 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                     }
                 }
             }
-            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+            int max_direction = argmax(directionOccurrences)[0];
+            if(matches > max_matches or
+            (matches == max_matches and direction_continued > max_direction_continued)
+            or (matches == max_matches and directionOccurrences [max_direction] > countNodeNumbersInDirection)) {
                 max_matches = matches;
                 max_direction_continued = direction_continued;
-                direction = argmax(directionOccurrences)[0];
+                direction = max_direction;
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
@@ -200,7 +210,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 4;
-                        directionOccurrences[temp_direction]++;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         matches++;
                         pathFound = true;
                         if(row > current_x - i and fp->isOnTrackNoMemorizing(row - 1, col)
@@ -210,11 +220,15 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
                     }
                 }
             }
-            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+            int max_direction = argmax(directionOccurrences)[0];
+            if(matches > max_matches
+            or (matches == max_matches and direction_continued > max_direction_continued)
+            or (matches == max_matches and directionOccurrences [max_direction] > countNodeNumbersInDirection)) {
                 max_matches = matches;
                 max_direction_continued = direction_continued;
-                direction = argmax(directionOccurrences)[0];
+                direction = max_direction;
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
@@ -227,6 +241,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
     }
     trajectory = 0;
     direction = 0;
+    countNodeNumbersInDirection = 0;
 }
 
 void observation::locateEnemies(std::vector<enemy> &enemies) {

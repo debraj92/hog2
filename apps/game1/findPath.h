@@ -68,6 +68,8 @@ public:
     int compareNodeOrders(int location1_x, int location1_y, int location2_x, int location2_y);
 
     int findDistanceToGoal(int &x, int &y);
+
+    int getNodeOrder(int &x, int &y);
 };
 
 

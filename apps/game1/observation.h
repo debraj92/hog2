@@ -79,6 +79,8 @@ public:
     int trajectory_on_track = 0;
     int trajectory_off_track = 0;
 
+    int countNodeNumbersInDirection = 0;
+
     double destination_distance = 1000;
     double destination_cosine = -1;
 
