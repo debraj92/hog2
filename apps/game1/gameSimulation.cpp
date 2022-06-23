@@ -208,7 +208,7 @@ void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, std::v
     fp.visited_y_onpath = player1->current_y;
     while(not isDestinationReached()) {
         fp.calculateNextPosition();
-        grid[player1->current_x][player1->current_x] = 0;
+        grid[player1->current_x][player1->current_y] = 0;
         player1->current_x = fp.getNext_x();
         player1->current_y = fp.getNext_y();
         grid[player1->current_x][player1->current_y] = 9;

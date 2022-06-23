@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 8000;   /// Must be greater than 8
+const int MAX_EPISODES = 15000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=8; /// >= 10 when running unit tests [7 for gameSimulation test]

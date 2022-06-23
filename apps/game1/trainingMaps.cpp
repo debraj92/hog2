@@ -14,6 +14,38 @@
 using namespace std;
 
 ///////////////// Game Maps for training //////////////////////////////////////////
+
+void trainingMaps::createMapSimple(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
+
+}
+
+void trainingMaps::createMap3(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
+
+    const int TOTAL_FIXED_OBSTACLES = 5;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {2, 2, 3, 5},
+            {3, 4, 4, 4},
+            {2, 4, 7, 7},
+            {4, 4, 1, 1},
+            {5, 6, 1, 2}
+
+    };
+    createAllFixedObstacles(grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
+
+    const int TOTAL_FIXED_ENEMIES = 5;
+    int enemyLocations[TOTAL_FIXED_ENEMIES][2] = {
+            //x, y
+            {1, 3},
+            {3, 1},
+            {4, 2},
+            {6, 5},
+            {4, 6},
+
+    };
+    createFixedEnemiesAtLocations(enemies, TOTAL_FIXED_ENEMIES, enemyLocations);
+}
+
 void trainingMaps::createMap1(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
 
     /// Grid 6X6
@@ -72,8 +104,10 @@ void trainingMaps::createMap2(std::vector<std::vector<int>>& grid, std::vector<e
 
 trainingMaps::trainingMaps() {
     logger = std::make_unique<Logger>(LogLevel);
-    gameMaps.emplace_back(createMap1);
+    //gameMaps.emplace_back(createMap1);
     //gameMaps.emplace_back(createMap2);
+    gameMaps.emplace_back(createMap3);
+    //gameMaps.emplace_back(createMapSimple);
 }
 
 void trainingMaps::generateNextMap(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
@@ -186,7 +220,7 @@ void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int
     startY = sources[index_src_dest][1];
     endX = destinations[index_src_dest][0];
     endY = destinations[index_src_dest][1];
-    index_src_dest = (index_src_dest+1)%6;
+    //index_src_dest = (index_src_dest+1)%6;
 }
 
 void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
