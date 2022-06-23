@@ -21,6 +21,8 @@ void trainingMaps::createMapSimple(std::vector<std::vector<int>>& grid, std::vec
 
 void trainingMaps::createMap3(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
 
+    /// 8X8
+
     const int TOTAL_FIXED_OBSTACLES = 5;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
             //x_s, x_e, y_s, y_e
@@ -221,6 +223,15 @@ void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int
     endX = destinations[index_src_dest][0];
     endY = destinations[index_src_dest][1];
     //index_src_dest = (index_src_dest+1)%6;
+}
+
+void trainingMaps::setSourceAndDestinationFixed(int &startX, int &startY, int &endX,
+                                                   int &endY) {
+
+    startX = 2;
+    startY = 0;
+    endX = 5;
+    endY = 7;
 }
 
 void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {

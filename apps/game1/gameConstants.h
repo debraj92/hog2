@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 15000;   /// Must be greater than 8
+const int MAX_EPISODES = 3000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=8; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -90,7 +90,7 @@ const int ACTION_FOLLOW = 8;
 
 const float REWARD_FACTOR = 10;
 const float REWARD_REACH =  2 * REWARD_FACTOR;
-const float REWARD_ACTION_UNAVAILABLE = -0.1 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -0.5 * REWARD_FACTOR;
 const float REWARD_TRACK_ONE_DIV = -0.1 * REWARD_FACTOR;
 const float REWARD_TRACK_TWO_DIV = -0.1 * REWARD_FACTOR;
 const float REWARD_DEATH = -2 * REWARD_FACTOR;
