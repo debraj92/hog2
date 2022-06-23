@@ -10,6 +10,7 @@
 #include "../DQN_interface.h"
 #include "../ReplayMemory.h"
 #include <string>
+#include <testing.h>
 
 using namespace std;
 
@@ -74,6 +75,18 @@ public:
     void printAction(int action);
 
     void plotLosses();
+
+#ifdef TESTING
+
+    /// For testing only
+    int seedAction = 1;
+    int seedExplore = 2;
+
+    virtual ReplayMemory* getAccessToReplayMemory() {
+        return &memory;
+    }
+
+#endif
 };
 
 

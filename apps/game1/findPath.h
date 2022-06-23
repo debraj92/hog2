@@ -26,6 +26,7 @@ class findPath {
     int current_y;
     int next_x;
     int next_y;
+
     AStar_ aStar;
 
     int destination_x;
@@ -36,6 +37,9 @@ class findPath {
 
 public:
 
+    int visited_x_onpath = -1;
+    int visited_y_onpath = -1;
+
     findPath(std::vector<std::vector<int>> &grid, int src_x, int src_y, int dest_x, int dest_y) : aStar(grid, src_x, src_y, dest_x, dest_y){
         current_x = src_x;
         current_y = src_y;
@@ -44,16 +48,26 @@ public:
         logger = std::make_unique<Logger>(LogLevel);
     }
     bool findPathToDestination();
-    void calculateNextPosition(int x, int y);
+    void calculateNextPosition();
+    void getNextPositionAfterGivenLocation(int &given_x, int &given_y, int &next_x, int &next_y);
     int getNext_x();
     int getNext_y();
     bool isOnTrack(int current_x, int current_y);
+    bool isOnTrackNoMemorizing(int current_x, int current_y);
     int pathDirection(int current_x, int current_y);
     void populateEnemyObstacles(vector<enemy> &enemies);
     int getDistanceToDestination();
     void printMap();
     void changeSourceAndDestination(int startX, int startY, int endX, int endY);
     void changeMap(vector<vector<int>> &grid);
+
+    /**
+     * Compare two nodes in the A* path
+     * @return +1 if first > second, -1 is first < second, 0 otherwise
+     */
+    int compareNodeOrders(int location1_x, int location1_y, int location2_x, int location2_y);
+
+    int findDistanceToGoal(int &x, int &y);
 };
 
 

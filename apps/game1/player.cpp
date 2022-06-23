@@ -37,7 +37,8 @@ void player::learnGame() {
         if (not resumed) {
             /// If resumed, then do not change previous episode's source and destination.
             train.generateNextMap(grid, enemies);
-            train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
+            train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
 
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
@@ -87,17 +88,18 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
     game.removeCharacters(grid);
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
     logger->logDebug("player::observe")->endLineDebug();
     ob.playerX = this->current_x;
     ob.playerY = this->current_y;
+    ob.destinationX = this->destination_x;
+    ob.destinationY = this->destination_y;
     // TODO: Add to input state tensor
     ob.playerLifeLeft = static_cast<float>(this->life_left);
 
-    if (!isRedirect) {
-        ob.locateTrajectoryAndDirection(fp, destination_x, destination_y);
-        ob.locateRelativeTrajectory();
-    }
+    ob.locateTrajectoryAndDirection(fp);
+    ob.locateRelativeTrajectory();
+    ob.findDestination();
 
     if (ob.direction > 0) {
         ob.locateEnemies(enemies);
@@ -105,26 +107,11 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     }
 }
 
-int player::getDirection() {
-    return fp->pathDirection(current_x, current_y);
-}
-
 void player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
     logger->logDebug("Find path to destination")->endLineDebug();
     fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    // TODO: Enable when enemy handling is perfect
     //fp->populateEnemyObstacles(enemies);
     fp->findPathToDestination();
-}
-
-void player::follow() {
-    fp->calculateNextPosition(current_x, current_y);
-    current_x = fp->getNext_x();
-    current_y = fp->getNext_y();
-}
-
-bool player::isOnTrack() {
-    return fp->isOnTrack(current_x, current_y);
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
@@ -143,33 +130,11 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
         resumeCount = resumeCount == MAX_RESUME? 0 : resumeCount;
     }
 
-    previous_x_on_track = current_x;
-    previous_y_on_track = current_y;
     destination_x = dest_x;
     destination_y = dest_y;
     life_left = MAX_LIFE;
     total_rewards = 0;
 
-}
-
-void player::findNewRoute(vector<std::vector<int>> &grid, observation &ob, vector<enemy> &enemies, int src_x, int src_y, int dst_x,
-                          int dst_y) {
-    logger->logDebug("Find new temporary route to destination")->endLineDebug();
-    fp_temp_reroute = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    fp_temp_reroute->populateEnemyObstacles(enemies);
-    fp_temp_reroute->findPathToDestination();
-    ob.rerouteDistance = fp_temp_reroute->getDistanceToDestination();
-}
-
-int player::switchToNewRoute(observation &ob) {
-    logger->logDebug("switchToNewRoute")->endLineDebug();
-    if (ob.rerouteDistance < 1000) {
-        logger->logDebug("New distance ")->logDebug(ob.rerouteDistance)->endLineDebug();
-        // implies last action was re-route
-        fp = fp_temp_reroute;
-        return 0;
-    }
-    return -1;
 }
 
 int player::selectAction(observation& currentState) {
@@ -184,9 +149,30 @@ double player::learnWithDQN() {
     return RLNN_Agent::learnWithDQN();
 }
 
-void player::recordRestoreLocation() {
-    restoreCellX = previous_x_on_track;
-    restoreCellY = previous_y_on_track;
+bool player::recordRestoreLocation(std::vector<enemy> &enemies) {
+    bool isRestoreLocationSet = false;
+    restoreCellX = fp->visited_x_onpath;
+    restoreCellY = fp->visited_y_onpath;
+    int nextCellX = -1, nextCellY = -1;
+    while(not isRestoreLocationSet) {
+        fp->getNextPositionAfterGivenLocation(restoreCellX, restoreCellY, nextCellX, nextCellY);
+        restoreCellX = nextCellX;
+        restoreCellY = nextCellY;
+        if (restoreCellX == destination_x and restoreCellY == destination_y) {
+            // cannot be restored
+            return false;
+        }
+        isRestoreLocationSet = true;
+        for (enemy e: enemies) {
+            if (e.current_x == restoreCellX and e.current_y == restoreCellY) {
+                isRestoreLocationSet = false;
+                break;
+            }
+        }
+    }
+
+    // restored
+    return true;
 }
 
 void player::plotRewards(vector<double> &rewards) {
@@ -224,11 +210,6 @@ bool player::isResuming() {
     return (not stopLearning) and playerDiedInPreviousEpisode and resumeCount < MAX_RESUME;
 }
 
-void player::savePreviousOnTrackCoordinates(int x, int y) {
-    previous_x_on_track = x;
-    previous_y_on_track = y;
-}
-
 void player::createEmptyGrid(vector<std::vector<int>> &grid) {
 
     // initialize an empty grid
@@ -237,4 +218,6 @@ void player::createEmptyGrid(vector<std::vector<int>> &grid) {
         grid.push_back(row);
     }
 }
+
+
 

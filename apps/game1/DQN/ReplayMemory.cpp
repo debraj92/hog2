@@ -155,12 +155,6 @@ void ReplayMemory::logStateVector(observation &ob) {
     if (ob.obstacle_front_right <= VISION_RADIUS) {
         state += "FR |";
     }
-    if (ob.obstacle_left <= VISION_RADIUS) {
-        state += "L |";
-    }
-    if (ob.obstacle_right <= VISION_RADIUS) {
-        state += "R";
-    }
     state += " Enmy: ";
     if (ob.enemy_distance_1 < MAX_DISTANCE) {
         state += "1. D:"+to_string(ob.enemy_distance_1)+" A:"+to_string(ob.enemy_angle_1 * 10) + " | ";

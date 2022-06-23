@@ -7,6 +7,7 @@
 #include <torch/torch.h>
 #include <utility>
 #include <vector>
+#include <testing.h>
 
 #include <iostream>
 
@@ -21,7 +22,11 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
         logger->logDebug("Selecting random action")->endLineDebug();
         std::uniform_int_distribution<> distri(0, ACTION_SPACE-1);
         std::default_random_engine re;
+#ifdef TESTING
+        re.seed(seedAction++);
+#else
         re.seed(std::chrono::system_clock::now().time_since_epoch().count());
+#endif
         action = distri(re);
     } else {
         logger->logDebug("Selecting max action")->endLineDebug();
@@ -124,12 +129,6 @@ void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &
 void RLNN_Agent::printAction(int action) {
     logger->logDebug("RLNN_Agent::printAction ");
     switch(action) {
-        case ACTION_DODGE_LEFT:
-            logger->logDebug("ACTION_DODGE_LEFT")->endLineDebug();
-            break;
-        case ACTION_DODGE_RIGHT:
-            logger->logDebug("ACTION_DODGE_RIGHT")->endLineDebug();
-            break;
         case ACTION_DODGE_DIAGONAL_LEFT:
             logger->logDebug("ACTION_DODGE_DIAGONAL_LEFT")->endLineDebug();
             break;
@@ -138,15 +137,6 @@ void RLNN_Agent::printAction(int action) {
             break;
         case ACTION_STRAIGHT:
             logger->logDebug("ACTION_STRAIGHT")->endLineDebug();
-            break;
-        case ACTION_REROUTE:
-            logger->logDebug("ACTION_REROUTE")->endLineDebug();
-            break;
-        case ACTION_REDIRECT:
-            logger->logDebug("ACTION_REDIRECT")->endLineDebug();
-            break;
-        case ACTION_SWITCH:
-            logger->logDebug("ACTION_SWITCH")->endLineDebug();
             break;
         default:
             logger->logDebug("INVALID ACTION")->endLineDebug();
@@ -172,7 +162,12 @@ bool RLNN_Agent::isExplore(int episodeCount) {
     double upper_bound = 1;
     std::uniform_real_distribution<double> unif(lower_bound,upper_bound);
     std::default_random_engine re;
+#ifdef TESTING
+    re.seed(seedExplore++);
+#else
     re.seed(std::chrono::system_clock::now().time_since_epoch().count());
+#endif
+
     return unif(re) < epsilon;
 }
 

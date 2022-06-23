@@ -50,6 +50,8 @@ class AStar_ {
 
     void reset();
 
+    void orderNodeLinks(node_ root);
+
 
 public:
 
@@ -84,6 +86,20 @@ public:
     void changeSourceAndDestination(int startX, int startY, int endX, int endY);
 
     void changeMap(vector<vector<int>> &grid);
+
+    /**
+     * Compare two nodes in the A* path
+     * @param first
+     * @param second
+     * @return +1 if first > second, -1 is first < second, 0 otherwise
+     */
+    int compareNodeOrders(node_ first, node_ second);
+
+    void eraseDestinationNode();
+
+    int getNodeOrder(node_ n);
+
+    int getTotalDistanceToDestination();
 };
 
 

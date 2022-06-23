@@ -12,6 +12,12 @@
 #include "findPath.h"
 #include "TestResult.h"
 #include "Logger.h"
+#include <testing.h>
+
+/// Testing
+#ifdef TESTING
+#include <gtest/gtest.h>
+#endif
 
 ///// Change header-folder to load different RL models
 #include "DQN/dueling-DQN/RLNN_Agent.h"
@@ -25,7 +31,7 @@ class player : public RLNN_Agent {
 
     const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
 
-    const std::string DQN_MODEL_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/clean-code/hog2/apps/game1/DQN";
+    const std::string DQN_MODEL_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/model";
 
     shared_ptr<findPath> fp;
     shared_ptr<findPath> fp_temp_reroute;
@@ -42,8 +48,6 @@ public:
 
     int current_x;
     int current_y;
-    int previous_x_on_track;
-    int previous_y_on_track;
     int source_x;
     int source_y;
     int destination_x;
@@ -74,19 +78,9 @@ public:
 
     void playGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 
-    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect);
-
-    int getDirection();
+    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies);
 
     void findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
-
-    void follow();
-
-    int switchToNewRoute(observation &ob);
-
-    bool isOnTrack();
-
-    void findNewRoute(std::vector<std::vector<int>> &grid, observation &ob, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
     int selectAction(observation& currentState);
 
@@ -94,13 +88,26 @@ public:
 
     double learnWithDQN();
 
-    void recordRestoreLocation();
+    bool recordRestoreLocation(std::vector<enemy> &enemies);
 
     void plotRewards(vector<double> &rewards);
 
     bool isResuming();
 
-    void savePreviousOnTrackCoordinates(int x, int y);
+    /// Testing
+#ifdef TESTING
+    ReplayMemory* getAccessToReplayMemory() {
+        return RLNN_Agent::getAccessToReplayMemory();
+    }
+
+    friend class Simulation_test;
+    FRIEND_TEST(Simulation_test, test1);
+    FRIEND_TEST(Simulation_test, test2);
+    FRIEND_TEST(Simulation_test, test3);
+
+#endif
+
+
 };
 
 

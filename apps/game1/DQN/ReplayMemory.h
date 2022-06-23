@@ -19,6 +19,13 @@
 #include "../observation.h"
 #include "../gameConstants.h"
 
+#include <testing.h>
+
+/// Testing
+#ifdef TESTING
+#include <gtest/gtest.h>
+#endif
+
 //#define ENABLE_STATE_VECTOR_DUMP 1
 
 using namespace std;
@@ -75,6 +82,16 @@ public:
     int getBufferSize();
 
     void logStateVector(observation &ob);
+
+    /// Testing
+#ifdef TESTING
+
+    friend class Simulation_test;
+    FRIEND_TEST(Simulation_test, test1);
+    FRIEND_TEST(Simulation_test, test2);
+    FRIEND_TEST(Simulation_test, test3);
+
+#endif
 
 };
 

@@ -26,7 +26,6 @@ class observation {
         int id;
     };
 
-    void setDirectionAngles(int (&angles)[9]);
     void updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties);
 
 public:
@@ -37,9 +36,15 @@ public:
 
     int playerX = 0;
     int playerY = 0;
+
+    int destinationX = 0;
+    int destinationY = 0;
+
     float playerLifeLeft = 0;
 
     int direction = 0; // one hot (8 values + 1 unknown = total 9 combinations)
+
+    bool isGoalInSight = false;
 
     /**
      * Assumption: Maximum 4 enemies within the vision radius
@@ -83,17 +88,20 @@ public:
     int obstacle_front_left = MAX_DISTANCE;
     int obstacle_front_right = MAX_DISTANCE;
 
-    void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int destination_x, int destination_y);
+    void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp);
     void locateRelativeTrajectory();
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);
     void locateEnemies(std::vector<enemy>& enemies);
 
     void printData();
 
-    void redirect(int current_x, int current_y, int destination_x, int destination_y);
-    void resetRerouteDistance();
-
     void flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]);
+
+    void setGoalInSight(int probeX, int probeY);
+
+    void findDestination();
+
+    void printRelativeTrajectory();
 };
 
 #endif //EXAMPLE_OBSERVATION_H
