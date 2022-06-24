@@ -13,6 +13,7 @@
 #include "TestResult.h"
 #include "Logger.h"
 #include <testing.h>
+#include "FOV_CNN/CNN_controller.h"
 
 /// Testing
 #ifdef TESTING
@@ -34,13 +35,15 @@ class player : public RLNN_Agent {
     const std::string DQN_MODEL_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/model";
 
     shared_ptr<findPath> fp;
-    shared_ptr<findPath> fp_temp_reroute;
 
     int episodeCount;
 
     int dqnTargetUpdateNextEpisode = MAX_EPISODES / 8;
 
     std::unique_ptr<Logger> logger;
+
+    vector<std::vector<int>> grid;
+    CNN_controller cnnController;
 
     void createEmptyGrid(vector<std::vector<int>> &grid);
 
@@ -62,7 +65,8 @@ public:
 
     float total_rewards = 0;
 
-    player(bool isTrainingMode) {
+    player(bool isTrainingMode) : cnnController(grid), RLNN_Agent(cnnController) {
+        createEmptyGrid(grid);
         RLNN_Agent::setTrainingMode(isTrainingMode);
         if(not isTrainingMode) {
             RLNN_Agent::loadModel(DQN_MODEL_PATH);

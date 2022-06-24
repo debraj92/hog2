@@ -30,13 +30,22 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
         action = distri(re);
     } else {
         logger->logDebug("Selecting max action")->endLineDebug();
+        float obstaclesFOV[1][FOV_WIDTH][FOV_WIDTH];
+        float enemiesFOV[1][FOV_WIDTH][FOV_WIDTH];
+        float pathFOV[1][FOV_WIDTH][FOV_WIDTH];
+        cnn.populateFOVChannels(currentState.playerX, currentState.playerY, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+        auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
+        auto tensor_obstacles = torch::from_blob(obstaclesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
+        auto tensor_enemies = torch::from_blob(enemiesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
+        auto tensor_path = torch::from_blob(pathFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
+        auto tensor_fov_channels= torch::cat({tensor_path, tensor_obstacles, tensor_enemies}, 1);
+
         float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
         currentState.flattenObservationToVector(observation_vector);
-        auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
         Tensor stateTensor = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options);
         {
             torch::NoGradGuard no_grad;
-            auto fp1 = policyNet->forwardPass(stateTensor.unsqueeze(0));
+            auto fp1 = policyNet->forwardPass(tensor_fov_channels, stateTensor.unsqueeze(0));
             auto actions = policyNet->forwardPassAdvantage(fp1);
             action = torch::argmax(actions).detach().item<int>();
             //cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
@@ -62,15 +71,15 @@ double RLNN_Agent::learnWithDQN() {
 
     // states have dimension: batch_size X observation_feature_size
     // output would have dimensions: batch_size X action_space
-    auto fp1 = policyNet->forwardPass(memory.tensor_states);
+    auto fp1 = policyNet->forwardPass(memory.tensor_fov_channels_current, memory.tensor_states);
     auto s_v = policyNet->forwardPassValue(fp1);
     auto s_a = policyNet->forwardPassAdvantage(fp1);
 
-    auto fp2 = policyNet->forwardPass(memory.tensor_next_states);
+    auto fp2 = policyNet->forwardPass(memory.tensor_fov_channels_next, memory.tensor_next_states);
     auto ns_v = policyNet->forwardPassValue(fp2);
     auto ns_a = policyNet->forwardPassAdvantage(fp2);
 
-    auto fp3 = targetNet->forwardPass(memory.tensor_next_states);
+    auto fp3 = targetNet->forwardPass(memory.tensor_fov_channels_next, memory.tensor_next_states);
     auto nst_v = targetNet->forwardPassValue(fp3);
     auto nst_a = targetNet->forwardPassAdvantage(fp3);
 
@@ -105,7 +114,7 @@ void RLNN_Agent::saveModel(const string &file) {
 }
 
 void RLNN_Agent::updateTargetNet() {
-    std::stringstream stream1, stream2, stream3;
+    std::stringstream stream1, stream2, stream3, stream4;
 
     policyNet->saveModel(stream1, DQNNet::SEQUENTIAL);
     targetNet->loadModel(stream1, DQNNet::SEQUENTIAL);
@@ -113,6 +122,8 @@ void RLNN_Agent::updateTargetNet() {
     targetNet->loadModel(stream2, DQNNet::VALUE);
     policyNet->saveModel(stream3, DQNNet::ADVANTAGE);
     targetNet->loadModel(stream3, DQNNet::ADVANTAGE);
+    policyNet->saveModel(stream4, DQNNet::CNN1);
+    targetNet->loadModel(stream4, DQNNet::CNN1);
 }
 
 void RLNN_Agent::decayEpsilon() {

@@ -70,6 +70,9 @@ public:
     int findDistanceToGoal(int &x, int &y);
 
     int getNodeOrder(int &x, int &y);
+
+    // For CNN
+    void markPathInGrid(vector<vector<int>> &grid, int srcX, int srcY, int dstX, int dstY);
 };
 
 

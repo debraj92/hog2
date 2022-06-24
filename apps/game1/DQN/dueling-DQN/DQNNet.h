@@ -25,6 +25,8 @@ class DQNNet : public nn::Module {
 
     nn::Linear m_advantage;
 
+    torch::nn::Conv2d m_conv1;
+
     int count = 1;
 
     unique_ptr<optim::Adam> optimizer;
@@ -37,12 +39,13 @@ public:
     enum MODEL_TYPE{
         SEQUENTIAL,
         VALUE,
-        ADVANTAGE
+        ADVANTAGE,
+        CNN1
     };
 
-    DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name);
+    DQNNet(double learning_rate, const std::string& module_name);
 
-    Tensor forwardPass(const Tensor& inputs);
+    Tensor forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstraction);
 
     Tensor forwardPassValue(const Tensor& inputs);
 

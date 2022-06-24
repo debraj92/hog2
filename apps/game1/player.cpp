@@ -20,8 +20,6 @@ void player::takeDamage(int points) {
 void player::learnGame() {
 
     vector<enemy> enemies;
-    vector<std::vector<int>> grid;
-    createEmptyGrid(grid);
     trainingMaps train;
 
     vector<double> rewards;
@@ -37,20 +35,24 @@ void player::learnGame() {
         if (not resumed) {
             /// If resumed, then do not change previous episode's source and destination.
             train.generateNextMap(grid, enemies);
-            //train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
+            train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
             //train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
-            train.setSourceAndDestinationFixed(src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestinationFixed(src_x, src_y, dest_x, dest_y);
 
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
             tempEnemies = enemies;
+            cnnController.markPath(src_x, src_y, dest_x, dest_y);
         }
         game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
         logger->logInfo("Episode ")->logInfo(episodeCount)->endLineInfo();
 
         if (episodeCount % dqnTargetUpdateNextEpisode == 0) {
-            updateTargetNet();
+            float percent_complete = (static_cast <float>(episodeCount) * 100) / static_cast <float>(MAX_EPISODES);
+            if (percent_complete < 80) {
+                updateTargetNet();
+            }
         }
 
         game.learnToPlay(grid, tempEnemies);

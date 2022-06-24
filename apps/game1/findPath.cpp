@@ -146,3 +146,16 @@ int findPath::getNodeOrder(int &x, int &y) {
     node_ givenLocation(x, y);
     return aStar.getNodeOrder(givenLocation);
 }
+
+void findPath::markPathInGrid(vector<vector<int>> &grid, int srcX, int srcY, int dstX, int dstY) {
+    int marker = 1;
+
+    while(srcX != dstX or srcY != dstY) {
+        grid[srcX][srcY] = marker++;
+        int nextX = -1, nextY = -1;
+        getNextPositionAfterGivenLocation(srcX, srcY, nextX, nextY);
+        srcX = nextX;
+        srcY = nextY;
+    }
+    grid[srcX][srcY] = marker;
+}

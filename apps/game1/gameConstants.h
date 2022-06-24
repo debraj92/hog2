@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 3000;   /// Must be greater than 8
+const int MAX_EPISODES = 3500;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=8; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -36,6 +36,8 @@ const int NW=6;
 const int SE=7;
 const int SW=8;
 const int VISION_RADIUS = 2;
+const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
+
 
 const int N_Angle=0;
 const int S_Angle=180;
@@ -88,13 +90,13 @@ const int ACTION_FOLLOW = 8;
 
 // REWARDS
 
-const float REWARD_FACTOR = 10;
-const float REWARD_REACH =  2 * REWARD_FACTOR;
-const float REWARD_ACTION_UNAVAILABLE = -0.5 * REWARD_FACTOR;
-const float REWARD_TRACK_ONE_DIV = -0.1 * REWARD_FACTOR;
-const float REWARD_TRACK_TWO_DIV = -0.1 * REWARD_FACTOR;
-const float REWARD_DEATH = -2 * REWARD_FACTOR;
-const float REWARD_OFFTRACK = -2 * REWARD_FACTOR;
+const float REWARD_FACTOR = 20;
+const float REWARD_REACH =  5 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -2 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -1 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -1 * REWARD_FACTOR;
+const float REWARD_DEATH = -4 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -4 * REWARD_FACTOR;
 
 
 const int MAX_LIFE = 10;
@@ -115,7 +117,13 @@ const double MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY = 0.5;
 
 const int MAX_REWARD_POINTS_IN_PLOT = 500;
 
-const int MARCH_TO_GOAL_DISTANCE = 2;
+const int PLAYER_ID = 9;
+
+const int MAX_CHANNELS_CNN = 3; // enemies, path, obstacle
+
+const int INPUT_SIZE = 161;//89;
+const int HIDDEN_LAYER_1_SIZE = 100;//60;
+const int HIDDEN_LAYER_2_SIZE = 60;//40;
 
 namespace RTS {
     enum LOG_LEVEL {
