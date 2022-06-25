@@ -35,8 +35,8 @@ void player::learnGame() {
         if (not resumed) {
             /// If resumed, then do not change previous episode's source and destination.
             train.generateNextMap(grid, enemies);
-            train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
-            //train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
+            train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
             //train.setSourceAndDestinationFixed(src_x, src_y, dest_x, dest_y);
 
             /// If resumed, then do not change enemy positions from last episode
@@ -145,7 +145,9 @@ int player::selectAction(observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
+    if (not next.isGoalInSight) {
+        RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
+    }
 }
 
 double player::learnWithDQN() {

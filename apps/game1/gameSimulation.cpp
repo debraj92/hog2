@@ -139,7 +139,7 @@ void gameSimulation::fight(std::vector<enemy> &enemies) {
 }
 
 
-float gameSimulation::calculateReward(vector<enemy> &enemies, observation &ob, int action_error) {
+float gameSimulation::calculateReward(vector<enemy> &enemies, const observation &ob, int action_error) {
     if(ob.playerLifeLeft <= 0) {
         return REWARD_DEATH;
     }
@@ -223,7 +223,7 @@ void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, std::v
 }
 
 bool gameSimulation::isMDPDone(observation &nextObservation) {
-    bool mdpDone = nextObservation.trajectory_on_track or nextObservation.trajectory_off_track or player1->life_left <= 0 or nextObservation.isGoalInSight;
+    bool mdpDone = nextObservation.trajectory_on_track or nextObservation.trajectory_off_track or player1->life_left <= 0;
     logger->logDebug("MDPDone ")->logDebug(mdpDone)->endLineDebug();
     return mdpDone;
 }

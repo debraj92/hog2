@@ -24,7 +24,7 @@ class gameSimulation : public coordinatesUtil {
     int movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &currentObservation, int* error);
     void moveEnemies(std::vector<enemy>& enemies);
     void fight(std::vector<enemy>& enemies);
-    float calculateReward(std::vector<enemy>& enemies, observation &ob, int action_error);
+    float calculateReward(std::vector<enemy>& enemies, const observation &ob, int action_error);
     void populateEnemies(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
 
     bool isDestinationReached();
