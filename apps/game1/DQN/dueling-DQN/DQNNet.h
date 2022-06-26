@@ -25,7 +25,7 @@ class DQNNet : public nn::Module {
 
     nn::Linear m_advantage;
 
-    torch::nn::Conv2d m_conv1;
+    //torch::nn::Conv2d m_conv1;
 
     int count = 1;
 
@@ -45,7 +45,8 @@ public:
 
     DQNNet(double learning_rate, const std::string& module_name);
 
-    Tensor forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstraction);
+    //Tensor forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstraction);
+    Tensor forwardPass(const Tensor& inputs_abstraction);
 
     Tensor forwardPassValue(const Tensor& inputs);
 

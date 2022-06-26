@@ -19,6 +19,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     while(!isDestinationReached() && player1->life_left > 0 && time < SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
+        currentObservation.printEnemyDistanceAndAngles();
         // Next Action
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
         logger->printBoardInfo(grid);

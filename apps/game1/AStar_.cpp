@@ -34,9 +34,7 @@ bool AStar_::findPathToDestination() {
             logger->logDebug("Number of nodes to destination ")->logDebug(countOfNodesToDestination)->endLineDebug();
             orderNodeLinks(root);
             eraseDestinationNode();
-            if (LogLevel == LOG_LEVEL::DEBUG) {
-                printTrack(root);
-            }
+            printTrack(root);
             return true;
         }
         vector<pair<int, int>> childNodes;

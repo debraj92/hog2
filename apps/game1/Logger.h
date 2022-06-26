@@ -26,6 +26,8 @@ public:
 
     static LOG_LEVEL GLOBAL_LOG_LEVEL;
 
+    bool turnLogOff = false;
+
     Logger(LOG_LEVEL l) : level(l) {
 
     }

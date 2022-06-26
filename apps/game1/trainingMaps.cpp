@@ -26,11 +26,11 @@ void trainingMaps::createMap3(std::vector<std::vector<int>>& grid, std::vector<e
     const int TOTAL_FIXED_OBSTACLES = 5;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
             //x_s, x_e, y_s, y_e
-            {2, 2, 3, 5},
-            {3, 4, 4, 4},
-            {2, 4, 7, 7},
-            {4, 4, 1, 1},
-            {5, 6, 1, 2}
+            {3, 3, 4, 6},
+            {4, 5, 5, 5},
+            {3, 5, 8, 9},
+            {5, 5, 2, 2},
+            {6, 7, 2, 3}
 
     };
     createAllFixedObstacles(grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
@@ -38,11 +38,11 @@ void trainingMaps::createMap3(std::vector<std::vector<int>>& grid, std::vector<e
     const int TOTAL_FIXED_ENEMIES = 5;
     int enemyLocations[TOTAL_FIXED_ENEMIES][2] = {
             //x, y
-            {1, 3},
-            {3, 1},
+            {2, 4},
             {4, 2},
-            {6, 5},
-            {4, 6},
+            {5, 3},
+            {7, 6},
+            {5, 7},
 
     };
     createFixedEnemiesAtLocations(enemies, TOTAL_FIXED_ENEMIES, enemyLocations);
@@ -201,28 +201,34 @@ void trainingMaps::unregisterAllCreateMapFunctions() {
 
 void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int &endX,
                                                    int &endY) {
-    int sources[6][2] = {
+    int sources[9][2] = {
             {0, 0},
             {GRID_SPAN-1, GRID_SPAN-1},
             {0, (GRID_SPAN-1)/2},
             {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
+            {(GRID_SPAN)/2 + 1, GRID_SPAN-1},
             {(GRID_SPAN-1)/2, 0},
+            {GRID_SPAN-4, 0},
+            {GRID_SPAN - 1, GRID_SPAN-4},
+            {0, 5},
     };
-    int destinations[6][2] = {
+    int destinations[9][2] = {
             {GRID_SPAN-1, GRID_SPAN-1},
             {0, (GRID_SPAN-1)/2},
             {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
+            {(GRID_SPAN)/2 + 1, GRID_SPAN-1},
             {GRID_SPAN-1, (GRID_SPAN-1)/2},
-            {GRID_SPAN/2, GRID_SPAN - 1},
+            {GRID_SPAN/2 + 3, GRID_SPAN - 1},
+            {0, GRID_SPAN - 1},
+            {0, GRID_SPAN - 3},
+            {GRID_SPAN-1, 2},
     };
 
     startX = sources[index_src_dest][0];
     startY = sources[index_src_dest][1];
     endX = destinations[index_src_dest][0];
     endY = destinations[index_src_dest][1];
-    //index_src_dest = (index_src_dest+1)%6;
+    index_src_dest = (index_src_dest+1)%9;
 }
 
 void trainingMaps::setSourceAndDestinationFixed(int &startX, int &startY, int &endX,

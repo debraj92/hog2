@@ -460,5 +460,20 @@ void observation::printRelativeTrajectory() {
 
 }
 
+void observation::printEnemyDistanceAndAngles() {
+    if (enemy_distance_1 < MAX_DISTANCE) {
+        logger->logDebug("Enemy1 Distance: ")->logDebug(enemy_distance_1)->endLineDebug();
+        logger->logDebug("Enemy1 Angle: ")->logDebug(enemy_angle_1)->endLineDebug();
+    }
+    if (enemy_distance_2 < MAX_DISTANCE) {
+        logger->logDebug("Enemy2 Distance: ")->logDebug(enemy_distance_2)->endLineDebug();
+        logger->logDebug("Enemy2 Angle: ")->logDebug(enemy_angle_2)->endLineDebug();
+    }
+    if (enemy_distance_3 < MAX_DISTANCE) {
+        logger->logDebug("Enemy3 Distance: ")->logDebug(enemy_distance_3)->endLineDebug();
+        logger->logDebug("Enemy3 Angle: ")->logDebug(enemy_angle_3)->endLineDebug();
+    }
+}
+
 
 

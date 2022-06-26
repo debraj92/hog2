@@ -104,6 +104,8 @@ public:
     void findDestination();
 
     void printRelativeTrajectory();
+
+    void printEnemyDistanceAndAngles();
 };
 
 #endif //EXAMPLE_OBSERVATION_H

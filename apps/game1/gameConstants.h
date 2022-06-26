@@ -12,10 +12,10 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 3500;   /// Must be greater than 8
+const int MAX_EPISODES = 15000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
-const int GRID_SPAN=8; /// >= 10 when running unit tests [7 for gameSimulation test]
+const int GRID_SPAN=10; /// >= 10 when running unit tests [7 for gameSimulation test]
 
 static const int MAX_STATES = 20000;
 
@@ -90,13 +90,13 @@ const int ACTION_FOLLOW = 8;
 
 // REWARDS
 
-const float REWARD_FACTOR = 20;
-const float REWARD_REACH =  5 * REWARD_FACTOR;
-const float REWARD_ACTION_UNAVAILABLE = -2 * REWARD_FACTOR;
-const float REWARD_TRACK_ONE_DIV = -1 * REWARD_FACTOR;
-const float REWARD_TRACK_TWO_DIV = -1 * REWARD_FACTOR;
-const float REWARD_DEATH = -4 * REWARD_FACTOR;
-const float REWARD_OFFTRACK = -4 * REWARD_FACTOR;
+const float REWARD_FACTOR = 10;
+const float REWARD_REACH =  0.1 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -0.5 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -0.1 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -0.1 * REWARD_FACTOR;
+const float REWARD_DEATH = -2 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -2 * REWARD_FACTOR;
 
 
 const int MAX_LIFE = 10;
@@ -121,9 +121,20 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // enemies, path, obstacle
 
+/*
 const int INPUT_SIZE = 161;//89;
 const int HIDDEN_LAYER_1_SIZE = 100;//60;
 const int HIDDEN_LAYER_2_SIZE = 60;//40;
+*/
+/*
+const int INPUT_SIZE = 89;
+const int HIDDEN_LAYER_1_SIZE = 60;
+const int HIDDEN_LAYER_2_SIZE = 40;
+ */
+
+const int INPUT_SIZE = 17;
+const int HIDDEN_LAYER_1_SIZE = 11;
+const int HIDDEN_LAYER_2_SIZE = 9;
 
 namespace RTS {
     enum LOG_LEVEL {

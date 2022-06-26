@@ -12,8 +12,8 @@
 using namespace std;
 
 DQNNet::DQNNet(double learning_rate, const std::string& module_name) : m_value(HIDDEN_LAYER_2_SIZE, 1),
-m_advantage(HIDDEN_LAYER_2_SIZE, ACTION_SPACE),
-m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 16, /*kernel_size=*/3)))
+m_advantage(HIDDEN_LAYER_2_SIZE, ACTION_SPACE)//,
+//m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 8, /*kernel_size=*/3)))
 {
     logger = std::make_unique<Logger>(LogLevel);
 
@@ -27,13 +27,13 @@ m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 16, /*kernel_size=
                                   nn::Sigmoid());
 
     register_module(module_name + "_primary", m_sequential);
-    register_module(module_name + "_primary_cnn_1", m_conv1);
+    //register_module(module_name + "_primary_cnn_1", m_conv1);
     register_module(module_name + "_secondary_value", m_value);
     register_module(module_name + "_secondary_advantage", m_advantage);
 
     optimizer = std::make_unique<optim::Adam>(this->parameters(), torch::optim::AdamOptions(learning_rate));
 }
-
+/*
 Tensor DQNNet::forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstraction) {
     logger->logDebug("DQNNet::forwardPass")->endLineDebug();
     optimizer->zero_grad();
@@ -43,6 +43,13 @@ Tensor DQNNet::forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstracti
     auto cnn_with_abstractions = torch::cat({cnn_out, inputs_abstraction}, 1);
     //cout<<cnn_with_abstractions<<endl;
     return m_sequential->forward(cnn_with_abstractions);
+}
+*/
+
+Tensor DQNNet::forwardPass(const Tensor& inputs_abstraction) {
+    logger->logDebug("DQNNet::forwardPass")->endLineDebug();
+    optimizer->zero_grad();
+    return m_sequential->forward(inputs_abstraction);
 }
 
 Tensor DQNNet::forwardPassValue(const Tensor &inputs) {
@@ -58,7 +65,7 @@ void DQNNet::saveModel(const string &file) {
     torch::save(m_sequential, file + "/dueling-DQN/model/m_sequential.pt");
     torch::save(m_value, file + "/dueling-DQN/model/m_value.pt");
     torch::save(m_advantage, file + "/dueling-DQN/model/m_adv.pt");
-    torch::save(m_conv1, file + "/dueling-DQN/model/m_conv1.pt");
+    //torch::save(m_conv1, file + "/dueling-DQN/model/m_conv1.pt");
 }
 
 void DQNNet::loadModel(const string &file) {
@@ -66,7 +73,7 @@ void DQNNet::loadModel(const string &file) {
     torch::load(m_sequential, file + "/dueling-DQN/model/m_sequential.pt");
     torch::load(m_value, file + "/dueling-DQN/model/m_value.pt");
     torch::load(m_advantage, file + "/dueling-DQN/model/m_adv.pt");
-    torch::load(m_conv1, file + "/dueling-DQN/model/m_conv1.pt");
+    //torch::load(m_conv1, file + "/dueling-DQN/model/m_conv1.pt");
 }
 
 
@@ -126,9 +133,11 @@ void DQNNet::loadModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_typ
         case ADVANTAGE:
             torch::load(m_advantage, stream);
             break;
+            /*
         case CNN1:
             torch::load(m_conv1, stream);
             break;
+             */
     }
 }
 
@@ -143,10 +152,12 @@ void DQNNet::saveModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_typ
         case ADVANTAGE:
             torch::save(m_advantage, stream);
             break;
-        case CNN1:
-            torch::save(m_conv1, stream);
-            break;
-    }
+        /*
+    case CNN1:
+        torch::save(m_conv1, stream);
+        break;
+         */
+}
 }
 
 
