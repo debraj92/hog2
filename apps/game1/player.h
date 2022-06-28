@@ -74,6 +74,8 @@ public:
         logger = std::make_unique<Logger>(LogLevel);
     }
 
+    void loadExistingModel();
+
     void initialize(int src_x, int src_y, int dest_x, int dest_y);
 
     void takeDamage(int points);

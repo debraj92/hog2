@@ -116,6 +116,11 @@ public:
     /// Testing
 #ifdef TESTING
 
+    int seedSamplingBatch = 1;
+
+    friend class ReplayMemory_test;
+    FRIEND_TEST(ReplayMemory_test, test_cnn);
+
     friend class Simulation_test;
     FRIEND_TEST(Simulation_test, test1);
     FRIEND_TEST(Simulation_test, test2);

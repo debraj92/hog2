@@ -27,8 +27,6 @@ class gameSimulation : public coordinatesUtil {
     float calculateReward(std::vector<enemy>& enemies, const observation &ob, int action_error);
     void populateEnemies(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
 
-    bool isDestinationReached();
-
     observation createObservationAfterAction(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation ob, int action);
 
     bool isEpisodeComplete();
@@ -52,6 +50,8 @@ public:
     float getTotalRewardsCollected();
 
     void removeCharacters(std::vector<std::vector<int>> &grid);
+
+    bool isDestinationReached();
 
 };
 

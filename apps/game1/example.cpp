@@ -34,13 +34,15 @@ int main() {
     increaseStackSize();
 
     using namespace RTS;
-    Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::DEBUG;
-
-    //player player1(true);
-    //player1.learnGame();
+    Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
 
+    player player1(false);
+    //player1.loadExistingModel();
+    player1.learnGame();
 
+
+    /*
     vector<vector<int>> grid;
     for (int i=0; i<GRID_SPAN; i++) {
         std::vector<int> row(GRID_SPAN, 0);
@@ -51,31 +53,36 @@ int main() {
     trainingMaps::createMap3(grid, enemies);
 
 
+
     player player1(false);
     TestResult t{};
+     */
 
-
+    // FAIL - stuck
+    //player1.playGame(grid, enemies, 0, 0, GRID_SPAN-1, GRID_SPAN-2, t);
+    //player1.playGame(grid, enemies, GRID_SPAN-1, GRID_SPAN-1, 0, (GRID_SPAN-1)/2, t);
 
 
     // ok
-    //player1.playGame(grid, enemies, GRID_SPAN-1, GRID_SPAN-1, 0, (GRID_SPAN-1)/2, t);
+
 
     //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN-1, GRID_SPAN-2, t);
     //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN/2+3, GRID_SPAN-1, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 0, 0, GRID_SPAN-1, t);
+
     //player1.playGame(grid, enemies, GRID_SPAN-1, 3, 2, 0, t);
 
-    //player1.playGame(grid, enemies, 0, 0, GRID_SPAN -1, GRID_SPAN -1, t);
+    //-143 player1.playGame(grid, enemies, 0, 0, GRID_SPAN -1, GRID_SPAN -1, t);
     //player1.playGame(grid, enemies, GRID_SPAN-1, 1, 0, 2, t);
     //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN/2+2, GRID_SPAN-1, t);
-    //player1.playGame(grid, enemies, 0, 8, GRID_SPAN-1, 6, t);
+    //8 player1.playGame(grid, enemies, 0, 8, GRID_SPAN-1, 6, t);
     //player1.playGame(grid, enemies, 5, 0, GRID_SPAN-1, GRID_SPAN-1, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 2, 0, 5, t);
+    //-184 player1.playGame(grid, enemies, GRID_SPAN-1, 2, 0, 5, t);
 
     // Fail - killed
 
     // stuck
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 5, 0, 6, t);
-
+    //-12 player1.playGame(grid, enemies, GRID_SPAN-1, 5, 0, 6, t);
+    //-123 player1.playGame(grid, enemies, GRID_SPAN-1, GRID_SPAN-1, 0, (GRID_SPAN-1)/2, t);
+    //player1.playGame(grid, enemies, GRID_SPAN-1, 0, 0, GRID_SPAN-1, t);
 
 }

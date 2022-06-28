@@ -13,19 +13,22 @@ using namespace std;
 
 void ReplayMemory::sampleBatch(const int batchSize) {
     logger->logDebug("ReplayMemory::sampleBatch")->endLineDebug();
-    if ((not isBufferFull) and idx == 0) {
+    if ((not isBufferFull) and idx <= 1) {
         return;
     }
+
+#ifdef TESTING
+    random::seed(seedSamplingBatch);
+#else
     random::seed(time(nullptr));
+#endif
+
     auto random_indices = random::randint<int>({batchSize}, 0, getBufferSize() - 1, random::get_default_random_engine());
 
     vector<long> temp_actions;
     vector<float> temp_rewards;
     vector<long> temp_dones;
-    vector<torch::Tensor> stateSequence(batchSize);
-    vector<torch::Tensor> nextStateSequence(batchSize);
 
-    /*
     float obstaclesFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float pathFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
@@ -33,7 +36,7 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     float pathFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float obstaclesFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
-    */
+
     auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
     auto options2 = torch::TensorOptions().dtype(torch::kLong).device(torch::kCPU);
 
@@ -44,7 +47,7 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 
     int i = 0;
     for(int random_index: random_indices) {
-    /*
+
         copy(&obstaclesFOVcurrent[random_index][0][0], &obstaclesFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV_current_temp[i][0][0]);
         copy(&enemiesFOVcurrent[random_index][0][0], &enemiesFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV_current_temp[i][0][0]);
         copy(&pathFOVcurrent[random_index][0][0], &pathFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOV_current_temp[i][0][0]);
@@ -52,7 +55,7 @@ void ReplayMemory::sampleBatch(const int batchSize) {
         copy(&obstaclesFOVnext[random_index][0][0], &obstaclesFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV_next_temp[i][0][0]);
         copy(&enemiesFOVnext[random_index][0][0], &enemiesFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV_next_temp[i][0][0]);
         copy(&pathFOVnext[random_index][0][0], &pathFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOV_next_temp[i][0][0]);
-    */
+
         temp_actions.emplace_back(buffer_actions[random_index]);
         temp_rewards.emplace_back(rewards[random_index]);
         temp_dones.emplace_back(dones[random_index] ? 1 : 0);
@@ -64,7 +67,7 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     tensor_actions = torch::from_blob(temp_actions.data(), {batchSize}, options2).clone();
     tensor_rewards = torch::from_blob(temp_rewards.data(), {batchSize}, options).clone();
     tensor_dones = torch::from_blob(temp_dones.data(), {batchSize}, options2).clone();
-    /*
+
     auto tensor_obstacles_current = torch::from_blob(obstaclesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     auto tensor_enemies_current = torch::from_blob(enemiesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     auto tensor_path_current = torch::from_blob(pathFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
@@ -76,7 +79,7 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     auto tensor_path_next = torch::from_blob(pathFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     // dimensions: Batch X Channels X FOV_WIDTH X FOV_WIDTH
     tensor_fov_channels_next = torch::cat({tensor_path_next, tensor_obstacles_next, tensor_enemies_next}, 1).clone();
-    */
+
 }
 
 void ReplayMemory::storeExperience(observation &current, observation &next, int action, float reward, bool done) {
@@ -90,8 +93,9 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
     /**
      * Populate FOV for CNN
      */
-    //cnn.populateFOVChannels(current.playerX, current.playerY, obstaclesFOVcurrent[idx], enemiesFOVcurrent[idx], pathFOVcurrent[idx]);
-    //cnn.populateFOVChannels(next.playerX, next.playerY, obstaclesFOVnext[idx], enemiesFOVnext[idx], pathFOVnext[idx]);
+     //TODO: Current must be taken before observation actually changes when the environment is dynamic
+    cnn.populateFOVChannels(current.playerX, current.playerY, current.direction, obstaclesFOVcurrent[idx], enemiesFOVcurrent[idx], pathFOVcurrent[idx]);
+    cnn.populateFOVChannels(next.playerX, next.playerY, next.direction, obstaclesFOVnext[idx], enemiesFOVnext[idx], pathFOVnext[idx]);
 
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
