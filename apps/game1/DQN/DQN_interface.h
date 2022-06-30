@@ -12,6 +12,7 @@ class DQN_interface {
 public:
 
     bool stopLearning = false;
+    int episodeNumber = 0;
 
     DQN_interface(){}
     virtual ~DQN_interface(){}

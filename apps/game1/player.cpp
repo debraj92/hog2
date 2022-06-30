@@ -32,6 +32,7 @@ void player::learnGame() {
     float deathCount = 0;
     float inferenceCount = 0;
     for(episodeCount = 1; episodeCount <= MAX_EPISODES; episodeCount++) {
+        episodeNumber = episodeCount;
         // pick a random source and destination
         resumed = isResuming();
         if (not resumed) {
@@ -85,8 +86,8 @@ void player::learnGame() {
     plotLosses();
     plotRewards(rewards);
 
-    logger->logInfo("Destination reach %")->logInfo(destinationCount * 100 / inferenceCount);
-    logger->logInfo("Death %")->logInfo(deathCount * 100 / inferenceCount);
+    logger->logInfo("Destination reach %")->logInfo(destinationCount * 100 / inferenceCount)->endLineInfo();
+    logger->logInfo("Death %")->logInfo(deathCount * 100 / inferenceCount)->endLineInfo();
 
 }
 
@@ -126,11 +127,11 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     }
 }
 
-void player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
+bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
     logger->logDebug("Find path to destination")->endLineDebug();
     fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
     //fp->populateEnemyObstacles(enemies);
-    fp->findPathToDestination();
+    return fp->findPathToDestination();
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {

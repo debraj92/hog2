@@ -43,7 +43,11 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     tensor_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
     tensor_next_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
 
-    tensor_states = torch::empty({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
+    //tensor_states = torch::empty({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
+
+    // Debugging
+    current_state_coordinates_selected.clear();
+    next_state_coordinates_selected.clear();
 
     int i = 0;
     for(int random_index: random_indices) {
@@ -61,6 +65,11 @@ void ReplayMemory::sampleBatch(const int batchSize) {
         temp_dones.emplace_back(dones[random_index] ? 1 : 0);
         tensor_states.slice(0, i,i+1) = torch::from_blob(buffer_states[random_index].data(), {MAX_ABSTRACT_OBSERVATIONS}, options);
         tensor_next_states.slice(0, i,i+1) = torch::from_blob(buffer_next_states[random_index].data(), {MAX_ABSTRACT_OBSERVATIONS}, options);
+
+        // Debugging
+        current_state_coordinates_selected.emplace_back(current_state_coordinates[random_index]);
+        next_state_coordinates_selected.emplace_back(next_state_coordinates[random_index]);
+
         i++;
     }
 
@@ -96,6 +105,10 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
      //TODO: Current must be taken before observation actually changes when the environment is dynamic
     cnn.populateFOVChannels(current.playerX, current.playerY, current.direction, obstaclesFOVcurrent[idx], enemiesFOVcurrent[idx], pathFOVcurrent[idx]);
     cnn.populateFOVChannels(next.playerX, next.playerY, next.direction, obstaclesFOVnext[idx], enemiesFOVnext[idx], pathFOVnext[idx]);
+
+    // Debugging
+    current_state_coordinates[idx] = std::make_pair(current.playerX, current.playerY);
+    next_state_coordinates[idx] = std::make_pair(next.playerX, next.playerY);
 
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);

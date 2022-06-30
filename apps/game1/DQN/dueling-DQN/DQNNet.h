@@ -10,6 +10,8 @@
 #include <string>
 #include "../../gameConstants.h"
 #include "../../Logger.h"
+#include "../../plot/pbPlots.hpp"
+#include "../../plot/supportLib.hpp"
 
 using namespace torch;
 using namespace std;

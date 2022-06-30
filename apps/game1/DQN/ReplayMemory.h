@@ -73,12 +73,20 @@ public:
     torch::Tensor tensor_fov_channels_current;
     torch::Tensor tensor_fov_channels_next;
 
+    /// debugging only
+    vector<pair<int, int>> current_state_coordinates;
+    vector<pair<int, int>> next_state_coordinates;
+    vector<pair<int, int>> current_state_coordinates_selected;
+    vector<pair<int, int>> next_state_coordinates_selected;
+
     ReplayMemory(CNN_controller& cnn1) : buffer_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
                      buffer_next_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
                      buffer_actions(MAX_CAPACITY_REPLAY_BUFFER),
                      rewards(MAX_CAPACITY_REPLAY_BUFFER),
                      dones(MAX_CAPACITY_REPLAY_BUFFER),
-                     cnn(cnn1)
+                     cnn(cnn1),
+                     current_state_coordinates(MAX_CAPACITY_REPLAY_BUFFER),
+                     next_state_coordinates(MAX_CAPACITY_REPLAY_BUFFER)
     {
         logger = std::make_unique<Logger>(LogLevel);
 

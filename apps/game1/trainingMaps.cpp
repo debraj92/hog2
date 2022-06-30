@@ -234,10 +234,10 @@ void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int
 void trainingMaps::setSourceAndDestinationFixed(int &startX, int &startY, int &endX,
                                                    int &endY) {
 
-    startX = 2;
+    startX = 0;
     startY = 0;
-    endX = 5;
-    endY = 7;
+    endX = GRID_SPAN - 1;
+    endY = GRID_SPAN - 1;
 }
 
 void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {

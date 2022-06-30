@@ -37,7 +37,7 @@ int main() {
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
 
-    player player1(false);
+    player player1(true);
     //player1.loadExistingModel();
     player1.learnGame();
 
@@ -56,8 +56,9 @@ int main() {
 
     player player1(false);
     TestResult t{};
-     */
 
+    player1.playGame(grid, enemies, 0, 0, GRID_SPAN-1, GRID_SPAN-1, t);
+    */
     // FAIL - stuck
     //player1.playGame(grid, enemies, 0, 0, GRID_SPAN-1, GRID_SPAN-2, t);
     //player1.playGame(grid, enemies, GRID_SPAN-1, GRID_SPAN-1, 0, (GRID_SPAN-1)/2, t);

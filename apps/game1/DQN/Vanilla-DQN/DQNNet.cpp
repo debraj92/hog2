@@ -11,47 +11,63 @@
 
 using namespace std;
 
-DQNNet::DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name)
+DQNNet::DQNNet(double learning_rate, const std::string& module_name) :
+        m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 16, /*kernel_size=*/3))),
+        m_pool1(nn::AvgPool2dOptions({2,2}).stride({2, 2}))
 {
-    cout<<"Creating DQNNet "<<module_name<<endl;
+    logger = std::make_unique<Logger>(LogLevel);
 
-    m_sequential = nn::Sequential(nn::Linear(inputSize, hiddenLayer1Size),
+    logger->logDebug("Creating DQNNet ")->logDebug(module_name)->endLineDebug();
+
+    m_sequential = nn::Sequential(nn::Linear(INPUT_SIZE, HIDDEN_LAYER_1_SIZE),
                                   nn::Sigmoid(),
-                                  nn::Linear(hiddenLayer1Size, outputSize));
+                                  nn::Linear(HIDDEN_LAYER_1_SIZE, HIDDEN_LAYER_2_SIZE),
+                                  nn::Sigmoid(),
+                                  nn::Linear(HIDDEN_LAYER_2_SIZE, ACTION_SPACE));
 
     register_module(module_name, m_sequential);
+    register_module(module_name + "_primary_cnn_1", m_conv1);
+    register_module(module_name + "_primary_pool_1", m_pool1);
 
     optimizer = std::make_unique<optim::Adam>(this->parameters(), torch::optim::AdamOptions(learning_rate));
 }
 
-Tensor DQNNet::forwardPass(const Tensor& inputs) {
-    cout<<"DQNNet::forwardPass"<<endl;
+Tensor DQNNet::forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstraction) {
+    logger->logDebug("DQNNet::forwardPass")->endLineDebug();
     optimizer->zero_grad();
-    return m_sequential->forward(inputs);
+    auto cnn_out1 = torch::relu(m_conv1(fov_cnn));
+    auto cnn_out2 = m_pool1(cnn_out1);
+    auto cnn_out = nn::Flatten()(cnn_out2);
+    auto cnn_with_abstractions = torch::cat({cnn_out, inputs_abstraction}, 1);
+    //cout<<cnn_with_abstractions<<endl;
+    return m_sequential->forward(cnn_with_abstractions);
 }
 
-void DQNNet::saveModel(string &file) {
-    cout<<"DQNNet::saveModel"<<endl;
-    torch::save(m_sequential, file + "/m_sequential.pt");
+void DQNNet::saveModel(const string &file) {
+    logger->logInfo("DQNNet::saveModel from file")->endLineInfo();
+    torch::save(m_sequential, file + "/vanilla-DQN/model/m_sequential.pt");
+    torch::save(m_conv1, file + "/vanilla-DQN/model/m_conv1.pt");
+    torch::save(m_pool1, file + "/vanilla-DQN/model/m_pool1.pt");
 }
 
-void DQNNet::loadModel(string &file) {
-    cout<<"DQNNet::loadModel"<<endl;
-    torch::load(m_sequential, file + "/m_sequential.pt");
+void DQNNet::loadModel(const string &file) {
+    logger->logInfo("DQNNet::loadModel from file")->endLineInfo();
+    torch::load(m_sequential, file + "/vanilla-DQN/model/m_sequential.pt");
+    torch::load(m_conv1, file + "/vanilla-DQN/model/m_conv1.pt");
+    torch::load(m_pool1, file + "/vanilla-DQN/model/m_pool1.pt");
 }
 
 
 double DQNNet::computeLossAndBackPropagate(const Tensor& expected, const Tensor& predicted) {
-    cout<<"computeLossAndBackPropagate "<<endl;
+    logger->logDebug("computeLossAndBackPropagate")->endLineDebug();
 
     auto lossfn = nn::SmoothL1Loss();
 
     auto loss = lossfn(predicted, expected);
-    cout<<"Network Loss: "<<loss<<endl;
     double loss_value = loss.data().detach().item<double>();
-    losses.push_back(loss_value);
-    loss_count.push_back(count++);
+    logger->logDebug("Network Loss: ")->logDebug(loss_value)->endLineDebug();
 
+    losses.push_back(loss_value);
     loss.backward();
 
     /// Gradient clipping
@@ -67,16 +83,26 @@ double DQNNet::computeLossAndBackPropagate(const Tensor& expected, const Tensor&
 
 
 void DQNNet::plotLoss() {
-    cout<<"Network Loss"<<endl;
-    /*for(double loss: losses) {
-        cout<<loss<<endl;
-    }*/
+    logger->logDebug("Network Loss")->endLineDebug();
+
+    vector<double> losses_averaged;
+    vector<double> episodes;
+    int avg_window_size = losses.size() / MAX_REWARD_POINTS_IN_PLOT;
+    for(int i=0; i<losses.size(); i+=avg_window_size) {
+        double sum = 0;
+        for(int j=i; j<i+avg_window_size and j<losses.size(); j++) {
+            sum += losses[j];
+        }
+        losses_averaged.push_back(sum/avg_window_size);
+        episodes.push_back(i+1);
+    }
+
     RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
     StringReference *errorMessage = new StringReference();
-    auto success = DrawScatterPlot(imageReference, 1000, 1000, &loss_count, &losses, errorMessage);
+    auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &losses_averaged, errorMessage);
     if(success){
         vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot/loss_output.png");
+        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot2/loss_output.png");
         DeleteImage(imageReference->image);
     }else{
         cerr << "Error: ";
@@ -88,12 +114,33 @@ void DQNNet::plotLoss() {
 
 }
 
-void DQNNet::loadModel(stringstream &stream) {
-    torch::load(m_sequential, stream);
+void DQNNet::loadModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_type) {
+    switch(model_type) {
+        case SEQUENTIAL:
+            torch::load(m_sequential, stream);
+            break;
+        case CNN1:
+            torch::load(m_conv1, stream);
+            break;
+        case POOL1:
+            torch::load(m_pool1, stream);
+            break;
+    }
+
 }
 
-void DQNNet::saveModel(stringstream &stream) {
-    torch::save(m_sequential, stream);
+void DQNNet::saveModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_type) {
+    switch(model_type) {
+        case SEQUENTIAL:
+            torch::save(m_sequential, stream);
+            break;
+        case CNN1:
+            torch::save(m_conv1, stream);
+            break;
+        case POOL1:
+            torch::save(m_pool1, stream);
+            break;
+    }
 }
 
 

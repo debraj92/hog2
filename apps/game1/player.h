@@ -21,9 +21,9 @@
 #endif
 
 ///// Change header-folder to load different RL models
-#include "DQN/dueling-DQN/RLNN_Agent.h"
+//#include "DQN/dueling-DQN/RLNN_Agent.h"
 //#include "DQN/DDQN/RLNN_Agent.h"
-//#include "DQN/Vanilla-DQN/RLNN_Agent.h"
+#include "DQN/Vanilla-DQN/RLNN_Agent.h"
 //#include "DQN/dueling-DQN-bounded/RLNN_Agent.h"
 
 using namespace RTS;
@@ -56,7 +56,7 @@ public:
     int destination_x;
     int destination_y;
     int life_left;
-    bool isExploring = false;
+    bool isExploring = true;
 
     bool playerDiedInPreviousEpisode = false;
     int resumeCount = 0;
@@ -86,7 +86,7 @@ public:
 
     void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies);
 
-    void findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
+    bool findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
     int selectAction(observation& currentState);
 
