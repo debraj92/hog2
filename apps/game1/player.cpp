@@ -32,7 +32,6 @@ void player::learnGame() {
     float deathCount = 0;
     float inferenceCount = 0;
     for(episodeCount = 1; episodeCount <= MAX_EPISODES; episodeCount++) {
-        episodeNumber = episodeCount;
         // pick a random source and destination
         resumed = isResuming();
         if (not resumed) {
@@ -45,7 +44,6 @@ void player::learnGame() {
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
             tempEnemies = enemies;
-            //cnnController.markPath(src_x, src_y, dest_x, dest_y);
         }
         game.player1->initialize(src_x, src_y, dest_x, dest_y);
 

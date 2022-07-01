@@ -40,7 +40,6 @@ public:
     DQNNet(double learning_rate, const std::string& module_name);
 
     Tensor forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstraction);
-    //Tensor forwardPass(const Tensor& inputs_abstraction);
 
     void saveModel(const string &file);
 

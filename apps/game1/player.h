@@ -65,7 +65,7 @@ public:
 
     float total_rewards = 0;
 
-    player(bool isTrainingMode) : cnnController(grid), RLNN_Agent(cnnController) {
+    player(bool isTrainingMode) : cnnController(grid) {
         createEmptyGrid(grid);
         RLNN_Agent::setTrainingMode(isTrainingMode);
         if(not isTrainingMode) {

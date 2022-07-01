@@ -31,10 +31,8 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 
     float obstaclesFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
-
     float obstaclesFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
-
 
     auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
     auto options2 = torch::TensorOptions().dtype(torch::kLong).device(torch::kCPU);
@@ -42,17 +40,11 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     tensor_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
     tensor_next_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
 
-    // Debugging
-    current_state_coordinates_selected.clear();
-    next_state_coordinates_selected.clear();
-    state_rep_selected.clear();
-
     int i = 0;
     for(int random_index: random_indices) {
 
         copy(&obstaclesFOVcurrent[random_index][0][0], &obstaclesFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV_current_temp[i][0][0]);
         copy(&enemiesFOVcurrent[random_index][0][0], &enemiesFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV_current_temp[i][0][0]);
-
         copy(&obstaclesFOVnext[random_index][0][0], &obstaclesFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV_next_temp[i][0][0]);
         copy(&enemiesFOVnext[random_index][0][0], &enemiesFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV_next_temp[i][0][0]);
 
@@ -61,11 +53,6 @@ void ReplayMemory::sampleBatch(const int batchSize) {
         temp_dones.emplace_back(dones[random_index] ? 1 : 0);
         tensor_states.slice(0, i,i+1) = torch::from_blob(buffer_states[random_index].data(), {MAX_ABSTRACT_OBSERVATIONS}, options);
         tensor_next_states.slice(0, i,i+1) = torch::from_blob(buffer_next_states[random_index].data(), {MAX_ABSTRACT_OBSERVATIONS}, options);
-
-        // Debugging
-        current_state_coordinates_selected.emplace_back(current_state_coordinates[random_index]);
-        next_state_coordinates_selected.emplace_back(next_state_coordinates[random_index]);
-        state_rep_selected.emplace_back(state_rep[random_index]);
 
         i++;
     }
@@ -78,14 +65,6 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     auto tensor_enemies_current = torch::from_blob(enemiesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     // dimensions: Batch X Channels X FOV_WIDTH X FOV_WIDTH
     tensor_fov_channels_current = torch::cat({tensor_obstacles_current, tensor_enemies_current}, 1).clone();
-    /*
-    cout<<tensor_fov_channels_current<<"\n\n"<<endl;
-    for(int v=0; v<batchSize; v++) {
-        cout<<v<<". "<<tensor_fov_channels_current.select(0, v)<<endl;
-    }
-     */
-
-
 
     auto tensor_obstacles_next = torch::from_blob(obstaclesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     auto tensor_enemies_next = torch::from_blob(enemiesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
@@ -112,10 +91,6 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
     copy(&next.obstaclesFOV[0][0], &next.obstaclesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOVnext[idx][0][0]);
     copy(&next.enemiesFOV[0][0], &next.enemiesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOVnext[idx][0][0]);
 
-    // Debugging
-    current_state_coordinates[idx] = std::make_pair(current.playerX, current.playerY);
-    next_state_coordinates[idx] = std::make_pair(next.playerX, next.playerY);
-
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);
     buffer_states[idx].assign(observation_vector, observation_vector + MAX_ABSTRACT_OBSERVATIONS);
@@ -125,13 +100,8 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
     buffer_actions[idx] = action;
     rewards[idx] = reward;
     dones[idx] = done;
-    state_rep[idx] = to_string(current.playerX)+"_"+to_string(current.playerY)+"_"+to_string(current.direction)+"_"+
-            to_string(pow(2,4)*current.trajectory_left + pow(2,3)*current.trajectory_on_track +
-            pow(2,2)*current.trajectory_front + pow(2,1)*current.trajectory_off_track +
-            pow(2,0)*current.trajectory_right);
 
     idx = (idx + 1) % MAX_CAPACITY_REPLAY_BUFFER;
-
 }
 
 int ReplayMemory::getBufferSize() {

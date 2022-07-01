@@ -41,18 +41,8 @@ Tensor DQNNet::forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstracti
     auto cnn_out2 = m_pool1(cnn_out1);
     auto cnn_out = nn::Flatten()(cnn_out2);
     auto cnn_with_abstractions = torch::cat({cnn_out, inputs_abstraction}, 1);
-    //cout<<cnn_with_abstractions<<endl;
     return m_sequential->forward(cnn_with_abstractions);
 }
-
-
-/*
-Tensor DQNNet::forwardPass(const Tensor& inputs_abstraction) {
-    logger->logDebug("DQNNet::forwardPass")->endLineDebug();
-    optimizer->zero_grad();
-    return m_sequential->forward(inputs_abstraction);
-}
-*/
 
 void DQNNet::saveModel(const string &file) {
     logger->logInfo("DQNNet::saveModel from file")->endLineInfo();
@@ -136,8 +126,6 @@ void DQNNet::loadModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_typ
         case POOL1:
             torch::load(m_pool1, stream);
             break;
-
-
     }
 
 }
@@ -153,7 +141,6 @@ void DQNNet::saveModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_typ
         case POOL1:
             torch::save(m_pool1, stream);
             break;
-
     }
 }
 

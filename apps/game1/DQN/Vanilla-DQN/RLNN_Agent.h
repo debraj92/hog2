@@ -27,19 +27,9 @@ class RLNN_Agent : public DQN_interface {
     const double epsilon_min = 0.01;
     const double epsilon_decay = 0.998;
     const double alpha = 1;
-    const int epsilon_annealing_percent = 50;
+    const int epsilon_annealing_percent = 60;
 
-    struct state_info {
-        vector<float> q_values;
-        torch::Tensor fov_channel;
-    };
-    /// debugging
-    map<string, vector<float>> state_q;
-    vector<float> q;
-
-    map<string, state_info> state_q_;
-
-    int batchSize = 2000;
+    int batchSize = 4000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;
@@ -48,13 +38,11 @@ class RLNN_Agent : public DQN_interface {
     bool isTrainingMode;
     bool startEpsilonDecay;
 
-    CNN_controller& cnn;
-
     bool isExplore(int episodeCount);
 
 public:
 
-    RLNN_Agent(CNN_controller& cnn1) : memory(cnn1), cnn(cnn1) {
+    RLNN_Agent() {
         policyNet = std::make_unique<DQNNet>(lr, "policyNet");
         targetNet = std::make_unique<DQNNet>(lr, "targetNet");
         // since no learning is performed on the target net
@@ -71,7 +59,6 @@ public:
 
     // TODO: Interface changes in other DQNs
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring);
-
 
     /// provide file path
     void saveModel(const string &file);

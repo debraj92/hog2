@@ -11,7 +11,6 @@ void FOV_Filters::init() {
     // N filter
     for(int i=0; i<FOV_WIDTH; i++) {
         for(int j=0; j<FOV_WIDTH; j++) {
-            //direction_N[i][j] = {i, j};
             direction_mapping[N][i][j] = {i, j};
         }
     }
@@ -21,7 +20,6 @@ void FOV_Filters::init() {
     for(int i=FOV_WIDTH; i>=0; i--) {
         y=0;
         for(int j=FOV_WIDTH; j>=0; j--) {
-            //direction_S[x][y] = {i-1, j-1};
             direction_mapping[S][x][y] = {i-1, j-1};
             y++;
         }

@@ -57,8 +57,6 @@ class ReplayMemory {
 
     double exploitation_window_start = MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY;
 
-    CNN_controller &cnn;
-
     void storeExperience(observation &current, observation &next, int action, float reward, bool done);
 
 public:
@@ -68,27 +66,16 @@ public:
     torch::Tensor tensor_actions;
     torch::Tensor tensor_rewards;
     torch::Tensor tensor_dones;
+
     // CNN
     torch::Tensor tensor_fov_channels_current;
     torch::Tensor tensor_fov_channels_next;
 
-    /// debugging only
-    vector<pair<int, int>> current_state_coordinates;
-    vector<pair<int, int>> next_state_coordinates;
-    vector<pair<int, int>> current_state_coordinates_selected;
-    vector<pair<int, int>> next_state_coordinates_selected;
-    vector<string> state_rep;
-    vector<string> state_rep_selected;
-
-    ReplayMemory(CNN_controller& cnn1) : buffer_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
+    ReplayMemory() : buffer_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
                      buffer_next_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
                      buffer_actions(MAX_CAPACITY_REPLAY_BUFFER),
                      rewards(MAX_CAPACITY_REPLAY_BUFFER),
-                     dones(MAX_CAPACITY_REPLAY_BUFFER),
-                     cnn(cnn1),
-                     current_state_coordinates(MAX_CAPACITY_REPLAY_BUFFER),
-                     next_state_coordinates(MAX_CAPACITY_REPLAY_BUFFER),
-                                         state_rep(MAX_CAPACITY_REPLAY_BUFFER)
+                     dones(MAX_CAPACITY_REPLAY_BUFFER)
     {
         logger = std::make_unique<Logger>(LogLevel);
 

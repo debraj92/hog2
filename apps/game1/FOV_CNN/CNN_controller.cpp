@@ -33,8 +33,7 @@ void CNN_controller::populateFOVChannels (
 void
 CNN_controller::populateFOVChannelsForLocation(int grid_x, int grid_y, int fov_x, int fov_y,
                                                float (&obstaclesFOV)[FOV_WIDTH][FOV_WIDTH],
-                                               float (&enemiesFOV)[FOV_WIDTH][FOV_WIDTH]//,
-                                               /*float (&pathFOV)[FOV_WIDTH][FOV_WIDTH]*/) {
+                                               float (&enemiesFOV)[FOV_WIDTH][FOV_WIDTH]) {
     if(grid_x < 0 or grid_x >= GRID_SPAN or grid_y < 0 or grid_y >= GRID_SPAN) {
         // location unavailable
         obstaclesFOV[fov_x][fov_y] = 1;
