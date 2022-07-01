@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 6000;   /// Must be greater than 8
+const int MAX_EPISODES = 15000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=10; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -70,9 +70,9 @@ const int two_deviation_E = 24;
 const int ACTION_DODGE_DIAGONAL_LEFT = 0;
 const int ACTION_DODGE_DIAGONAL_RIGHT = 1;
 const int ACTION_STRAIGHT = 2;
-
 const int ACTION_DODGE_RIGHT = 3;
 const int ACTION_DODGE_LEFT = 4;
+
 
 const int ACTION_SWITCH = 7;
 
@@ -80,7 +80,7 @@ const int ACTION_SWITCH = 7;
 const int ACTION_REROUTE = 6;
 const int ACTION_REDIRECT = 5;//7;
 
-const int ACTION_SPACE = 3;
+const int ACTION_SPACE = 5;
 
 
 // deprecated action
@@ -111,7 +111,7 @@ const int MAX_LIFE = 10;
 
 const int MAX_DISTANCE = 100;
 
-const int MAX_ABSTRACT_OBSERVATIONS = 17;
+const int MAX_ABSTRACT_OBSERVATIONS = 20;
 
 const int MAX_CAPACITY_REPLAY_BUFFER = 10000;
 
@@ -136,8 +136,8 @@ const int HIDDEN_LAYER_2_SIZE = 60;//40;
 */
 
 
-const int INPUT_SIZE = 33;//89;
-const int HIDDEN_LAYER_1_SIZE = 22;//60;
+const int INPUT_SIZE = 36;//89;
+const int HIDDEN_LAYER_1_SIZE = 23;//60;
 const int HIDDEN_LAYER_2_SIZE = 16;//40;
 
 /*

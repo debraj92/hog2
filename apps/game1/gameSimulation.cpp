@@ -125,6 +125,12 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
         case ACTION_DODGE_DIAGONAL_RIGHT:
             *error = setDodgeDiagonalRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
+        case ACTION_DODGE_LEFT:
+            *error = setDodgeLeftActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
+            break;
+        case ACTION_DODGE_RIGHT:
+            *error = setDodgeRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
+            break;
         default:
             logger->logInfo("ERROR: Wrong next action")->endLineInfo();
     }

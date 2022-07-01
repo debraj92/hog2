@@ -48,8 +48,10 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
             torch::NoGradGuard no_grad;
             auto actions = policyNet->forwardPass(tensor_fov_channels, tensor_states);
             action = torch::argmax(actions).detach().item<int>();
-            //cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
-            //cout<<"direction: "<<currentState.direction<<endl;
+            cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
+            cout<<"direction: "<<currentState.direction<<endl;
+            cout<<"FOV\n"<<tensor_fov_channels<<endl;
+            cout<<"Abstract\n"<<tensor_states<<endl;
         }
     }
 
@@ -127,13 +129,19 @@ void RLNN_Agent::printAction(int action) {
     logger->logDebug("RLNN_Agent::printAction ");
     switch(action) {
         case ACTION_DODGE_DIAGONAL_LEFT:
-            logger->logDebug("ACTION_DODGE_DIAGONAL_LEFT")->endLineDebug();
+            logger->logDebug("ACTION_DIAGONAL_LEFT")->endLineDebug();
             break;
         case ACTION_DODGE_DIAGONAL_RIGHT:
-            logger->logDebug("ACTION_DODGE_DIAGONAL_RIGHT")->endLineDebug();
+            logger->logDebug("ACTION_DIAGONAL_RIGHT")->endLineDebug();
             break;
         case ACTION_STRAIGHT:
             logger->logDebug("ACTION_STRAIGHT")->endLineDebug();
+            break;
+        case ACTION_DODGE_LEFT:
+            logger->logDebug("ACTION_LEFT")->endLineDebug();
+            break;
+        case ACTION_DODGE_RIGHT:
+            logger->logDebug("ACTION_RIGHT")->endLineDebug();
             break;
         default:
             logger->logDebug("INVALID ACTION")->endLineDebug();

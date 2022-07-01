@@ -54,6 +54,28 @@ void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) 
             break;
         }
     }
+
+    // left
+    next_x = x;
+    next_y = y;
+
+    for(int i=1; i<=VISION_RADIUS; i++) {
+        if (coordinates.setDodgeLeftActionCoordinates(next_x, next_y, direction) == -1) {
+            obstacle_left = i;
+            break;
+        }
+    }
+
+    // right
+    next_x = x;
+    next_y = y;
+
+    for(int i=1; i<=VISION_RADIUS; i++) {
+        if (coordinates.setDodgeRightActionCoordinates(next_x, next_y, direction) == -1) {
+            obstacle_right = i;
+            break;
+        }
+    }
 }
 
 void observation::printData() {
@@ -324,6 +346,10 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
+
+    observation_vector[nextPosOffset++] = static_cast< float >(countNodeNumbersInDirection);
 
     observation_vector[nextPosOffset++] = enemy_distance_1;
     /// Angle is represented with ONE HOT.
