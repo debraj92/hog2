@@ -475,5 +475,9 @@ void observation::printEnemyDistanceAndAngles() {
     }
 }
 
+void observation::recordFOVForCNN(CNN_controller& cnn) {
+    cnn.populateFOVChannels(playerX, playerY, direction, obstaclesFOV, enemiesFOV);
+}
+
 
 

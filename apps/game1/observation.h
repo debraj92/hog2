@@ -12,6 +12,7 @@
 #include "enemy/enemy.h"
 #include "vector"
 #include "Logger.h"
+#include "FOV_CNN/CNN_controller.h"
 
 class observation {
 
@@ -90,6 +91,10 @@ public:
     int obstacle_front_left = MAX_DISTANCE;
     int obstacle_front_right = MAX_DISTANCE;
 
+    // FOV for CNN
+    float obstaclesFOV[FOV_WIDTH][FOV_WIDTH];
+    float enemiesFOV[FOV_WIDTH][FOV_WIDTH];
+
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp);
     void locateRelativeTrajectory();
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);
@@ -102,6 +107,8 @@ public:
     void setGoalInSight(int probeX, int probeY);
 
     void findDestination();
+
+    void recordFOVForCNN(CNN_controller& cnn);
 
     void printRelativeTrajectory();
 

@@ -10,6 +10,7 @@
 #include "../DQN_interface.h"
 #include "../ReplayMemory.h"
 #include <string>
+#include <unordered_map>
 
 using namespace std;
 
@@ -26,9 +27,19 @@ class RLNN_Agent : public DQN_interface {
     const double epsilon_min = 0.01;
     const double epsilon_decay = 0.998;
     const double alpha = 1;
-    const int epsilon_annealing_percent = 60;
+    const int epsilon_annealing_percent = 50;
 
-    int batchSize = 4000;
+    struct state_info {
+        vector<float> q_values;
+        torch::Tensor fov_channel;
+    };
+    /// debugging
+    map<string, vector<float>> state_q;
+    vector<float> q;
+
+    map<string, state_info> state_q_;
+
+    int batchSize = 2000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;

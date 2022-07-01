@@ -56,7 +56,7 @@ public:
     int destination_x;
     int destination_y;
     int life_left;
-    bool isExploring = true;
+    bool isExploring = false;
 
     bool playerDiedInPreviousEpisode = false;
     int resumeCount = 0;
@@ -82,7 +82,7 @@ public:
 
     void learnGame();
 
-    void playGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
+    void playGame(std::vector<std::vector<int>> &gridSource, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 
     void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies);
 
@@ -99,6 +99,8 @@ public:
     void plotRewards(vector<double> &rewards);
 
     bool isResuming();
+
+    void copyGrid(std::vector<std::vector<int>> &gridSource);
 
     /// Testing
 #ifdef TESTING

@@ -20,6 +20,7 @@
 #include "../gameConstants.h"
 
 #include "../FOV_CNN/CNN_controller.h"
+#include <string>
 
 #include <testing.h>
 
@@ -45,12 +46,10 @@ class ReplayMemory {
     /// FOV for CNN - current state
     float obstaclesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float pathFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
 
     /// FOV for CNN - next state
     float obstaclesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float pathFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
 
     int idx = 0;
 
@@ -78,6 +77,8 @@ public:
     vector<pair<int, int>> next_state_coordinates;
     vector<pair<int, int>> current_state_coordinates_selected;
     vector<pair<int, int>> next_state_coordinates_selected;
+    vector<string> state_rep;
+    vector<string> state_rep_selected;
 
     ReplayMemory(CNN_controller& cnn1) : buffer_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
                      buffer_next_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
@@ -86,7 +87,8 @@ public:
                      dones(MAX_CAPACITY_REPLAY_BUFFER),
                      cnn(cnn1),
                      current_state_coordinates(MAX_CAPACITY_REPLAY_BUFFER),
-                     next_state_coordinates(MAX_CAPACITY_REPLAY_BUFFER)
+                     next_state_coordinates(MAX_CAPACITY_REPLAY_BUFFER),
+                                         state_rep(MAX_CAPACITY_REPLAY_BUFFER)
     {
         logger = std::make_unique<Logger>(LogLevel);
 
@@ -96,7 +98,6 @@ public:
                 for (int k=0; k<FOV_WIDTH; k++) {
                     obstaclesFOVcurrent[i][j][k] = 0;
                     enemiesFOVcurrent[i][j][k] = 0;
-                    pathFOVcurrent[i][j][k] = 0;
                 }
             }
         }

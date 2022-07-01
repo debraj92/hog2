@@ -45,7 +45,7 @@ void player::learnGame() {
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
             tempEnemies = enemies;
-            cnnController.markPath(src_x, src_y, dest_x, dest_y);
+            //cnnController.markPath(src_x, src_y, dest_x, dest_y);
         }
         game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
@@ -91,7 +91,8 @@ void player::learnGame() {
 
 }
 
-void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
+void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
+    copyGrid(gridSource);
     gameSimulation game(grid);
     game.player1 = this;
     logger->logInfo("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
@@ -125,6 +126,8 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
         ob.locateEnemies(enemies);
         ob.updateObstacleDistances(grid);
     }
+
+    ob.recordFOVForCNN(cnnController);
 }
 
 bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
@@ -243,6 +246,14 @@ void player::createEmptyGrid(vector<std::vector<int>> &grid) {
 
 void player::loadExistingModel() {
     RLNN_Agent::loadModel(DQN_MODEL_PATH);
+}
+
+void player::copyGrid(std::vector<std::vector<int>> &gridSource) {
+    for (int i=0; i<GRID_SPAN; i++) {
+        for (int j=0; j<GRID_SPAN; j++) {
+            grid[i][j] = gridSource[i][j];
+        }
+    }
 }
 
 

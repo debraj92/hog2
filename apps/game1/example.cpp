@@ -37,12 +37,12 @@ int main() {
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
 
-    player player1(true);
+    //player player1(true);
     //player1.loadExistingModel();
-    player1.learnGame();
+    //player1.learnGame();
 
 
-    /*
+
     vector<vector<int>> grid;
     for (int i=0; i<GRID_SPAN; i++) {
         std::vector<int> row(GRID_SPAN, 0);
@@ -57,33 +57,17 @@ int main() {
     player player1(false);
     TestResult t{};
 
-    player1.playGame(grid, enemies, 0, 0, GRID_SPAN-1, GRID_SPAN-1, t);
-    */
-    // FAIL - stuck
-    //player1.playGame(grid, enemies, 0, 0, GRID_SPAN-1, GRID_SPAN-2, t);
+    //OK
+    //player1.playGame(grid, enemies, 0, 0, GRID_SPAN-1, GRID_SPAN-1, t);
     //player1.playGame(grid, enemies, GRID_SPAN-1, GRID_SPAN-1, 0, (GRID_SPAN-1)/2, t);
+    //player1.playGame(grid, enemies, 0, (GRID_SPAN-1)/2, GRID_SPAN-1, 0, t);
+    //player1.playGame(grid, enemies, GRID_SPAN-1, 0, (GRID_SPAN)/2 + 1, GRID_SPAN-1, t);
+    //player1.playGame(grid, enemies, (GRID_SPAN)/2 + 1, GRID_SPAN-1, GRID_SPAN-1, (GRID_SPAN-1)/2, t);
+    //player1.playGame(grid, enemies, GRID_SPAN-4, 0, 0, GRID_SPAN - 1, t);
+    //player1.playGame(grid, enemies, GRID_SPAN - 1, GRID_SPAN-4, 0, GRID_SPAN - 3, t);
+    //player1.playGame(grid, enemies, 0, 5, GRID_SPAN-1, 2, t);
 
 
-    // ok
-
-
-    //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN-1, GRID_SPAN-2, t);
-    //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN/2+3, GRID_SPAN-1, t);
-
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 3, 2, 0, t);
-
-    //-143 player1.playGame(grid, enemies, 0, 0, GRID_SPAN -1, GRID_SPAN -1, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 1, 0, 2, t);
-    //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN/2+2, GRID_SPAN-1, t);
-    //8 player1.playGame(grid, enemies, 0, 8, GRID_SPAN-1, 6, t);
-    //player1.playGame(grid, enemies, 5, 0, GRID_SPAN-1, GRID_SPAN-1, t);
-    //-184 player1.playGame(grid, enemies, GRID_SPAN-1, 2, 0, 5, t);
-
-    // Fail - killed
-
-    // stuck
-    //-12 player1.playGame(grid, enemies, GRID_SPAN-1, 5, 0, 6, t);
-    //-123 player1.playGame(grid, enemies, GRID_SPAN-1, GRID_SPAN-1, 0, (GRID_SPAN-1)/2, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 0, 0, GRID_SPAN-1, t);
-
+    //FAIL
+    player1.playGame(grid, enemies, (GRID_SPAN-1)/2, 0, GRID_SPAN/2 + 3, GRID_SPAN - 1, t);
 }

@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 7000;   /// Must be greater than 8
+const int MAX_EPISODES = 2000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=10; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -127,13 +127,14 @@ const int MAX_REWARD_POINTS_IN_PLOT = 500;
 
 const int PLAYER_ID = 9;
 
-const int MAX_CHANNELS_CNN = 3; // enemies, path, obstacle, direction
+const int MAX_CHANNELS_CNN = 2;//3; // enemies, path, obstacle, direction
 
 /*
 const int INPUT_SIZE = 161;//89;
 const int HIDDEN_LAYER_1_SIZE = 100;//60;
 const int HIDDEN_LAYER_2_SIZE = 60;//40;
 */
+
 
 const int INPUT_SIZE = 33;//89;
 const int HIDDEN_LAYER_1_SIZE = 22;//60;
@@ -144,6 +145,7 @@ const int INPUT_SIZE = 17;
 const int HIDDEN_LAYER_1_SIZE = 11;
 const int HIDDEN_LAYER_2_SIZE = 9;
 */
+
 namespace RTS {
     enum LOG_LEVEL {
         INFO,
