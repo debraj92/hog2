@@ -107,18 +107,27 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int action) {
     logger->logDebug("player::observe")->endLineDebug();
+
     ob.playerX = this->current_x;
     ob.playerY = this->current_y;
     ob.destinationX = this->destination_x;
     ob.destinationY = this->destination_y;
-    // TODO: Add to input state tensor
     ob.playerLifeLeft = static_cast<float>(this->life_left);
 
-    ob.locateTrajectoryAndDirection(fp);
+    if (action == ACTION_REDIRECT) {
+        if (currentState.direction != 0) {
+            ob.direction = currentState.direction == 8 ? 1 : currentState.direction + 1;
+            ob.trajectory = currentState.trajectory;
+        }
+        ob.isGoalInSight = currentState.isGoalInSight;
+    } else {
+        ob.locateTrajectoryAndDirection(fp);
+        ob.findDestination();
+    }
+
     ob.locateRelativeTrajectory();
-    ob.findDestination();
 
     if (ob.direction > 0) {
         ob.locateEnemies(enemies);
@@ -126,6 +135,7 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     }
 
     ob.recordFOVForCNN(cnnController);
+    currentState = ob;
 }
 
 bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {

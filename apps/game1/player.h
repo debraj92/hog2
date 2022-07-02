@@ -45,6 +45,8 @@ class player : public RLNN_Agent {
     vector<std::vector<int>> grid;
     CNN_controller cnnController;
 
+    observation currentState;
+
     void createEmptyGrid(vector<std::vector<int>> &grid);
 
 public:
@@ -84,7 +86,7 @@ public:
 
     void playGame(std::vector<std::vector<int>> &gridSource, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 
-    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies);
+    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int action);
 
     bool findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 

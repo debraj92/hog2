@@ -55,7 +55,6 @@ void FOV_Filters::createFilterNE() {
 void FOV_Filters::createFilterSE() {
     for(int i=0; i<FOV_WIDTH; i++) {
         for(int j=0; j<FOV_WIDTH; j++) {
-            //direction_SE[i][j] = {i, j};
             direction_mapping[SE][i][j] = {i, j};
         }
     }

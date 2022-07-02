@@ -35,6 +35,7 @@ void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &ene
     int sy=0;
     int dx=GRID_SPAN-1;
     int dy=GRID_SPAN-1;
+
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
     assert(t.final_x == dx and t.final_y == dy);
 
@@ -104,12 +105,11 @@ int main() {
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
 
-    player player1(true);
+    //player player1(true);
     //player1.loadExistingModel();
-    player1.learnGame();
+    //player1.learnGame();
 
 
-    /*
     vector<vector<int>> grid;
     for (int i=0; i<GRID_SPAN; i++) {
         std::vector<int> row(GRID_SPAN, 0);
@@ -124,6 +124,5 @@ int main() {
     player player1(false);
     TestResult t{};
     runTest(player1, grid, enemies);
-     */
 
 }

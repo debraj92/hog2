@@ -48,8 +48,13 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
             torch::NoGradGuard no_grad;
             auto actions = policyNet->forwardPass(tensor_fov_channels, tensor_states);
             action = torch::argmax(actions).detach().item<int>();
-            //cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
-            //cout<<"direction: "<<currentState.direction<<endl;
+            /*
+            cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
+            cout<<"direction: "<<currentState.direction<<endl;
+            cout<<endl;
+            cout<<"Abstract State:\n"<<tensor_states<<endl;
+            cout<<"FOV\n"<<tensor_fov_channels<<endl;
+             */
         }
     }
 
