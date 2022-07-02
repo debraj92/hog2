@@ -33,24 +33,44 @@ void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) 
         }
     }
 
-    // front-left
+    // front-left and blind-left
     next_x = x;
     next_y = y;
 
     for(int i=1; i<=VISION_RADIUS; i++) {
+        if (i==VISION_RADIUS) {
+            int next_x_ = next_x;
+            int next_y_ = next_y;
+            if (coordinates.setStraightActionCoordinates(next_x_, next_y_, direction) == -1) {
+                obstacle_blind_left = i;
+            }
+        }
         if (coordinates.setDodgeDiagonalLeftActionCoordinates(next_x, next_y, direction) == -1) {
             obstacle_front_left = i;
+            if(i == 1) {
+                obstacle_blind_left = i;
+            }
             break;
         }
     }
 
-    // front-right
+    // front-right and blind-right
     next_x = x;
     next_y = y;
 
     for(int i=1; i<=VISION_RADIUS; i++) {
+        if (i==VISION_RADIUS) {
+            int next_x_ = next_x;
+            int next_y_ = next_y;
+            if (coordinates.setStraightActionCoordinates(next_x_, next_y_, direction) == -1) {
+                obstacle_blind_right = i;
+            }
+        }
         if (coordinates.setDodgeDiagonalRightActionCoordinates(next_x, next_y, direction) == -1) {
             obstacle_front_right = i;
+            if(i == 1) {
+                obstacle_blind_right = i;
+            }
             break;
         }
     }
@@ -323,7 +343,9 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
 
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_right);
 
     observation_vector[nextPosOffset++] = enemy_distance_1;
     /// Angle is represented with ONE HOT.
@@ -473,6 +495,10 @@ void observation::printEnemyDistanceAndAngles() {
         logger->logDebug("Enemy3 Distance: ")->logDebug(enemy_distance_3)->endLineDebug();
         logger->logDebug("Enemy3 Angle: ")->logDebug(enemy_angle_3)->endLineDebug();
     }
+}
+
+void observation::recordFOVForCNN(CNN_controller& cnn) {
+    cnn.populateFOVChannels(playerX, playerY, direction, obstaclesFOV, enemiesFOV);
 }
 
 

@@ -29,16 +29,85 @@ void increaseStackSize() {
     }
 }
 
+void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &enemies) {
+    TestResult t{};
+    int sx=0;
+    int sy=0;
+    int dx=GRID_SPAN-1;
+    int dy=GRID_SPAN-1;
+
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=GRID_SPAN-1;
+    sy=GRID_SPAN-1;
+    dx=0;
+    dy=(GRID_SPAN-1)/2;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=0;
+    sy=(GRID_SPAN-1)/2;
+    dx=GRID_SPAN-1;
+    dy=0;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=0;
+    sy=(GRID_SPAN-1)/2;
+    dx=GRID_SPAN-1;
+    dy=0;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=(GRID_SPAN)/2 + 1;
+    sy=GRID_SPAN-1;
+    dx=GRID_SPAN-1;
+    dy=(GRID_SPAN-1)/2;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=GRID_SPAN-4;
+    sy=0;
+    dx=0;
+    dy=GRID_SPAN - 1;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=GRID_SPAN-1;
+    sy=GRID_SPAN-4;
+    dx=0;
+    dy=GRID_SPAN-3;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=0;
+    sy=5;
+    dx=GRID_SPAN-1;
+    dy=2;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+    sx=(GRID_SPAN-1)/2;
+    sy=0;
+    dx=GRID_SPAN/2 + 3;
+    dy=GRID_SPAN - 1;
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
+
+}
+
 int main() {
 
     increaseStackSize();
 
     using namespace RTS;
-    Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::DEBUG;
+    Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
+
 
     //player player1(true);
+    //player1.loadExistingModel();
     //player1.learnGame();
-
 
 
     vector<vector<int>> grid;
@@ -51,31 +120,9 @@ int main() {
     trainingMaps::createMap3(grid, enemies);
 
 
+
     player player1(false);
     TestResult t{};
-
-
-
-
-    // ok
-    //player1.playGame(grid, enemies, GRID_SPAN-1, GRID_SPAN-1, 0, (GRID_SPAN-1)/2, t);
-
-    //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN-1, GRID_SPAN-2, t);
-    //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN/2+3, GRID_SPAN-1, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 0, 0, GRID_SPAN-1, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 3, 2, 0, t);
-
-    //player1.playGame(grid, enemies, 0, 0, GRID_SPAN -1, GRID_SPAN -1, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 1, 0, 2, t);
-    //player1.playGame(grid, enemies, GRID_SPAN/2+2, 0, GRID_SPAN/2+2, GRID_SPAN-1, t);
-    //player1.playGame(grid, enemies, 0, 8, GRID_SPAN-1, 6, t);
-    //player1.playGame(grid, enemies, 5, 0, GRID_SPAN-1, GRID_SPAN-1, t);
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 2, 0, 5, t);
-
-    // Fail - killed
-
-    // stuck
-    //player1.playGame(grid, enemies, GRID_SPAN-1, 5, 0, 6, t);
-
+    runTest(player1, grid, enemies);
 
 }

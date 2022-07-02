@@ -9,17 +9,21 @@ using namespace std;
 void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     logger->logDebug("gameSimulation::play")->endLineDebug();
     populateEnemies(grid, enemies);
-    player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+    bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+    if (not isPathFound) {
+        logger->logInfo("No path found, ignoring navigation");
+        return;
+    }
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardInfo(grid);
     int time = 1;
     int actionError = 0;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies);
-    while(!isDestinationReached() && player1->life_left > 0 && time < SESSION_TIMEOUT) {
+    player1->observe(currentObservation, grid, enemies, -1);
+    while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
-        currentObservation.printEnemyDistanceAndAngles();
+        //currentObservation.printEnemyDistanceAndAngles();
         // Next Action
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
         logger->printBoardInfo(grid);
@@ -27,16 +31,20 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         moveEnemies(enemies);
         fight(enemies);
         // Observe next State
-        observation nextObservation = createObservationAfterAction(grid, enemies, currentObservation, action);
+        observation nextObservation;
+        player1->observe(nextObservation, grid, enemies, action);
+        if (nextObservation.trajectory_off_track) {
+            // poisoned if off track
+            player1->life_left = 0;
+        }
         // Next state reward
-        auto reward = calculateReward(enemies, nextObservation, actionError);
+        auto reward = calculateReward(enemies, nextObservation, action, actionError);
         logger->logInfo("Reward received ")->logInfo(reward)->endLineInfo();
-
         currentObservation = nextObservation;
         time++;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
-            logger->logDebug("Marching to destination");
+            logger->logInfo("Marching towards destination");
             headStraightToDestination(grid, enemies, true);
         }
     }
@@ -47,11 +55,15 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {
     logger->logDebug("gameSimulation::learnToPlay")->endLineDebug();
     populateEnemies(grid, enemies);
-    player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+    bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+    if (not isPathFound) {
+        logger->logInfo("No path found, ignoring training");
+        return;
+    }
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies);
+    player1->observe(currentObservation, grid, enemies, -1);
     int time = 1;
     double loss_sum = 0;
     int loss_count = 0;
@@ -66,12 +78,12 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         fight(enemies);
         // Observe after action
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies);
+        player1->observe(nextObservation, grid, enemies, action);
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
         }
-        auto reward = calculateReward(enemies, nextObservation, actionError);
+        auto reward = calculateReward(enemies, nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
         loss_sum += player1->learnWithDQN();
@@ -80,7 +92,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         time++;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
-            logger->logDebug("Marching to destination");
+            logger->logDebug("Marching towards destination");
             headStraightToDestination(grid, enemies, false);
         }
     }
@@ -113,6 +125,8 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
         case ACTION_DODGE_DIAGONAL_RIGHT:
             *error = setDodgeDiagonalRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
+        case ACTION_REDIRECT:
+            break;
         default:
             logger->logInfo("ERROR: Wrong next action")->endLineInfo();
     }
@@ -140,12 +154,15 @@ void gameSimulation::fight(std::vector<enemy> &enemies) {
 }
 
 
-float gameSimulation::calculateReward(vector<enemy> &enemies, const observation &ob, int action_error) {
+float gameSimulation::calculateReward(vector<enemy> &enemies, const observation &ob, int action, int action_error) {
     if(ob.playerLifeLeft <= 0) {
         return REWARD_DEATH;
     }
     if(action_error == -1) {
         return REWARD_ACTION_UNAVAILABLE;
+    }
+    if(action == ACTION_REDIRECT) {
+        return REWARD_ACTION_REDIRECT;
     }
     if(ob.trajectory == on_track) {
         return REWARD_REACH;
@@ -181,13 +198,6 @@ void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, vector<enem
 
 bool gameSimulation::isDestinationReached() {
     return  player1->current_x == player1->destination_x and player1->current_y == player1->destination_y;
-}
-
-
-observation gameSimulation::createObservationAfterAction(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation ob, int action) {
-    observation ob1;
-    player1->observe(ob1, grid, enemies);
-    return ob1;
 }
 
 bool gameSimulation::isEpisodeComplete() {

@@ -28,34 +28,45 @@ void player::learnGame() {
     vector<enemy> tempEnemies;
     int src_x, src_y, dest_x, dest_y;
     bool resumed;
-
+    float destinationCount = 0;
+    float deathCount = 0;
+    float inferenceCount = 0;
     for(episodeCount = 1; episodeCount <= MAX_EPISODES; episodeCount++) {
         // pick a random source and destination
         resumed = isResuming();
         if (not resumed) {
             /// If resumed, then do not change previous episode's source and destination.
             train.generateNextMap(grid, enemies);
-            train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
-            //train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
+            train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
             //train.setSourceAndDestinationFixed(src_x, src_y, dest_x, dest_y);
 
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
             tempEnemies = enemies;
-            cnnController.markPath(src_x, src_y, dest_x, dest_y);
         }
         game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
         logger->logInfo("Episode ")->logInfo(episodeCount)->endLineInfo();
 
-        if (episodeCount % dqnTargetUpdateNextEpisode == 0) {
+        if (not stopLearning and episodeCount % dqnTargetUpdateNextEpisode == 0) {
             float percent_complete = (static_cast <float>(episodeCount) * 100) / static_cast <float>(MAX_EPISODES);
             if (percent_complete < 80) {
+                logger->logInfo("Target net updated at episode ")->logInfo(episodeCount)->endLineInfo();
                 updateTargetNet();
             }
         }
 
         game.learnToPlay(grid, tempEnemies);
+        if (stopLearning) {
+            inferenceCount++;
+        }
+        if(stopLearning and game.isDestinationReached()) {
+            destinationCount++;
+        }
+        if(stopLearning and life_left <= 0) {
+            deathCount++;
+        }
         logger->printBoardDebug(grid);
         logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
 
@@ -73,9 +84,13 @@ void player::learnGame() {
     plotLosses();
     plotRewards(rewards);
 
+    logger->logInfo("Destination reach %")->logInfo(destinationCount * 100 / inferenceCount)->endLineInfo();
+    logger->logInfo("Death %")->logInfo(deathCount * 100 / inferenceCount)->endLineInfo();
+
 }
 
-void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
+void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
+    copyGrid(gridSource);
     gameSimulation game(grid);
     game.player1 = this;
     logger->logInfo("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
@@ -89,32 +104,45 @@ void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, in
     result.destination_y = game.player1->destination_y;
     result.total_rewards = game.player1->total_rewards;
     game.removeCharacters(grid);
+    logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int action) {
     logger->logDebug("player::observe")->endLineDebug();
+
     ob.playerX = this->current_x;
     ob.playerY = this->current_y;
     ob.destinationX = this->destination_x;
     ob.destinationY = this->destination_y;
-    // TODO: Add to input state tensor
     ob.playerLifeLeft = static_cast<float>(this->life_left);
 
-    ob.locateTrajectoryAndDirection(fp);
+    if (action == ACTION_REDIRECT) {
+        if (currentState.direction != 0) {
+            ob.direction = currentState.direction == 8 ? 1 : currentState.direction + 1;
+            ob.trajectory = currentState.trajectory;
+        }
+        ob.isGoalInSight = currentState.isGoalInSight;
+    } else {
+        ob.locateTrajectoryAndDirection(fp);
+        ob.findDestination();
+    }
+
     ob.locateRelativeTrajectory();
-    ob.findDestination();
 
     if (ob.direction > 0) {
         ob.locateEnemies(enemies);
         ob.updateObstacleDistances(grid);
     }
+
+    ob.recordFOVForCNN(cnnController);
+    currentState = ob;
 }
 
-void player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
+bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
     logger->logDebug("Find path to destination")->endLineDebug();
     fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
     //fp->populateEnemyObstacles(enemies);
-    fp->findPathToDestination();
+    return fp->findPathToDestination();
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
@@ -145,7 +173,7 @@ int player::selectAction(observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    if (not next.isGoalInSight) {
+    if (not next.isGoalInSight and not stopLearning) {
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
     }
 }
@@ -200,7 +228,7 @@ void player::plotRewards(vector<double> &rewards) {
     auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &rewards_averaged, errorMessage);
     if(success){
         vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot/episode_rewards.png");
+        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot2/episode_rewards.png");
         DeleteImage(imageReference->image);
     }else{
         cerr << "Error: ";
@@ -221,6 +249,18 @@ void player::createEmptyGrid(vector<std::vector<int>> &grid) {
     for (int i=0; i<GRID_SPAN; i++) {
         std::vector<int> row(GRID_SPAN, 0);
         grid.push_back(row);
+    }
+}
+
+void player::loadExistingModel() {
+    RLNN_Agent::loadModel(DQN_MODEL_PATH);
+}
+
+void player::copyGrid(std::vector<std::vector<int>> &gridSource) {
+    for (int i=0; i<GRID_SPAN; i++) {
+        for (int j=0; j<GRID_SPAN; j++) {
+            grid[i][j] = gridSource[i][j];
+        }
     }
 }
 

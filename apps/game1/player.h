@@ -21,9 +21,9 @@
 #endif
 
 ///// Change header-folder to load different RL models
-#include "DQN/dueling-DQN/RLNN_Agent.h"
+//#include "DQN/dueling-DQN/RLNN_Agent.h"
 //#include "DQN/DDQN/RLNN_Agent.h"
-//#include "DQN/Vanilla-DQN/RLNN_Agent.h"
+#include "DQN/Vanilla-DQN/RLNN_Agent.h"
 //#include "DQN/dueling-DQN-bounded/RLNN_Agent.h"
 
 using namespace RTS;
@@ -45,6 +45,8 @@ class player : public RLNN_Agent {
     vector<std::vector<int>> grid;
     CNN_controller cnnController;
 
+    observation currentState;
+
     void createEmptyGrid(vector<std::vector<int>> &grid);
 
 public:
@@ -65,7 +67,7 @@ public:
 
     float total_rewards = 0;
 
-    player(bool isTrainingMode) : cnnController(grid), RLNN_Agent(cnnController) {
+    player(bool isTrainingMode) : cnnController(grid) {
         createEmptyGrid(grid);
         RLNN_Agent::setTrainingMode(isTrainingMode);
         if(not isTrainingMode) {
@@ -74,17 +76,19 @@ public:
         logger = std::make_unique<Logger>(LogLevel);
     }
 
+    void loadExistingModel();
+
     void initialize(int src_x, int src_y, int dest_x, int dest_y);
 
     void takeDamage(int points);
 
     void learnGame();
 
-    void playGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
+    void playGame(std::vector<std::vector<int>> &gridSource, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 
-    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies);
+    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int action);
 
-    void findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
+    bool findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
     int selectAction(observation& currentState);
 
@@ -97,6 +101,8 @@ public:
     void plotRewards(vector<double> &rewards);
 
     bool isResuming();
+
+    void copyGrid(std::vector<std::vector<int>> &gridSource);
 
     /// Testing
 #ifdef TESTING

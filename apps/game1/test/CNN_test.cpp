@@ -84,8 +84,10 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
     float obstaclesFOV[3][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV[3][FOV_WIDTH][FOV_WIDTH];
     float pathFOV[3][FOV_WIDTH][FOV_WIDTH];
-    cout<<"("<<0<<","<<0<<")"<<endl;
-    cnn.populateFOVChannels(0, 0, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    float directionFOV[3][FOV_WIDTH][FOV_WIDTH];
+
+    cout<<"("<<0<<","<<0<<") N"<<endl;
+    cnn.populateFOVChannels(0, 0, N, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;
@@ -96,28 +98,81 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
     printBoard(pathFOV[0]);
     cout<<endl;
 
-    cout<<"("<<4<<","<<4<<")"<<endl;
-    cnn.populateFOVChannels(4, 4, obstaclesFOV[1], enemiesFOV[1], pathFOV[1]);
+    cout<<"("<<0<<","<<0<<") NE"<<endl;
+    cnn.populateFOVChannels(0, 0, NE, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
-    printBoard(obstaclesFOV[1]);
+    printBoard(obstaclesFOV[0]);
     cout<<endl;
     cout<<"enemies FOV: "<<endl;
-    printBoard(enemiesFOV[1]);
+    printBoard(enemiesFOV[0]);
     cout<<endl;
     cout<<"path FOV: "<<endl;
-    printBoard(pathFOV[1]);
+    printBoard(pathFOV[0]);
     cout<<endl;
 
-    cout<<"("<<5<<","<<0<<")"<<endl;
-    cnn.populateFOVChannels(5, 0, obstaclesFOV[2], enemiesFOV[2], pathFOV[2]);
+    cout<<"("<<0<<","<<0<<") S"<<endl;
+    cnn.populateFOVChannels(0, 0, S, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
-    printBoard(obstaclesFOV[2]);
+    printBoard(obstaclesFOV[0]);
     cout<<endl;
     cout<<"enemies FOV: "<<endl;
-    printBoard(enemiesFOV[2]);
+    printBoard(enemiesFOV[0]);
     cout<<endl;
     cout<<"path FOV: "<<endl;
-    printBoard(pathFOV[2]);
+    printBoard(pathFOV[0]);
     cout<<endl;
+
+    cout<<"("<<0<<","<<0<<") SE"<<endl;
+    cnn.populateFOVChannels(0, 0, SE, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cout<<"obstacles FOV: "<<endl;
+    printBoard(obstaclesFOV[0]);
+    cout<<endl;
+    cout<<"enemies FOV: "<<endl;
+    printBoard(enemiesFOV[0]);
+    cout<<endl;
+    cout<<"path FOV: "<<endl;
+    printBoard(pathFOV[0]);
+    cout<<endl;
+
+    int x = 4, y = 1;
+    cout<<"("<<x<<","<<y<<") NE"<<endl;
+    cnn.populateFOVChannels(x, y, NE, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cout<<"obstacles FOV: "<<endl;
+    printBoard(obstaclesFOV[0]);
+    cout<<endl;
+    cout<<"enemies FOV: "<<endl;
+    printBoard(enemiesFOV[0]);
+    cout<<endl;
+    cout<<"path FOV: "<<endl;
+    printBoard(pathFOV[0]);
+    cout<<endl;
+
+    x = 4, y = 1;
+    cout<<"("<<x<<","<<y<<") NW"<<endl;
+    cnn.populateFOVChannels(x, y, NW, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cout<<"obstacles FOV: "<<endl;
+    printBoard(obstaclesFOV[0]);
+    cout<<endl;
+    cout<<"enemies FOV: "<<endl;
+    printBoard(enemiesFOV[0]);
+    cout<<endl;
+    cout<<"path FOV: "<<endl;
+    printBoard(pathFOV[0]);
+    cout<<endl;
+
+
+    x = 4, y = 4;
+    cout<<"("<<x<<","<<y<<") W"<<endl;
+    cnn.populateFOVChannels(x, y, W, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cout<<"obstacles FOV: "<<endl;
+    printBoard(obstaclesFOV[0]);
+    cout<<endl;
+    cout<<"enemies FOV: "<<endl;
+    printBoard(enemiesFOV[0]);
+    cout<<endl;
+    cout<<"path FOV: "<<endl;
+    printBoard(pathFOV[0]);
+    cout<<endl;
+
 
 }

@@ -45,20 +45,16 @@ class ReplayMemory {
     /// FOV for CNN - current state
     float obstaclesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float pathFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
 
     /// FOV for CNN - next state
     float obstaclesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float pathFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
 
     int idx = 0;
 
     bool isBufferFull = false;
 
     double exploitation_window_start = MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY;
-
-    CNN_controller &cnn;
 
     void storeExperience(observation &current, observation &next, int action, float reward, bool done);
 
@@ -69,16 +65,16 @@ public:
     torch::Tensor tensor_actions;
     torch::Tensor tensor_rewards;
     torch::Tensor tensor_dones;
+
     // CNN
     torch::Tensor tensor_fov_channels_current;
     torch::Tensor tensor_fov_channels_next;
 
-    ReplayMemory(CNN_controller& cnn1) : buffer_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
+    ReplayMemory() : buffer_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
                      buffer_next_states(MAX_CAPACITY_REPLAY_BUFFER, vector<float>(MAX_ABSTRACT_OBSERVATIONS, 0)),
                      buffer_actions(MAX_CAPACITY_REPLAY_BUFFER),
                      rewards(MAX_CAPACITY_REPLAY_BUFFER),
-                     dones(MAX_CAPACITY_REPLAY_BUFFER),
-                     cnn(cnn1)
+                     dones(MAX_CAPACITY_REPLAY_BUFFER)
     {
         logger = std::make_unique<Logger>(LogLevel);
 
@@ -88,7 +84,6 @@ public:
                 for (int k=0; k<FOV_WIDTH; k++) {
                     obstaclesFOVcurrent[i][j][k] = 0;
                     enemiesFOVcurrent[i][j][k] = 0;
-                    pathFOVcurrent[i][j][k] = 0;
                 }
             }
         }
@@ -115,6 +110,11 @@ public:
 
     /// Testing
 #ifdef TESTING
+
+    int seedSamplingBatch = 1;
+
+    friend class ReplayMemory_test;
+    FRIEND_TEST(ReplayMemory_test, test_cnn);
 
     friend class Simulation_test;
     FRIEND_TEST(Simulation_test, test1);
