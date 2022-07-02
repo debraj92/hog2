@@ -14,6 +14,9 @@ using namespace std;
 LOG_LEVEL Logger::GLOBAL_LOG_LEVEL = INFO;
 
 Logger* Logger::logDebug(string output) {
+    if (turnLogOff) {
+        return this;
+    }
     switch (GLOBAL_LOG_LEVEL) {
         case DEBUG:
             if (level != OFF) {
@@ -36,6 +39,9 @@ Logger* Logger::logDebug(string output) {
 }
 
 Logger* Logger::logInfo(string output) {
+    if (turnLogOff) {
+        return this;
+    }
     switch (GLOBAL_LOG_LEVEL) {
         case DEBUG:
             if (level != OFF) {

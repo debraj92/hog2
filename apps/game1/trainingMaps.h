@@ -41,9 +41,12 @@ public:
     void setSourceAndDestination(vector<std::vector<int>> &grid, int &startX, int &startY, int &endX, int &endY);
 
     void setSourceAndDestinationRotating(int &startX, int &startY, int &endX, int &endY);
+    void setSourceAndDestinationFixed(int &startX, int &startY, int &endX, int &endY);
 
     static void createMap1(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     static void createMap2(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    static void createMap3(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    static void createMapSimple(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
 
 
     /// For testing

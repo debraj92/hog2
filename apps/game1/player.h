@@ -12,11 +12,18 @@
 #include "findPath.h"
 #include "TestResult.h"
 #include "Logger.h"
+#include <testing.h>
+#include "FOV_CNN/CNN_controller.h"
+
+/// Testing
+#ifdef TESTING
+#include <gtest/gtest.h>
+#endif
 
 ///// Change header-folder to load different RL models
-#include "DQN/dueling-DQN/RLNN_Agent.h"
+//#include "DQN/dueling-DQN/RLNN_Agent.h"
 //#include "DQN/DDQN/RLNN_Agent.h"
-//#include "DQN/Vanilla-DQN/RLNN_Agent.h"
+#include "DQN/Vanilla-DQN/RLNN_Agent.h"
 //#include "DQN/dueling-DQN-bounded/RLNN_Agent.h"
 
 using namespace RTS;
@@ -25,10 +32,9 @@ class player : public RLNN_Agent {
 
     const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
 
-    const std::string DQN_MODEL_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/clean-code/hog2/apps/game1/DQN";
+    const std::string DQN_MODEL_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/model";
 
     shared_ptr<findPath> fp;
-    shared_ptr<findPath> fp_temp_reroute;
 
     int episodeCount;
 
@@ -36,14 +42,17 @@ class player : public RLNN_Agent {
 
     std::unique_ptr<Logger> logger;
 
+    vector<std::vector<int>> grid;
+    CNN_controller cnnController;
+
+    observation currentState;
+
     void createEmptyGrid(vector<std::vector<int>> &grid);
 
 public:
 
     int current_x;
     int current_y;
-    int previous_x_on_track;
-    int previous_y_on_track;
     int source_x;
     int source_y;
     int destination_x;
@@ -58,7 +67,8 @@ public:
 
     float total_rewards = 0;
 
-    player(bool isTrainingMode) {
+    player(bool isTrainingMode) : cnnController(grid) {
+        createEmptyGrid(grid);
         RLNN_Agent::setTrainingMode(isTrainingMode);
         if(not isTrainingMode) {
             RLNN_Agent::loadModel(DQN_MODEL_PATH);
@@ -66,27 +76,19 @@ public:
         logger = std::make_unique<Logger>(LogLevel);
     }
 
+    void loadExistingModel();
+
     void initialize(int src_x, int src_y, int dest_x, int dest_y);
 
     void takeDamage(int points);
 
     void learnGame();
 
-    void playGame(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
+    void playGame(std::vector<std::vector<int>> &gridSource, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 
-    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect);
+    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int action);
 
-    int getDirection();
-
-    void findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
-
-    void follow();
-
-    int switchToNewRoute(observation &ob);
-
-    bool isOnTrack();
-
-    void findNewRoute(std::vector<std::vector<int>> &grid, observation &ob, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
+    bool findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
     int selectAction(observation& currentState);
 
@@ -94,13 +96,28 @@ public:
 
     double learnWithDQN();
 
-    void recordRestoreLocation();
+    bool recordRestoreLocation(std::vector<enemy> &enemies);
 
     void plotRewards(vector<double> &rewards);
 
     bool isResuming();
 
-    void savePreviousOnTrackCoordinates(int x, int y);
+    void copyGrid(std::vector<std::vector<int>> &gridSource);
+
+    /// Testing
+#ifdef TESTING
+    ReplayMemory* getAccessToReplayMemory() {
+        return RLNN_Agent::getAccessToReplayMemory();
+    }
+
+    friend class Simulation_test;
+    FRIEND_TEST(Simulation_test, test1);
+    FRIEND_TEST(Simulation_test, test2);
+    FRIEND_TEST(Simulation_test, test3);
+
+#endif
+
+
 };
 
 

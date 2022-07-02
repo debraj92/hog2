@@ -20,6 +20,8 @@ public:
 
     int heap_idx;
 
+    int order = 0;
+
     struct node_Hash
     {
         size_t operator()(const node_& point) const

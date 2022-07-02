@@ -12,6 +12,7 @@
 #include "enemy/enemy.h"
 #include "vector"
 #include "Logger.h"
+#include "FOV_CNN/CNN_controller.h"
 
 class observation {
 
@@ -26,7 +27,6 @@ class observation {
         int id;
     };
 
-    void setDirectionAngles(int (&angles)[9]);
     void updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties);
 
 public:
@@ -37,9 +37,15 @@ public:
 
     int playerX = 0;
     int playerY = 0;
+
+    int destinationX = 0;
+    int destinationY = 0;
+
     float playerLifeLeft = 0;
 
     int direction = 0; // one hot (8 values + 1 unknown = total 9 combinations)
+
+    bool isGoalInSight = false;
 
     /**
      * Assumption: Maximum 4 enemies within the vision radius
@@ -74,26 +80,44 @@ public:
     int trajectory_on_track = 0;
     int trajectory_off_track = 0;
 
+    int countNodeNumbersInDirection = 0;
+
     double destination_distance = 1000;
     double destination_cosine = -1;
 
     int obstacle_front = MAX_DISTANCE; // default at infinity
-    int obstacle_left = MAX_DISTANCE;
-    int obstacle_right = MAX_DISTANCE;
+
     int obstacle_front_left = MAX_DISTANCE;
     int obstacle_front_right = MAX_DISTANCE;
+    int obstacle_blind_left = MAX_DISTANCE;
+    int obstacle_blind_right = MAX_DISTANCE;
 
-    void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int destination_x, int destination_y);
+
+    int obstacle_left = MAX_DISTANCE; // deprecated
+    int obstacle_right = MAX_DISTANCE; // deprecated
+
+    // FOV for CNN
+    float obstaclesFOV[FOV_WIDTH][FOV_WIDTH];
+    float enemiesFOV[FOV_WIDTH][FOV_WIDTH];
+
+    void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp);
     void locateRelativeTrajectory();
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);
     void locateEnemies(std::vector<enemy>& enemies);
 
     void printData();
 
-    void redirect(int current_x, int current_y, int destination_x, int destination_y);
-    void resetRerouteDistance();
-
     void flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]);
+
+    void setGoalInSight(int probeX, int probeY);
+
+    void findDestination();
+
+    void recordFOVForCNN(CNN_controller& cnn);
+
+    void printRelativeTrajectory();
+
+    void printEnemyDistanceAndAngles();
 };
 
 #endif //EXAMPLE_OBSERVATION_H

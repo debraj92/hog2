@@ -9,38 +9,45 @@
 #include <vector>
 #include <string>
 #include "../../gameConstants.h"
+#include "../../Logger.h"
 
 using namespace torch;
 using namespace std;
 
 class DQNNet : public nn::Module {
 
+    const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+    std::unique_ptr<Logger> logger;
+
     nn::Sequential m_sequential;
+    torch::nn::Conv2d m_conv1;
+    torch::nn::AvgPool2d m_pool1;
 
     int count = 1;
 
     unique_ptr<optim::Adam> optimizer;
 
     vector<double> losses;
-    vector<double> loss_count;
 
 public:
 
-    DQNNet(int inputSize, int outputSize, int hiddenLayer1Size, int hiddenLayer2Size, double learning_rate, const std::string& module_name);
+    enum MODEL_TYPE{
+        SEQUENTIAL,
+        CNN1,
+        POOL1
+    };
 
-    Tensor forwardPass(const Tensor& inputs);
+    DQNNet(double learning_rate, const std::string& module_name);
 
-    Tensor forwardPassValue(const Tensor& inputs);
+    Tensor forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstraction);
 
-    Tensor forwardPassAdvantage(const Tensor& inputs);
+    void saveModel(const string &file);
 
-    void saveModel(string &file);
+    void loadModel(const string &file);
 
-    void loadModel(string &file);
+    void saveModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_type);
 
-    void saveModel(stringstream &stream);
-
-    void loadModel(stringstream &stream);
+    void loadModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_type);
 
     double computeLossAndBackPropagate(const Tensor& expected, const Tensor& predicted);
 

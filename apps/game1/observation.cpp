@@ -15,6 +15,8 @@
 #include <xtensor/xio.hpp>
 
 using namespace std;
+using namespace xt;
+
 void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) {
     int x = playerX;
     int y = playerY;
@@ -31,46 +33,44 @@ void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) 
         }
     }
 
-    // left
+    // front-left and blind-left
     next_x = x;
     next_y = y;
 
     for(int i=1; i<=VISION_RADIUS; i++) {
-        if (coordinates.setDodgeLeftActionCoordinates(next_x, next_y, direction) == -1) {
-            obstacle_left = i;
-            break;
+        if (i==VISION_RADIUS) {
+            int next_x_ = next_x;
+            int next_y_ = next_y;
+            if (coordinates.setStraightActionCoordinates(next_x_, next_y_, direction) == -1) {
+                obstacle_blind_left = i;
+            }
         }
-    }
-
-    // front-left
-    next_x = x;
-    next_y = y;
-
-    for(int i=1; i<=VISION_RADIUS; i++) {
         if (coordinates.setDodgeDiagonalLeftActionCoordinates(next_x, next_y, direction) == -1) {
             obstacle_front_left = i;
+            if(i == 1) {
+                obstacle_blind_left = i;
+            }
             break;
         }
     }
 
-    // right
+    // front-right and blind-right
     next_x = x;
     next_y = y;
 
     for(int i=1; i<=VISION_RADIUS; i++) {
-        if (coordinates.setDodgeRightActionCoordinates(next_x, next_y, direction) == -1) {
-            obstacle_right = i;
-            break;
+        if (i==VISION_RADIUS) {
+            int next_x_ = next_x;
+            int next_y_ = next_y;
+            if (coordinates.setStraightActionCoordinates(next_x_, next_y_, direction) == -1) {
+                obstacle_blind_right = i;
+            }
         }
-    }
-
-    // front-right
-    next_x = x;
-    next_y = y;
-
-    for(int i=1; i<=VISION_RADIUS; i++) {
         if (coordinates.setDodgeDiagonalRightActionCoordinates(next_x, next_y, direction) == -1) {
             obstacle_front_right = i;
+            if(i == 1) {
+                obstacle_blind_right = i;
+            }
             break;
         }
     }
@@ -93,8 +93,7 @@ void observation::printData() {
  *   v
  *   x
  */
-
-void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, int destination_x, int destination_y) {
+void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
     logger->logDebug("locateTrajectoryAndDirection ")->endLineDebug();
 
     int current_x = playerX;
@@ -102,6 +101,9 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
     if (fp->isOnTrack(current_x, current_y)) {
         trajectory = on_track;
         direction = fp->pathDirection(current_x, current_y);
+        countNodeNumbersInDirection = MAX_DISTANCE;
+        logger->logDebug("Direction ")->logDebug(direction)->endLineDebug();
+        logger->logDebug("Trajectory ")->logDebug(trajectory)->endLineDebug();
         return;
     }
 
@@ -116,15 +118,21 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
     for (int i=1; i<=VISION_RADIUS; i++) {
         row = current_x - i;
         if (row >= 0) {
+            xarray<int>::shape_type shape = {9};
+            xarray<int> directionOccurrences = xarray<int>::from_shape(shape);
+            directionOccurrences.fill(0);
+            directionOccurrences[0] = -100;
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
+                    setGoalInSight(row, col);
+                    if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 1;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         pathFound = true;
                         matches++;
-                        if(col > current_y - i and fp->isOnTrack(row, col - 1)
-                        and temp_direction == fp->pathDirection(row, col - 1)) {
+                        if(col > current_y - i and fp->isOnTrackNoMemorizing(row, col - 1)
+                           and temp_direction == fp->pathDirection(row, col - 1)) {
                             direction_continued++;
                         }
                     }
@@ -133,93 +141,127 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp, i
             if (matches > max_matches) {
                 max_matches = matches;
                 max_direction_continued = direction_continued;
-                direction = temp_direction;
+                direction = argmax(directionOccurrences)[0];
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
         }
         row = current_x + i;
         if (row <= GRID_SPAN - 1) {
+            xarray<int>::shape_type shape = {9};
+            xarray<int> directionOccurrences = xarray<int>::from_shape(shape);
+            directionOccurrences.fill(0);
+            directionOccurrences[0] = -100;
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
+                    setGoalInSight(row, col);
+                    if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 2;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         matches++;
                         pathFound = true;
-                        if(col > current_y - i and fp->isOnTrack(row, col - 1)
+                        if(col > current_y - i and fp->isOnTrackNoMemorizing(row, col - 1)
                            and temp_direction == fp->pathDirection(row, col - 1)) {
                             direction_continued++;
                         }
                     }
                 }
             }
-            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+            int max_direction = argmax(directionOccurrences)[0];
+            if(matches > max_matches
+            or (matches == max_matches and direction_continued > max_direction_continued)
+            or (matches == max_matches and directionOccurrences [max_direction] > countNodeNumbersInDirection)) {
                 max_matches = matches;
                 max_direction_continued = direction_continued;
-                direction = temp_direction;
+                direction = max_direction;
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
         }
         col = current_y - i;
         if (col >= 0) {
+            xarray<int>::shape_type shape = {9};
+            xarray<int> directionOccurrences = xarray<int>::from_shape(shape);
+            directionOccurrences.fill(0);
+            directionOccurrences[0] = -100;
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
+                    setGoalInSight(row, col);
+                    if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 3;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         matches++;
                         pathFound = true;
-                        if(row > current_x - i and fp->isOnTrack(row - 1, col)
+                        if(row > current_x - i and fp->isOnTrackNoMemorizing(row - 1, col)
                            and temp_direction == fp->pathDirection(row - 1, col)) {
                             direction_continued++;
                         }
                     }
                 }
             }
-            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+            int max_direction = argmax(directionOccurrences)[0];
+            if(matches > max_matches or
+            (matches == max_matches and direction_continued > max_direction_continued)
+            or (matches == max_matches and directionOccurrences [max_direction] > countNodeNumbersInDirection)) {
                 max_matches = matches;
                 max_direction_continued = direction_continued;
-                direction = temp_direction;
+                direction = max_direction;
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
         }
         col = current_y + i;
         if (col <= GRID_SPAN - 1) {
+            xarray<int>::shape_type shape = {9};
+            xarray<int> directionOccurrences = xarray<int>::from_shape(shape);
+            directionOccurrences.fill(0);
+            directionOccurrences[0] = -100;
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
-                    if (fp->isOnTrack(row, col)) {
+                    setGoalInSight(row, col);
+                    if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 4;
+                        directionOccurrences[temp_direction] += fp->getNodeOrder(row, col) + 1;
                         matches++;
                         pathFound = true;
-                        if(row > current_x - i and fp->isOnTrack(row - 1, col)
+                        if(row > current_x - i and fp->isOnTrackNoMemorizing(row - 1, col)
                            and temp_direction == fp->pathDirection(row - 1, col)) {
                             direction_continued++;
                         }
                     }
                 }
             }
-            if(matches > max_matches or (matches == max_matches and direction_continued > max_direction_continued)) {
+            int max_direction = argmax(directionOccurrences)[0];
+            if(matches > max_matches
+            or (matches == max_matches and direction_continued > max_direction_continued)
+            or (matches == max_matches and directionOccurrences [max_direction] > countNodeNumbersInDirection)) {
                 max_matches = matches;
                 max_direction_continued = direction_continued;
-                direction = temp_direction;
+                direction = max_direction;
                 trajectory = temp_trajectory;
+                countNodeNumbersInDirection = directionOccurrences[direction];
             }
             matches = 0;
             direction_continued = 0;
         }
         if(pathFound) {
+            logger->logDebug("Direction ")->logDebug(direction)->endLineDebug();
+            logger->logDebug("Trajectory ")->logDebug(trajectory)->endLineDebug();
             return;
         }
     }
     trajectory = 0;
     direction = 0;
+    countNodeNumbersInDirection = 0;
 }
 
 void observation::locateEnemies(std::vector<enemy> &enemies) {
@@ -244,39 +286,6 @@ void observation::locateEnemies(std::vector<enemy> &enemies) {
 
     updateEnemyDistanceAndAngles(enemy_properties);
 
-}
-
-void observation::redirect(int current_x, int current_y, int destination_x, int destination_y) {
-    logger->logDebug("observation::redirect ")->endLineDebug();
-    using namespace xt;
-    double dx = destination_x - current_x;
-    double dy = destination_y - current_y;
-    double magnitude_d = sqrt(pow(dx,2) + pow(dy,2));
-    xarray<double>::shape_type shape = {9};
-    xarray<double> angles = xarray<double>::from_shape(shape);;
-    angles[0] = 1000;
-    angles[N] = acos(-dx / magnitude_d);
-    angles[S] = acos(dx / magnitude_d);
-    angles[E] = acos(dy / magnitude_d);
-    angles[W] = acos(-dy / magnitude_d);
-
-    angles[NE] = acos((-dx + dy) / (magnitude_d * sqrt(2)));
-    angles[NW] = acos((-dx - dy) / (magnitude_d * sqrt(2)));
-    angles[SE] = acos((dx + dy) / (magnitude_d * sqrt(2)));
-    angles[SW] = acos((dx - dy) / (magnitude_d * sqrt(2)));
-
-    direction = argmin(angles)[0];
-}
-
-void observation::setDirectionAngles(int (&angles)[9]) {
-    angles[N] = N_Angle;
-    angles[S] = S_Angle;
-    angles[E] = E_Angle;
-    angles[W] = W_Angle;
-    angles[NE] = NE_Angle;
-    angles[NW] = NW_Angle;
-    angles[SE] = SE_Angle;
-    angles[SW] = SW_Angle;
 }
 
 void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties) {
@@ -322,11 +331,6 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
     }
 }
 
-
-void observation::resetRerouteDistance() {
-    rerouteDistance = 1000;
-}
-
 void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
     int nextPosOffset = 0;
     /// set trajectory. Takes 5 positions - on track, Left, Right, Front, off track
@@ -338,10 +342,10 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
     observation_vector[nextPosOffset++] = static_cast< float >(trajectory_off_track);
 
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_right);
 
     observation_vector[nextPosOffset++] = enemy_distance_1;
     /// Angle is represented with ONE HOT.
@@ -428,6 +432,73 @@ void observation::locateRelativeTrajectory() {
             trajectory_right *= 2;
             break;
     }
+    printRelativeTrajectory();
+}
+
+void observation::setGoalInSight(int probeX, int probeY) {
+    isGoalInSight = (destinationX == probeX) and (destinationY == probeY);
+}
+
+void observation::findDestination() {
+    if (isGoalInSight) {
+        return;
+    }
+    // TODO: take from cnn
+    for(int i = playerX - VISION_RADIUS; i<=playerX + VISION_RADIUS; i++) {
+        for(int j = playerY - VISION_RADIUS; j<=playerY + VISION_RADIUS; j++) {
+            if(i >= 0 and i < GRID_SPAN and j >= 0 and j < GRID_SPAN) {
+                // FOV
+                setGoalInSight(i, j);
+                if (isGoalInSight) {
+                    return;
+                }
+            }
+        }
+    }
+}
+
+void observation::printRelativeTrajectory() {
+
+    if(trajectory_on_track) {
+        logger->logDebug("Relative Trajectory ON Track")->endLineDebug();
+    } else if(trajectory_front) {
+        logger->logDebug("Relative Trajectory Front")->endLineDebug();
+        if (trajectory_front == 2) {
+            logger->logDebug("Two Deviations")->endLineDebug();
+        }
+    } else if (trajectory_left) {
+        logger->logDebug("Relative Trajectory Left")->endLineDebug();
+        if (trajectory_left == 2) {
+            logger->logDebug("Two Deviations")->endLineDebug();
+        }
+    } else if (trajectory_right) {
+        logger->logDebug("Relative Trajectory Right")->endLineDebug();
+        if (trajectory_right == 2) {
+            logger->logDebug("Two Deviations")->endLineDebug();
+        }
+    } else {
+        logger->logDebug("Relative Trajectory OFF Track")->endLineDebug();
+    }
+
+}
+
+void observation::printEnemyDistanceAndAngles() {
+    if (enemy_distance_1 < MAX_DISTANCE) {
+        logger->logDebug("Enemy1 Distance: ")->logDebug(enemy_distance_1)->endLineDebug();
+        logger->logDebug("Enemy1 Angle: ")->logDebug(enemy_angle_1)->endLineDebug();
+    }
+    if (enemy_distance_2 < MAX_DISTANCE) {
+        logger->logDebug("Enemy2 Distance: ")->logDebug(enemy_distance_2)->endLineDebug();
+        logger->logDebug("Enemy2 Angle: ")->logDebug(enemy_angle_2)->endLineDebug();
+    }
+    if (enemy_distance_3 < MAX_DISTANCE) {
+        logger->logDebug("Enemy3 Distance: ")->logDebug(enemy_distance_3)->endLineDebug();
+        logger->logDebug("Enemy3 Angle: ")->logDebug(enemy_angle_3)->endLineDebug();
+    }
+}
+
+void observation::recordFOVForCNN(CNN_controller& cnn) {
+    cnn.populateFOVChannels(playerX, playerY, direction, obstaclesFOV, enemiesFOV);
 }
 
 

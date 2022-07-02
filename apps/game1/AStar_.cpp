@@ -32,9 +32,9 @@ bool AStar_::findPathToDestination() {
             finalizeNodeLinks();
             countOfNodesToDestination = reverseNodeLinks(nextNode);
             logger->logDebug("Number of nodes to destination ")->logDebug(countOfNodesToDestination)->endLineDebug();
-            if (LogLevel == LOG_LEVEL::DEBUG) {
-                printTrack(root);
-            }
+            orderNodeLinks(root);
+            eraseDestinationNode();
+            printTrack(root);
             return true;
         }
         vector<pair<int, int>> childNodes;
@@ -110,6 +110,10 @@ bool AStar_::isDestinationFound(node_ node) {
 }
 
 node_ AStar_::getNextNode(node_& current) {
+    if(isDestinationFound(current)) {
+        logger->logInfo("Next node after destination is destination (loop?)");
+        return current;
+    }
     return childParent.find(current)->second;
 }
 
@@ -121,7 +125,7 @@ void AStar_::finalizeNodeLinks() {
     auto childParentIterator = childParent.begin();
     while(childParentIterator != childParent.end()) {
         node_ node = childParentIterator->first;
-        if(closedList.find(node) == closedList.end()) {
+        if (closedList.find(node) == closedList.end()) {
             childParentIterator++;
             childParent.erase(node);
         } else {
@@ -167,10 +171,13 @@ void AStar_::populateEnemyObstacles(vector<enemy> &enemies) {
 
 void AStar_::printTrack(node_ root) {
     logger->logDebug("AStar_::printTrack")->endLineDebug();
-    string path = "("+ to_string(root.x)+", "+to_string(root.y)+") ";
-    while(!isDestinationFound(root)) {
-        root = getNextNode(root);
-        path += "("+ to_string(root.x)+", "+to_string(root.y)+") ";
+    auto current = childParent.find(root)->first;
+    string path = "("+ to_string(current.x)+", "+to_string(current.y)+") ";
+    path += "["+ to_string(current.order)+"] ";
+    while(!isDestinationFound(current)) {
+        current = getNextNode(current);
+        path += "("+ to_string(current.x)+", "+to_string(current.y)+") ";
+        path += "["+ to_string(current.order)+"] ";
     }
     logger->logDebug(path)->endLineDebug();
 }
@@ -208,4 +215,49 @@ void AStar_::changeSourceAndDestination(int startX, int startY, int endX, int en
 void AStar_::changeMap(vector<vector<int>> &grid) {
     this->grid.clear();
     std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
+}
+
+void AStar_::orderNodeLinks(node_ root) {
+    int order = 1;
+    if (isDestinationFound(root)) {
+        return;
+    }
+    auto current_first = childParent.find(root)->first;
+    current_first.order = order++;
+    while(!isDestinationFound(current_first)) {
+        auto current_second = childParent.find(current_first)->second;
+        current_second.order = order++;
+        childParent.erase(current_first);
+        childParent.insert(make_pair(current_first, current_second));
+        current_first = current_second;
+    }
+}
+
+/// Both nodes must be on path (excludes destination)
+int AStar_::compareNodeOrders(node_ first, node_ second) {
+    if (childParent.find(first) == childParent.end() or childParent.find(second) == childParent.end()) {
+        logger->logInfo("Nodes to compare are absent or marked as destination")->endLineInfo();
+        return -100;
+    }
+    return childParent.find(first)->first.order - childParent.find(second)->first.order;
+}
+
+void AStar_::eraseDestinationNode() {
+    node_ dest(destination.first, destination.second);
+    if(childParent.find(dest) != childParent.end()) {
+        childParent.erase(dest);
+    }
+}
+
+int AStar_::getNodeOrder(node_ n) {
+    auto n_iter = childParent.find(n);
+    if(n_iter != childParent.end()) {
+        return n_iter->first.order;
+    }
+    logger->logInfo("Error: Node NOT FOUND for node order")->endLineInfo();
+    return -1;
+}
+
+int AStar_::getTotalDistanceToDestination() {
+    return countOfNodesToDestination;
 }

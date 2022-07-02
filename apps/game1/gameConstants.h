@@ -12,10 +12,10 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 15000;   /// Must be greater than 8
+const int MAX_EPISODES = 10000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
-const int GRID_SPAN=12;//6; /// >= 10 when running unit tests
+const int GRID_SPAN=10; /// >= 10 when running unit tests [7 for gameSimulation test]
 
 static const int MAX_STATES = 20000;
 
@@ -28,14 +28,16 @@ static const int MAX_STATES = 20000;
  */
 
 const int N=1;
-const int S=2;
-const int E=3;
-const int W=4;
-const int NE=5;
-const int NW=6;
-const int SE=7;
-const int SW=8;
+const int NW=2;
+const int W=3;
+const int SW=4;
+const int S=5;
+const int SE=6;
+const int E=7;
+const int NE=8;
+
 const int VISION_RADIUS = 2;
+const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
 
 const int N_Angle=0;
 const int S_Angle=180;
@@ -64,50 +66,32 @@ const int two_deviation_W = 23;
 const int two_deviation_E = 24;
 
 
- /*
-const int ACTION_SWITCH = 4;//0;
-const int ACTION_DODGE_LEFT = 3;//1;//0;//1;
-const int ACTION_DODGE_DIAGONAL_LEFT = 0;//2;
-const int ACTION_DODGE_RIGHT = 2;//3;
-const int ACTION_DODGE_DIAGONAL_RIGHT = 1;//3;//4;
-const int ACTION_STRAIGHT = 7;//5;
-const int ACTION_REROUTE = 6;
-const int ACTION_REDIRECT = 5;//7;
-  */
+/// ACTIONS
 
 const int ACTION_DODGE_DIAGONAL_LEFT = 0;
 const int ACTION_DODGE_DIAGONAL_RIGHT = 1;
-const int ACTION_DODGE_LEFT = 2;
-const int ACTION_DODGE_RIGHT = 3;
-const int ACTION_STRAIGHT = 4;
+const int ACTION_STRAIGHT = 2;
+const int ACTION_REDIRECT = 3;
 
-const int ACTION_SWITCH = 7;
+const int ACTION_SPACE = 4;
 
-
-const int ACTION_REROUTE = 6;
-const int ACTION_REDIRECT = 5;//7;
-
-const int ACTION_SPACE = 5;//7;//8;
-
-
-// deprecated action
-const int ACTION_FOLLOW = 8;
+const int ACTION_DODGE_RIGHT = 6; // deprecated
+const int ACTION_DODGE_LEFT = 4; // deprecated
+const int ACTION_SWITCH = 7; // deprecated
+const int ACTION_REROUTE = 5; // deprecated
+const int ACTION_FOLLOW = 8; // deprecated
 
 
+/// REWARDS
 
-// REWARDS
-const float REWARD_REROUTE = -0.1;//-15;
-const float REWARD_REDIRECT = -0.1;//-10;
-
-
-const float REWARD_FACTOR = 100;
-const float REWARD_REACH =  1 * REWARD_FACTOR;
-const float REWARD_ACTION_UNAVAILABLE = -0.2 * REWARD_FACTOR;
-const float REWARD_TRACK_FOLLOW = -0.01 * REWARD_FACTOR;
-const float REWARD_TRACK_ONE_DIV = -0.05 * REWARD_FACTOR;
+const float REWARD_FACTOR = 10;
+const float REWARD_REACH =  4 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -1 * REWARD_FACTOR;
+const float REWARD_ACTION_REDIRECT = -0.1 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -0.1 * REWARD_FACTOR;
 const float REWARD_TRACK_TWO_DIV = -0.1 * REWARD_FACTOR;
-const float REWARD_OFFTRACK = -0.4 * REWARD_FACTOR;
-const float REWARD_DEATH = -0.4 * REWARD_FACTOR;
+const float REWARD_DEATH = -3 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -3 * REWARD_FACTOR;
 
 
 const int MAX_LIFE = 10;
@@ -122,11 +106,19 @@ const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = 1000;
 
 const int SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 90;
 
-const int MAX_RESUME = 5;
+const int MAX_RESUME = (GRID_SPAN * 3) / 2; // Approx average path size
 
 const double MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY = 0.5;
 
 const int MAX_REWARD_POINTS_IN_PLOT = 500;
+
+const int PLAYER_ID = 9;
+
+const int MAX_CHANNELS_CNN = 2; // enemies, path, obstacle, direction
+
+const int INPUT_SIZE = 35;
+const int HIDDEN_LAYER_1_SIZE = 22;
+const int HIDDEN_LAYER_2_SIZE = 16;
 
 namespace RTS {
     enum LOG_LEVEL {
