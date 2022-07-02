@@ -114,7 +114,7 @@ const int MAX_REWARD_POINTS_IN_PLOT = 500;
 
 const int PLAYER_ID = 9;
 
-const int MAX_CHANNELS_CNN = 2;//3; // enemies, path, obstacle, direction
+const int MAX_CHANNELS_CNN = 2; // enemies, path, obstacle, direction
 
 const int INPUT_SIZE = 35;
 const int HIDDEN_LAYER_1_SIZE = 22;

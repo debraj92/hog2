@@ -20,7 +20,6 @@
 #include "../gameConstants.h"
 
 #include "../FOV_CNN/CNN_controller.h"
-#include <string>
 
 #include <testing.h>
 

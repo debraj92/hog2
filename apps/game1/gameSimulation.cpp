@@ -44,7 +44,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         time++;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
-            logger->logDebug("Marching towards destination");
+            logger->logInfo("Marching towards destination");
             headStraightToDestination(grid, enemies, true);
         }
     }

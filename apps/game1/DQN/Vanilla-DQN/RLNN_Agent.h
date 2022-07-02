@@ -47,6 +47,9 @@ public:
         targetNet = std::make_unique<DQNNet>(lr, "targetNet");
         // since no learning is performed on the target net
         targetNet->eval();
+        if (!isTrainingMode) {
+            policyNet->eval();
+        }
         startEpsilonDecay = false;
         logger = std::make_unique<Logger>(LogLevel);
     }
