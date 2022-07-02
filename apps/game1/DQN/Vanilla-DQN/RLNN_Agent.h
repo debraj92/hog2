@@ -9,8 +9,6 @@
 #include "../../gameConstants.h"
 #include "../DQN_interface.h"
 #include "../ReplayMemory.h"
-#include <string>
-#include <unordered_map>
 
 using namespace std;
 
