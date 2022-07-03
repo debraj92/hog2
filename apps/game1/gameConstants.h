@@ -71,9 +71,10 @@ const int two_deviation_E = 24;
 const int ACTION_DODGE_DIAGONAL_LEFT = 0;
 const int ACTION_DODGE_DIAGONAL_RIGHT = 1;
 const int ACTION_STRAIGHT = 2;
-const int ACTION_REDIRECT = 3;
+const int ACTION_REDIRECT_LEFT = 3;
+const int ACTION_REDIRECT_RIGHT = 4;
 
-const int ACTION_SPACE = 4;
+const int ACTION_SPACE = 5;
 
 const int ACTION_DODGE_RIGHT = 6; // deprecated
 const int ACTION_DODGE_LEFT = 4; // deprecated
@@ -87,9 +88,9 @@ const int ACTION_FOLLOW = 8; // deprecated
 const float REWARD_FACTOR = 10;
 const float REWARD_REACH =  4 * REWARD_FACTOR;
 const float REWARD_ACTION_UNAVAILABLE = -1 * REWARD_FACTOR;
-const float REWARD_ACTION_REDIRECT = -0.1 * REWARD_FACTOR;
-const float REWARD_TRACK_ONE_DIV = -0.1 * REWARD_FACTOR;
-const float REWARD_TRACK_TWO_DIV = -0.1 * REWARD_FACTOR;
+const float REWARD_ACTION_REDIRECT = -0.2 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -0.2 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -0.2 * REWARD_FACTOR;
 const float REWARD_DEATH = -3 * REWARD_FACTOR;
 const float REWARD_OFFTRACK = -3 * REWARD_FACTOR;
 
