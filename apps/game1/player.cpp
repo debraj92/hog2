@@ -116,11 +116,9 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.destinationY = this->destination_y;
     ob.playerLifeLeft = static_cast<float>(this->life_left);
 
-    if (action == ACTION_REDIRECT) {
-        if (currentState.direction != 0) {
-            ob.direction = currentState.direction == 8 ? 1 : currentState.direction + 1;
-            ob.trajectory = currentState.trajectory;
-        }
+    if (action == ACTION_REDIRECT_LEFT or action == ACTION_REDIRECT_RIGHT) {
+        ob.direction = currentState.direction;
+        ob.trajectory = currentState.trajectory;
         ob.isGoalInSight = currentState.isGoalInSight;
     } else {
         ob.locateTrajectoryAndDirection(fp);
@@ -264,5 +262,20 @@ void player::copyGrid(std::vector<std::vector<int>> &gridSource) {
     }
 }
 
+int player::redirectLeft() {
+    if (currentState.direction == 0) {
+        return -1;
+    }
+    currentState.direction = currentState.direction == 8 ? 1 : currentState.direction + 1;
+    return 0;
+}
+
+int player::redirectRight() {
+    if (currentState.direction == 0) {
+        return -1;
+    }
+    currentState.direction = currentState.direction == 1 ? 8 : currentState.direction - 1;
+    return 0;
+}
 
 

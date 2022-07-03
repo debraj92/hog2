@@ -125,7 +125,11 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
         case ACTION_DODGE_DIAGONAL_RIGHT:
             *error = setDodgeDiagonalRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
-        case ACTION_REDIRECT:
+        case ACTION_REDIRECT_LEFT:
+            *error = player1->redirectLeft();
+            break;
+        case ACTION_REDIRECT_RIGHT:
+            *error = player1->redirectRight();
             break;
         default:
             logger->logInfo("ERROR: Wrong next action")->endLineInfo();
@@ -133,6 +137,7 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
 
     grid[oldLocationX][oldLocationY] = 0;
     grid[player1->current_x][player1->current_y] = 9;
+
     return nextAction;
 }
 
@@ -161,7 +166,7 @@ float gameSimulation::calculateReward(vector<enemy> &enemies, const observation 
     if(action_error == -1) {
         return REWARD_ACTION_UNAVAILABLE;
     }
-    if(action == ACTION_REDIRECT) {
+    if(action == ACTION_REDIRECT_LEFT or action == ACTION_REDIRECT_RIGHT) {
         return REWARD_ACTION_REDIRECT;
     }
     if(ob.trajectory == on_track) {

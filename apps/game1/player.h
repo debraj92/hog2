@@ -104,6 +104,10 @@ public:
 
     void copyGrid(std::vector<std::vector<int>> &gridSource);
 
+    int redirectLeft();
+
+    int redirectRight();
+
     /// Testing
 #ifdef TESTING
     ReplayMemory* getAccessToReplayMemory() {
