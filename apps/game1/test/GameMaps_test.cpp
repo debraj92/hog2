@@ -65,12 +65,13 @@ TEST(TrainMap1, BasicAssertions) {
 }
 
 TEST(TrainMap2, BasicAssertions) {
+    /// set grid span correctly (10)
     vector<std::vector<int>> grid;
     std::vector<enemy> enemies;
     Logger logger(LOG_LEVEL::DEBUG);
 
-    for (int i=0; i<6; i++) {
-        std::vector<int> row(6, 0);
+    for (int i=0; i<GRID_SPAN; i++) {
+        std::vector<int> row(GRID_SPAN, 0);
         grid.push_back(row);
     }
 

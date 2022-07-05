@@ -209,7 +209,7 @@ bool gameSimulation::isEpisodeComplete() {
 }
 
 void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, std::vector<enemy>& enemies, bool isInference) {
-    // TODO: reach goal while avoiding enemies using Mstar concept - deterministic
+    /// No enemies at interface or locations within goal radius
     findPath fp(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     fp.populateEnemyObstacles(enemies);
     bool pathFound = fp.findPathToDestination();
