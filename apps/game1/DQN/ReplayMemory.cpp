@@ -31,8 +31,10 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 
     float obstaclesFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
+    float pathFOV_current_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float obstaclesFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
+    float pathFOV_next_temp[batchSize][FOV_WIDTH][FOV_WIDTH];
 
     auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
     auto options2 = torch::TensorOptions().dtype(torch::kLong).device(torch::kCPU);
@@ -45,8 +47,11 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 
         copy(&obstaclesFOVcurrent[random_index][0][0], &obstaclesFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV_current_temp[i][0][0]);
         copy(&enemiesFOVcurrent[random_index][0][0], &enemiesFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV_current_temp[i][0][0]);
+        copy(&pathFOVcurrent[random_index][0][0], &pathFOVcurrent[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOV_current_temp[i][0][0]);
+
         copy(&obstaclesFOVnext[random_index][0][0], &obstaclesFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV_next_temp[i][0][0]);
         copy(&enemiesFOVnext[random_index][0][0], &enemiesFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV_next_temp[i][0][0]);
+        copy(&pathFOVnext[random_index][0][0], &pathFOVnext[random_index][0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOV_next_temp[i][0][0]);
 
         temp_actions.emplace_back(buffer_actions[random_index]);
         temp_rewards.emplace_back(rewards[random_index]);
@@ -63,13 +68,15 @@ void ReplayMemory::sampleBatch(const int batchSize) {
 
     auto tensor_obstacles_current = torch::from_blob(obstaclesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     auto tensor_enemies_current = torch::from_blob(enemiesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
+    auto tensor_path_current = torch::from_blob(pathFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     // dimensions: Batch X Channels X FOV_WIDTH X FOV_WIDTH
-    tensor_fov_channels_current = torch::cat({tensor_obstacles_current, tensor_enemies_current}, 1).clone();
+    tensor_fov_channels_current = torch::cat({tensor_obstacles_current, tensor_enemies_current, tensor_path_current}, 1).clone();
 
     auto tensor_obstacles_next = torch::from_blob(obstaclesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     auto tensor_enemies_next = torch::from_blob(enemiesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
+    auto tensor_path_next = torch::from_blob(pathFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone();
     // dimensions: Batch X Channels X FOV_WIDTH X FOV_WIDTH
-    tensor_fov_channels_next = torch::cat({tensor_obstacles_next, tensor_enemies_next}, 1).clone();
+    tensor_fov_channels_next = torch::cat({tensor_obstacles_next, tensor_enemies_next, tensor_path_next}, 1).clone();
 
 }
 
@@ -87,9 +94,11 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
 
     copy(&current.obstaclesFOV[0][0], &current.obstaclesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOVcurrent[idx][0][0]);
     copy(&current.enemiesFOV[0][0], &current.enemiesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOVcurrent[idx][0][0]);
+    copy(&current.pathFOV[0][0], &current.pathFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOVcurrent[idx][0][0]);
 
     copy(&next.obstaclesFOV[0][0], &next.obstaclesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOVnext[idx][0][0]);
     copy(&next.enemiesFOV[0][0], &next.enemiesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOVnext[idx][0][0]);
+    copy(&next.pathFOV[0][0], &next.pathFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOVnext[idx][0][0]);
 
     float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
     current.flattenObservationToVector(observation_vector);

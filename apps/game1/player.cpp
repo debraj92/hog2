@@ -37,9 +37,9 @@ void player::learnGame() {
         if (not resumed) {
             /// If resumed, then do not change previous episode's source and destination.
             train.generateNextMap(grid, enemies);
-            //train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
-            train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
-            //train.setSourceAndDestinationFixed(src_x, src_y, dest_x, dest_y);
+            train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestinationFixed( src_x, src_y, dest_x, dest_y);
 
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
@@ -107,7 +107,7 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int action) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction) {
     logger->logDebug("player::observe")->endLineDebug();
 
     ob.playerX = this->current_x;
@@ -116,15 +116,8 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.destinationY = this->destination_y;
     ob.playerLifeLeft = static_cast<float>(this->life_left);
 
-    if (action == ACTION_REDIRECT_LEFT or action == ACTION_REDIRECT_RIGHT) {
-        ob.direction = currentState.direction;
-        ob.trajectory = currentState.trajectory;
-        ob.isGoalInSight = currentState.isGoalInSight;
-    } else {
-        ob.locateTrajectoryAndDirection(fp);
-        ob.findDestination();
-    }
-
+    ob.locateTrajectoryAndDirection(fp);
+    ob.findDestination(isTrainingMode and not stopLearning);
     ob.locateRelativeTrajectory();
 
     if (ob.direction > 0) {
@@ -132,8 +125,8 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
         ob.updateObstacleDistances(grid);
     }
 
-    ob.recordFOVForCNN(cnnController);
-    currentState = ob;
+    ob.recordFOVForCNN(cnnController, fp);
+    ob.processLastAction(lastAction);
 }
 
 bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
@@ -260,22 +253,6 @@ void player::copyGrid(std::vector<std::vector<int>> &gridSource) {
             grid[i][j] = gridSource[i][j];
         }
     }
-}
-
-int player::redirectLeft() {
-    if (currentState.direction == 0) {
-        return -1;
-    }
-    currentState.direction = currentState.direction == 8 ? 1 : currentState.direction + 1;
-    return 0;
-}
-
-int player::redirectRight() {
-    if (currentState.direction == 0) {
-        return -1;
-    }
-    currentState.direction = currentState.direction == 1 ? 8 : currentState.direction - 1;
-    return 0;
 }
 
 

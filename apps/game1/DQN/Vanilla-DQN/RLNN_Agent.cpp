@@ -34,11 +34,14 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
 
         float obstaclesFOV[1][FOV_WIDTH][FOV_WIDTH];
         float enemiesFOV[1][FOV_WIDTH][FOV_WIDTH];
+        float pathFOV[1][FOV_WIDTH][FOV_WIDTH];
         copy(&currentState.obstaclesFOV[0][0], &currentState.obstaclesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV[0][0][0]);
         copy(&currentState.enemiesFOV[0][0], &currentState.enemiesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV[0][0][0]);
+        copy(&currentState.pathFOV[0][0], &currentState.pathFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOV[0][0][0]);
         auto tensor_obstacles = torch::from_blob(obstaclesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
         auto tensor_enemies = torch::from_blob(enemiesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
-        auto tensor_fov_channels= torch::cat({tensor_obstacles, tensor_enemies}, 1);
+        auto tensor_path = torch::from_blob(pathFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
+        auto tensor_fov_channels= torch::cat({tensor_obstacles, tensor_enemies, tensor_path}, 1);
 
         float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
         currentState.flattenObservationToVector(observation_vector);
@@ -55,6 +58,7 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
             cout<<"Abstract State:\n"<<tensor_states<<endl;
             cout<<"FOV\n"<<tensor_fov_channels<<endl;
              */
+
         }
     }
 
@@ -100,6 +104,7 @@ double RLNN_Agent::learnWithDQN() {
 
 void RLNN_Agent::loadModel(const string &file) {
     policyNet->loadModel(file);
+    targetNet->loadModel(file);
 }
 
 void RLNN_Agent::saveModel(const string &file) {
@@ -140,10 +145,10 @@ void RLNN_Agent::printAction(int action) {
         case ACTION_STRAIGHT:
             logger->logDebug("ACTION_STRAIGHT")->endLineDebug();
             break;
-        case ACTION_REDIRECT_LEFT:
+        case ACTION_DODGE_LEFT:
             logger->logDebug("ACTION_REDIRECT_LEFT")->endLineDebug();
             break;
-        case ACTION_REDIRECT_RIGHT:
+        case ACTION_DODGE_RIGHT:
             logger->logDebug("ACTION_REDIRECT_RIGHT")->endLineDebug();
             break;
         default:

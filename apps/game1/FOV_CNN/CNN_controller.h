@@ -9,6 +9,7 @@
 #include "../Logger.h"
 #include "FOV_Filters.h"
 #include <vector>
+#include "../findPath.h"
 
 using namespace std;
 
@@ -22,9 +23,12 @@ class CNN_controller {
 
     FOV_Filters fovFilters;
 
-    void populateFOVChannelsForLocation(int grid_x, int grid_y, int fov_x, int fov_y,
+    void populateFOVChannelsForLocation(int grid_x, int grid_y, int fov_x, int fov_y, const shared_ptr<findPath>& fp,
                                         float (&obstaclesFOV)[FOV_WIDTH][FOV_WIDTH],
-                                        float (&enemiesFOV)[FOV_WIDTH][FOV_WIDTH]);
+                                        float (&enemiesFOV)[FOV_WIDTH][FOV_WIDTH],
+                                        float (&pathFOV)[FOV_WIDTH][FOV_WIDTH],
+                                        float &min);
+
 
 public:
 
@@ -33,9 +37,11 @@ public:
         fovFilters.init();
     }
 
-    void populateFOVChannels(int currentX, int currentY, int direction,
+
+    void populateFOVChannels(int currentX, int currentY, int direction, bool isOnTrack, const shared_ptr<findPath>& fp,
                              float (&obstaclesFOV)[FOV_WIDTH][FOV_WIDTH],
-                             float (&enemiesFOV)[FOV_WIDTH][FOV_WIDTH]);
+                             float (&enemiesFOV)[FOV_WIDTH][FOV_WIDTH],
+                             float (&pathFOV)[FOV_WIDTH][FOV_WIDTH]);
 };
 
 

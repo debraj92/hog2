@@ -45,10 +45,12 @@ class ReplayMemory {
     /// FOV for CNN - current state
     float obstaclesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
+    float pathFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
 
     /// FOV for CNN - next state
     float obstaclesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
+    float pathFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
 
     int idx = 0;
 
