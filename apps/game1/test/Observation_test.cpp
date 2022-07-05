@@ -154,7 +154,7 @@ TEST(ObservationRelativeTrajectory, BasicAssertions) {
 
     ob = observation();
     ob.trajectory = 11;
-    ob.direction = 5;
+    ob.direction = NE;
     ob.locateRelativeTrajectory();
     assert(ob.trajectory_on_track == 0);
     assert(ob.trajectory_left == 1);
@@ -164,7 +164,7 @@ TEST(ObservationRelativeTrajectory, BasicAssertions) {
 
     ob = observation();
     ob.trajectory = 13;
-    ob.direction = 8;
+    ob.direction = SW;
     ob.locateRelativeTrajectory();
 
     assert(ob.trajectory_on_track == 0);
@@ -175,7 +175,7 @@ TEST(ObservationRelativeTrajectory, BasicAssertions) {
 
     ob = observation();
     ob.trajectory = 22;
-    ob.direction = 4;
+    ob.direction = W;
     ob.locateRelativeTrajectory();
 
     assert(ob.trajectory_on_track == 0);
@@ -186,7 +186,7 @@ TEST(ObservationRelativeTrajectory, BasicAssertions) {
 
     ob = observation();
     ob.trajectory = 24;
-    ob.direction = 5;
+    ob.direction = NE;
     ob.locateRelativeTrajectory();
 
     assert(ob.trajectory_on_track == 0);
@@ -197,7 +197,7 @@ TEST(ObservationRelativeTrajectory, BasicAssertions) {
 
     ob = observation();
     ob.trajectory = 24;
-    ob.direction = 3;
+    ob.direction = E;
     ob.locateRelativeTrajectory();
 
     assert(ob.trajectory_on_track == 0);
@@ -208,7 +208,7 @@ TEST(ObservationRelativeTrajectory, BasicAssertions) {
 
     ob = observation();
     ob.trajectory = 12;
-    ob.direction = 2;
+    ob.direction = S;
     ob.locateRelativeTrajectory();
 
     assert(ob.trajectory_on_track == 0);

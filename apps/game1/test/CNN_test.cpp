@@ -63,31 +63,22 @@ void printBoard(float (&arr)[FOV_WIDTH][FOV_WIDTH]) {
     }
 }
 
-
-TEST(CNN_MarkPath, BasicAssertions) {
-    Logger logger(LOG_LEVEL::DEBUG);
-    vector<std::vector<int>> grid;
-    CNN_controller cnn(grid);
-    createGrid1(grid);
-    logger.printBoardDebug(grid);
-    cnn.markPath(0, 0, 5, 5);
-}
-
 TEST(CNN_FOV_Channel1, BasicAssertions) {
     Logger logger(LOG_LEVEL::DEBUG);
     vector<std::vector<int>> grid;
     CNN_controller cnn(grid);
     createGrid1(grid);
     logger.printBoardDebug(grid);
-    cnn.markPath(0, 0, 5, 5);
+    std::shared_ptr<findPath> fp = make_shared<findPath>(grid, 0, 0, 5, 5);
+    fp->findPathToDestination();
 
     float obstaclesFOV[3][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV[3][FOV_WIDTH][FOV_WIDTH];
     float pathFOV[3][FOV_WIDTH][FOV_WIDTH];
-    float directionFOV[3][FOV_WIDTH][FOV_WIDTH];
 
     cout<<"("<<0<<","<<0<<") N"<<endl;
-    cnn.populateFOVChannels(0, 0, N, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    bool isOnTrack = fp->isOnTrack(0,0);
+    cnn.populateFOVChannels(0, 0, N, isOnTrack, fp, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;
@@ -99,7 +90,7 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
     cout<<endl;
 
     cout<<"("<<0<<","<<0<<") NE"<<endl;
-    cnn.populateFOVChannels(0, 0, NE, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cnn.populateFOVChannels(0, 0, NE, isOnTrack, fp, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;
@@ -111,7 +102,7 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
     cout<<endl;
 
     cout<<"("<<0<<","<<0<<") S"<<endl;
-    cnn.populateFOVChannels(0, 0, S, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cnn.populateFOVChannels(0, 0, S, isOnTrack, fp, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;
@@ -123,7 +114,7 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
     cout<<endl;
 
     cout<<"("<<0<<","<<0<<") SE"<<endl;
-    cnn.populateFOVChannels(0, 0, SE, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cnn.populateFOVChannels(0, 0, SE, isOnTrack, fp, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;
@@ -136,7 +127,8 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
 
     int x = 4, y = 1;
     cout<<"("<<x<<","<<y<<") NE"<<endl;
-    cnn.populateFOVChannels(x, y, NE, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    isOnTrack = fp->isOnTrack(4,1);
+    cnn.populateFOVChannels(x, y, NE, isOnTrack, fp, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;
@@ -149,7 +141,7 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
 
     x = 4, y = 1;
     cout<<"("<<x<<","<<y<<") NW"<<endl;
-    cnn.populateFOVChannels(x, y, NW, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    cnn.populateFOVChannels(x, y, NW, isOnTrack, fp, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;
@@ -163,7 +155,8 @@ TEST(CNN_FOV_Channel1, BasicAssertions) {
 
     x = 4, y = 4;
     cout<<"("<<x<<","<<y<<") W"<<endl;
-    cnn.populateFOVChannels(x, y, W, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+    isOnTrack = fp->isOnTrack(4,4);
+    cnn.populateFOVChannels(x, y, W, isOnTrack, fp, obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
     cout<<"obstacles FOV: "<<endl;
     printBoard(obstaclesFOV[0]);
     cout<<endl;

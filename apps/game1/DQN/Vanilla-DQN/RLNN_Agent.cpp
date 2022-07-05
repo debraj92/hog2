@@ -146,10 +146,10 @@ void RLNN_Agent::printAction(int action) {
             logger->logDebug("ACTION_STRAIGHT")->endLineDebug();
             break;
         case ACTION_DODGE_LEFT:
-            logger->logDebug("ACTION_REDIRECT_LEFT")->endLineDebug();
+            logger->logDebug("ACTION_DODGE_LEFT")->endLineDebug();
             break;
         case ACTION_DODGE_RIGHT:
-            logger->logDebug("ACTION_REDIRECT_RIGHT")->endLineDebug();
+            logger->logDebug("ACTION_DODGE_RIGHT")->endLineDebug();
             break;
         default:
             logger->logDebug("INVALID ACTION")->endLineDebug();

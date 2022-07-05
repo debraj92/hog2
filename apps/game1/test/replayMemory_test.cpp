@@ -42,22 +42,26 @@ TEST(ReplayMemory_test, test_cnn) {
     createEmptyGrid(grid);
 
     CNN_controller cnnController(grid);
-    ReplayMemory r(cnnController);
+    std::shared_ptr<findPath> fp = make_shared<findPath>(grid, 0, 0, GRID_SPAN - 1, GRID_SPAN - 1);
+    fp->findPathToDestination();
+    ReplayMemory r;
     trainingMaps train;
     train.createMap3(grid, enemies);
     populateEnemies(grid, enemies);
-
-    cnnController.markPath(0, 0, GRID_SPAN - 1, GRID_SPAN - 1);
 
     observation ob_current;
     ob_current.playerX = 2;
     ob_current.playerY = 2;
     ob_current.direction = SE;
+    ob_current.locateTrajectoryAndDirection(fp);
+    ob_current.recordFOVForCNN(cnnController, fp);
 
     observation ob_next;
     ob_next.playerX = 3;
     ob_next.playerY = 3;
     ob_next.direction = SE;
+    ob_next.locateTrajectoryAndDirection(fp);
+    ob_next.recordFOVForCNN(cnnController, fp);
 
     r.storeExperience(ob_current, ob_next, ACTION_STRAIGHT, 1, true);
     r.storeExperience(ob_current, ob_next, ACTION_STRAIGHT, 1, true);
@@ -76,4 +80,5 @@ TEST(ReplayMemory_test, test_cnn) {
     cout<<"Channel current obstacles"<<endl<<r.tensor_fov_channels_current[1]<<endl;
     cout<<endl;
     cout<<"Channel next obstacles"<<endl<<r.tensor_fov_channels_next[1]<<endl;
+
 }
