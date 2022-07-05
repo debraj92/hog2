@@ -46,6 +46,7 @@ public:
     int direction = 0; // one hot (8 values + 1 unknown = total 9 combinations)
 
     bool isGoalInSight = false;
+    bool isLastActionLeftRight = false;
 
     /**
      * Assumption: Maximum 4 enemies within the vision radius
@@ -99,6 +100,7 @@ public:
     // FOV for CNN
     float obstaclesFOV[FOV_WIDTH][FOV_WIDTH];
     float enemiesFOV[FOV_WIDTH][FOV_WIDTH];
+    float pathFOV[FOV_WIDTH][FOV_WIDTH];
 
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp);
     void locateRelativeTrajectory();
@@ -111,13 +113,15 @@ public:
 
     void setGoalInSight(int probeX, int probeY);
 
-    void findDestination();
+    void findDestination(bool isTraining);
 
-    void recordFOVForCNN(CNN_controller& cnn);
+    void recordFOVForCNN(CNN_controller& cnn, const shared_ptr<findPath>& fp);
 
     void printRelativeTrajectory();
 
     void printEnemyDistanceAndAngles();
+
+    void processLastAction(int action);
 };
 
 #endif //EXAMPLE_OBSERVATION_H

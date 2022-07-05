@@ -39,6 +39,7 @@ void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &ene
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
     assert(t.final_x == dx and t.final_y == dy);
 
+
     sx=GRID_SPAN-1;
     sy=GRID_SPAN-1;
     dx=0;
@@ -46,12 +47,14 @@ void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &ene
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
     assert(t.final_x == dx and t.final_y == dy);
 
+
     sx=0;
     sy=(GRID_SPAN-1)/2;
     dx=GRID_SPAN-1;
     dy=0;
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
     assert(t.final_x == dx and t.final_y == dy);
+
 
     sx=0;
     sy=(GRID_SPAN-1)/2;
@@ -81,12 +84,15 @@ void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &ene
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
     assert(t.final_x == dx and t.final_y == dy);
 
+
     sx=0;
     sy=5;
     dx=GRID_SPAN-1;
     dy=2;
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
     assert(t.final_x == dx and t.final_y == dy);
+
+
 
     sx=(GRID_SPAN-1)/2;
     sy=0;
@@ -95,6 +101,13 @@ void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &ene
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
     assert(t.final_x == dx and t.final_y == dy);
 
+    sx=9;
+    sy=9;
+    dx=4;
+    dy=0;
+
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    assert(t.final_x == dx and t.final_y == dy);
 }
 
 int main() {
@@ -105,9 +118,11 @@ int main() {
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
 
+
     //player player1(true);
     //player1.loadExistingModel();
     //player1.learnGame();
+
 
 
     vector<vector<int>> grid;
@@ -124,5 +139,6 @@ int main() {
     player player1(false);
     TestResult t{};
     runTest(player1, grid, enemies);
+
 
 }

@@ -33,7 +33,6 @@ class RLNN_Agent : public DQN_interface {
     unique_ptr<DQNNet> targetNet;
 
     ReplayMemory memory;
-    bool isTrainingMode;
     bool startEpsilonDecay;
 
     bool isExplore(int episodeCount);

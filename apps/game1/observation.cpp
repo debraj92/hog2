@@ -74,6 +74,28 @@ void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) 
             break;
         }
     }
+
+    // left
+    next_x = x;
+    next_y = y;
+
+    for(int i=1; i<=VISION_RADIUS; i++) {
+        if (coordinates.setDodgeLeftActionCoordinates(next_x, next_y, direction) == -1) {
+            obstacle_left = i;
+            break;
+        }
+    }
+
+    // right
+    next_x = x;
+    next_y = y;
+
+    for(int i=1; i<=VISION_RADIUS; i++) {
+        if (coordinates.setDodgeRightActionCoordinates(next_x, next_y, direction) == -1) {
+            obstacle_right = i;
+            break;
+        }
+    }
 }
 
 void observation::printData() {
@@ -124,7 +146,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
-                    setGoalInSight(row, col);
+                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 1;
@@ -156,7 +178,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
-                    setGoalInSight(row, col);
+                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 2;
@@ -191,7 +213,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
-                    setGoalInSight(row, col);
+                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 3;
@@ -226,7 +248,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
-                    setGoalInSight(row, col);
+                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 4;
@@ -344,8 +366,10 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_left);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_right);
+    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
 
     observation_vector[nextPosOffset++] = enemy_distance_1;
     /// Angle is represented with ONE HOT.
@@ -366,6 +390,7 @@ void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABS
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_3) * 10;
     nextPosOffset += 2;
 
+    observation_vector[nextPosOffset++] = isLastActionLeftRight ? 1 : 0;
 }
 
 void observation::locateRelativeTrajectory() {
@@ -439,13 +464,11 @@ void observation::setGoalInSight(int probeX, int probeY) {
     isGoalInSight = (destinationX == probeX) and (destinationY == probeY);
 }
 
-void observation::findDestination() {
-    if (isGoalInSight) {
-        return;
-    }
-    // TODO: take from cnn
-    for(int i = playerX - VISION_RADIUS; i<=playerX + VISION_RADIUS; i++) {
-        for(int j = playerY - VISION_RADIUS; j<=playerY + VISION_RADIUS; j++) {
+void observation::findDestination(bool isTraining) {
+
+    int goalDistance = isTraining ? GOAL_RADIUS : GOAL_RADIUS + 1;
+    for(int i = playerX - goalDistance; i<=playerX + goalDistance; i++) {
+        for(int j = playerY - goalDistance; j<=playerY + goalDistance; j++) {
             if(i >= 0 and i < GRID_SPAN and j >= 0 and j < GRID_SPAN) {
                 // FOV
                 setGoalInSight(i, j);
@@ -497,8 +520,13 @@ void observation::printEnemyDistanceAndAngles() {
     }
 }
 
-void observation::recordFOVForCNN(CNN_controller& cnn) {
-    cnn.populateFOVChannels(playerX, playerY, direction, obstaclesFOV, enemiesFOV);
+void observation::recordFOVForCNN(CNN_controller& cnn, const shared_ptr<findPath>& fp) {
+    cnn.populateFOVChannels(playerX, playerY, direction, trajectory_on_track == 1, fp, obstaclesFOV, enemiesFOV, pathFOV);
+}
+
+void observation::processLastAction(int action) {
+    logger->logDebug("processLastAction")->endLineDebug();
+    isLastActionLeftRight = (action == ACTION_DODGE_LEFT) or (action == ACTION_DODGE_RIGHT);
 }
 
 

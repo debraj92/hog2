@@ -19,7 +19,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     int time = 1;
     int actionError = 0;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, -1);
+    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT);
     while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
@@ -63,7 +63,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, -1);
+    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT);
     int time = 1;
     double loss_sum = 0;
     int loss_count = 0;
@@ -125,16 +125,15 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
         case ACTION_DODGE_DIAGONAL_RIGHT:
             *error = setDodgeDiagonalRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
-        case ACTION_REDIRECT_LEFT:
-            *error = player1->redirectLeft();
+        case ACTION_DODGE_LEFT:
+            *error = setDodgeLeftActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
-        case ACTION_REDIRECT_RIGHT:
-            *error = player1->redirectRight();
+        case ACTION_DODGE_RIGHT:
+            *error = setDodgeRightActionCoordinates(player1->current_x, player1->current_y, currentObservation.direction);
             break;
         default:
             logger->logInfo("ERROR: Wrong next action")->endLineInfo();
     }
-
     grid[oldLocationX][oldLocationY] = 0;
     grid[player1->current_x][player1->current_y] = 9;
 
@@ -166,8 +165,8 @@ float gameSimulation::calculateReward(vector<enemy> &enemies, const observation 
     if(action_error == -1) {
         return REWARD_ACTION_UNAVAILABLE;
     }
-    if(action == ACTION_REDIRECT_LEFT or action == ACTION_REDIRECT_RIGHT) {
-        return REWARD_ACTION_REDIRECT;
+    if (action == ACTION_DODGE_LEFT or action == ACTION_DODGE_RIGHT) {
+        return REWARD_ACTION_LR;
     }
     if(ob.trajectory == on_track) {
         return REWARD_REACH;

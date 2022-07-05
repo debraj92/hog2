@@ -235,9 +235,9 @@ void trainingMaps::setSourceAndDestinationFixed(int &startX, int &startY, int &e
                                                    int &endY) {
 
     startX = 0;
-    startY = 0;
-    endX = GRID_SPAN - 1;
-    endY = GRID_SPAN - 1;
+    startY = (GRID_SPAN-1)/2;
+    endX = GRID_SPAN-1;
+    endY = 0;
 }
 
 void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
