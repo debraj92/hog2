@@ -27,24 +27,30 @@ class RLNN_Agent : public DQN_interface {
     const double epsilon_decay = 0.998;
     const double alpha = 1;
     const int epsilon_annealing_percent = 60;
-
     int batchSize = 4000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;
+    unique_ptr<DQNNet> policyNetSaved;
 
     ReplayMemory memory;
     bool startEpsilonDecay;
 
+    std::mutex safeActionSelectionAndTraining;
+
     bool isExplore(int episodeCount);
+
+    void savePolicyNet();
 
 public:
 
     RLNN_Agent() {
         policyNet = std::make_unique<DQNNet>(lr, "policyNet");
         targetNet = std::make_unique<DQNNet>(lr, "targetNet");
+        policyNetSaved = std::make_unique<DQNNet>(lr, "policyNetSaved");
         // since no learning is performed on the target net
         targetNet->eval();
+        policyNetSaved->eval();
         if (!isTrainingMode) {
             policyNet->eval();
         }

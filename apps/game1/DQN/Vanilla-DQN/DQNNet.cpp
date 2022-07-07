@@ -45,7 +45,7 @@ Tensor DQNNet::forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstracti
 }
 
 void DQNNet::saveModel(const string &file) {
-    logger->logInfo("DQNNet::saveModel from file")->endLineInfo();
+    logger->logInfo("DQNNet::saveModel to file")->endLineInfo();
     torch::save(m_sequential, file + "/vanilla-DQN/model/m_sequential.pt");
     torch::save(m_conv1, file + "/vanilla-DQN/model/m_conv1.pt");
     torch::save(m_pool1, file + "/vanilla-DQN/model/m_pool1.pt");
@@ -88,7 +88,7 @@ void DQNNet::plotLoss() {
 
     vector<double> losses_averaged;
     vector<double> episodes;
-    int avg_window_size = losses.size() / MAX_REWARD_POINTS_IN_PLOT;
+    int avg_window_size = max(static_cast<int>(losses.size() / MAX_REWARD_POINTS_IN_PLOT), 1);
     for(int i=0; i<losses.size(); i+=avg_window_size) {
         double sum = 0;
         for(int j=i; j<i+avg_window_size and j<losses.size(); j++) {

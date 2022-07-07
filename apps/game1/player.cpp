@@ -18,11 +18,9 @@ void player::takeDamage(int points) {
 }
 
 void player::learnGame() {
-
     vector<enemy> enemies;
     trainingMaps train;
 
-    vector<double> rewards;
     gameSimulation game(grid);
     game.player1 = this;
     vector<enemy> tempEnemies;
@@ -31,7 +29,12 @@ void player::learnGame() {
     float destinationCount = 0;
     float deathCount = 0;
     float inferenceCount = 0;
-    for(episodeCount = 1; episodeCount <= MAX_EPISODES; episodeCount++) {
+
+    /// Start training async
+    stopLearning = false;
+    thread trainingRunner([this]{runTrainingAsync();});
+
+    while (epoch <= MAX_EPISODES) {
         // pick a random source and destination
         resumed = isResuming();
         if (not resumed) {
@@ -47,16 +50,6 @@ void player::learnGame() {
         }
         game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
-        logger->logInfo("Episode ")->logInfo(episodeCount)->endLineInfo();
-
-        if (not stopLearning and episodeCount % dqnTargetUpdateNextEpisode == 0) {
-            float percent_complete = (static_cast <float>(episodeCount) * 100) / static_cast <float>(MAX_EPISODES);
-            if (percent_complete < 80) {
-                logger->logInfo("Target net updated at episode ")->logInfo(episodeCount)->endLineInfo();
-                updateTargetNet();
-            }
-        }
-
         game.learnToPlay(grid, tempEnemies);
         if (stopLearning) {
             inferenceCount++;
@@ -68,16 +61,36 @@ void player::learnGame() {
             deathCount++;
         }
         logger->printBoardDebug(grid);
-        logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
 
-        if (not resumed) {
-            // Consider reward if the episode was not a resume. If there are multiple resumes, then only the 1st reward is considered.
-            rewards.push_back(game.getTotalRewardsCollected());
-        }
         game.removeCharacters(grid);
         decayEpsilon();
+
+        /// Wake up the reader to run training
+        {
+            // critical
+            std::unique_lock<mutex> locker(safeTrainingExploration);
+            if (stopLearning) {
+                logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
+                rewards.push_back(game.getTotalRewardsCollected());
+                epoch++;
+                logger->logInfo("Epoch: ")->logInfo(epoch)->endLineInfo();
+                locker.unlock();
+                explorationOpportunity.notify_one();
+            } else {
+                if (not resumed) {
+                    aggregated_rewards += game.getTotalRewardsCollected();
+                    count_aggregation++;
+                }
+                if (explorationCount >= MIN_EXPLORATION_BEFORE_TRAINING) {
+                    locker.unlock();
+                    explorationOpportunity.notify_one();
+                }
+                explorationCount++;
+            }
+        }
     }
 
+    trainingRunner.join();
     // Save Model
     saveModel(DQN_MODEL_PATH);
 
@@ -160,17 +173,13 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
 }
 
 int player::selectAction(observation& currentState) {
-    return RLNN_Agent::selectAction(currentState, episodeCount, &isExploring);
+    return RLNN_Agent::selectAction(currentState, epoch, &isExploring);
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
     if (not next.isGoalInSight and not stopLearning) {
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
     }
-}
-
-double player::learnWithDQN() {
-    return RLNN_Agent::learnWithDQN();
 }
 
 bool player::recordRestoreLocation(std::vector<enemy> &enemies) {
@@ -203,7 +212,7 @@ void player::plotRewards(vector<double> &rewards) {
 
     vector<double> rewards_averaged;
     vector<double> episodes;
-    int avg_window_size = rewards.size() / MAX_REWARD_POINTS_IN_PLOT;
+    int avg_window_size = max(static_cast<int>(rewards.size() / MAX_REWARD_POINTS_IN_PLOT), 1);
     for(int i=0; i<rewards.size(); i+=avg_window_size) {
         double sum = 0;
         for(int j=i; j<i+avg_window_size and j<rewards.size(); j++) {
@@ -252,6 +261,36 @@ void player::copyGrid(std::vector<std::vector<int>> &gridSource) {
         for (int j=0; j<GRID_SPAN; j++) {
             grid[i][j] = gridSource[i][j];
         }
+    }
+}
+
+
+void player::runTrainingAsync() {
+    for(epoch = 1; epoch <= MAX_EPISODES and not stopLearning; epoch++) {
+
+        /// Let the writer thread run a few times before executing a training pass
+        {
+            // critical
+            std::unique_lock<mutex> locker(safeTrainingExploration);
+            explorationOpportunity.wait(locker);
+            if (stopLearning) {
+                break;
+            }
+            rewards.push_back(aggregated_rewards/count_aggregation);
+            explorationCount = 0;
+            aggregated_rewards = 0;
+            count_aggregation = 0;
+        }
+        if (epoch % dqnTargetUpdateNextEpisode == 0) {
+            float percent_complete = (static_cast <float>(epoch) * 100) / static_cast <float>(MAX_EPISODES);
+            if (percent_complete < 80) {
+                logger->logInfo("Target net updated at episode ")->logInfo(epoch)->endLineInfo();
+                updateTargetNet();
+            }
+        }
+        logger->logInfo("Epoch: ")->logInfo(epoch)->endLineInfo();
+        auto loss = RLNN_Agent::learnWithDQN();
+        logger->logInfo("Network Loss: ")->logInfo(loss)->endLineInfo();
     }
 }
 

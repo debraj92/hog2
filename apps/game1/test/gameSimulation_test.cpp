@@ -51,7 +51,7 @@ TEST_F(Simulation_test, test1) {
     enemies.push_back(f1);
 
     pl1.initialize(0, 0, 6, 6);
-    pl1.episodeCount = 1;
+    pl1.epoch = 1;
     game.learnToPlay(grid, enemies);
 
     auto replayBuf_ptr = pl1.getAccessToReplayMemory();

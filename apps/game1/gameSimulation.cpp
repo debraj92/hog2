@@ -65,8 +65,6 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     observation currentObservation;
     player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT);
     int time = 1;
-    double loss_sum = 0;
-    int loss_count = 0;
     while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
@@ -86,8 +84,6 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         auto reward = calculateReward(enemies, nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
-        loss_sum += player1->learnWithDQN();
-        loss_count ++;
         currentObservation = nextObservation;
         time++;
         player1->total_rewards += reward;
@@ -96,11 +92,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
             headStraightToDestination(grid, enemies, false);
         }
     }
-    double avg_loss = loss_sum / loss_count;
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
-    if (not player1->stopLearning) {
-        logger->logInfo("Network Loss after episode completion ")->logInfo(avg_loss)->endLineInfo();
-    }
     if (player1->life_left <= 0 and not player1->stopLearning) {
         player1->playerDiedInPreviousEpisode = player1->recordRestoreLocation(enemies);
     } else {

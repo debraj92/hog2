@@ -117,12 +117,9 @@ int main() {
     using namespace RTS;
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
-
-
     //player player1(true);
     //player1.loadExistingModel();
     //player1.learnGame();
-
 
 
     vector<vector<int>> grid;

@@ -48,8 +48,9 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
         auto tensor_states = torch::zeros({1, MAX_ABSTRACT_OBSERVATIONS}, options);
         tensor_states.slice(0, 0, 1) = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options);
         {
-            torch::NoGradGuard no_grad;
-            auto actions = policyNet->forwardPass(tensor_fov_channels, tensor_states);
+            // critical
+            std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
+            auto actions = policyNetSaved->forwardPass(tensor_fov_channels, tensor_states);
             action = torch::argmax(actions).detach().item<int>();
             /*
             cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
@@ -58,7 +59,6 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
             cout<<"Abstract State:\n"<<tensor_states<<endl;
             cout<<"FOV\n"<<tensor_fov_channels<<endl;
              */
-
         }
     }
 
@@ -79,6 +79,13 @@ double RLNN_Agent::learnWithDQN() {
     }
     // select n samples picked uniformly at random from the experience replay memory, such that n=batchsize
     memory.sampleBatch(batchSize);
+
+    /// Save policy net for action selection
+    {
+        // critical
+        std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
+        savePolicyNet();
+    }
 
     // states have dimension: batch_size X observation_feature_size
     // output would have dimensions: batch_size X action_space
@@ -104,6 +111,7 @@ double RLNN_Agent::learnWithDQN() {
 
 void RLNN_Agent::loadModel(const string &file) {
     policyNet->loadModel(file);
+    policyNetSaved->loadModel(file);
     targetNet->loadModel(file);
 }
 
@@ -161,7 +169,6 @@ void RLNN_Agent::plotLosses() {
 }
 
 bool RLNN_Agent::isExplore(int episodeCount) {
-
     double episodeCompletion = static_cast<double> (episodeCount) / MAX_EPISODES * 100;
     if(episodeCompletion < epsilon_annealing_percent) {
         return true;
@@ -189,4 +196,15 @@ void RLNN_Agent::setTrainingMode(bool value) {
     if (!isTrainingMode) {
         policyNet->eval();
     }
+}
+
+void RLNN_Agent::savePolicyNet() {
+    std::stringstream stream1, stream2, stream3;
+
+    policyNet->saveModel(stream1, DQNNet::SEQUENTIAL);
+    policyNetSaved->loadModel(stream1, DQNNet::SEQUENTIAL);
+    policyNet->saveModel(stream2, DQNNet::CNN1);
+    policyNetSaved->loadModel(stream2, DQNNet::CNN1);
+    policyNet->saveModel(stream3, DQNNet::POOL1);
+    policyNetSaved->loadModel(stream3, DQNNet::POOL1);
 }

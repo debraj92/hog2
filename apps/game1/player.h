@@ -15,6 +15,8 @@
 #include <testing.h>
 #include "FOV_CNN/CNN_controller.h"
 
+#include <thread>
+
 /// Testing
 #ifdef TESTING
 #include <gtest/gtest.h>
@@ -36,7 +38,7 @@ class player : public RLNN_Agent {
 
     shared_ptr<findPath> fp;
 
-    int episodeCount;
+    std::atomic<int> epoch;
 
     int dqnTargetUpdateNextEpisode = MAX_EPISODES / 8;
 
@@ -45,7 +47,14 @@ class player : public RLNN_Agent {
     vector<std::vector<int>> grid;
     CNN_controller cnnController;
 
+    std::mutex safeTrainingExploration;
+    std::condition_variable explorationOpportunity;
+    /// Needs protection from concurrent access
+    int explorationCount = 0;
+
     void createEmptyGrid(vector<std::vector<int>> &grid);
+
+    void runTrainingAsync();
 
 public:
 
@@ -64,6 +73,10 @@ public:
     int restoreCellY;
 
     float total_rewards = 0;
+
+    float aggregated_rewards = 0;
+    float count_aggregation = 0;
+    vector<double> rewards;
 
     player(bool isTrainingMode) : cnnController(grid) {
         createEmptyGrid(grid);
@@ -91,8 +104,6 @@ public:
     int selectAction(observation& currentState);
 
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done);
-
-    double learnWithDQN();
 
     bool recordRestoreLocation(std::vector<enemy> &enemies);
 

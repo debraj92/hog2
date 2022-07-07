@@ -12,12 +12,14 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 20000;   /// Must be greater than 8
+const int MAX_EPISODES = 35000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=10; /// >= 10 when running unit tests [7 for gameSimulation test]
 
-static const int MAX_STATES = 20000;
+const int MIN_EXPLORATION_BEFORE_TRAINING = 4;
+
+static const int MAX_STATES = 40000;
 
 /**
  *    NW  N  NE
@@ -101,7 +103,7 @@ const int MAX_DISTANCE = 100;
 
 const int MAX_ABSTRACT_OBSERVATIONS = 22;
 
-const int MAX_CAPACITY_REPLAY_BUFFER = 10000;
+const int MAX_CAPACITY_REPLAY_BUFFER = 12000;
 
 const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = 1000;
 

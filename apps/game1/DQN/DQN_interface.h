@@ -6,12 +6,13 @@
 #define EXAMPLE_DQN_INTERFACE_H
 
 #include "../observation.h"
+#include <atomic>
 
 class DQN_interface {
 
 public:
 
-    bool stopLearning = false;
+    atomic<bool> stopLearning;
     bool isTrainingMode;
 
     DQN_interface(){}

@@ -23,6 +23,8 @@
 
 #include <testing.h>
 
+#include <mutex>
+
 /// Testing
 #ifdef TESTING
 #include <gtest/gtest.h>
@@ -36,6 +38,9 @@ class ReplayMemory {
     const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
     std::unique_ptr<Logger> logger;
 
+    std::mutex replayBuffersSafeReadWrite;
+
+    ///// NEEDS TO BE PROTECTED FROM CONCURRENT READ/WRITE /////////////////////////
     vector<vector<float>> buffer_states;
     vector<vector<float>> buffer_next_states;
     vector<long> buffer_actions;
@@ -51,6 +56,8 @@ class ReplayMemory {
     float obstaclesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float enemiesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
     float pathFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
+
+    ///////////////////////////////////////////////////////////////////////////
 
     int idx = 0;
 
