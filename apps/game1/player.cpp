@@ -106,18 +106,17 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     copyGrid(gridSource);
     gameSimulation game(grid);
     game.player1 = this;
-    logger->logInfo("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
-            ->endLineInfo();
+    logger->logDebug("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
+            ->endLineDebug();
     this->initialize(src_x, src_y, dest_x, dest_y);
     game.play(grid, enemies);
-    logger->printBoardInfo(grid);
     result.final_x = game.player1->current_x;
     result.final_y = game.player1->current_y;
     result.destination_x = game.player1->destination_x;
     result.destination_y = game.player1->destination_y;
     result.total_rewards = game.player1->total_rewards;
     game.removeCharacters(grid);
-    logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
+    logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
 void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction) {
@@ -128,6 +127,12 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.destinationX = this->destination_x;
     ob.destinationY = this->destination_y;
     ob.playerLifeLeft = static_cast<float>(this->life_left);
+
+    if (isSimpleAstarPlayer and (current_x != destination_x or current_y != destination_y)) {
+        if (not findPathToDestination(grid, enemies, current_x, current_y, destination_x, destination_y)) {
+            logger->logInfo("ERROR: Player could not find path to destination")->endLineInfo();
+        }
+    }
 
     ob.locateTrajectoryAndDirection(fp);
     ob.findDestination(isTrainingMode and not stopLearning);
@@ -144,8 +149,14 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
 
 bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
     logger->logDebug("Find path to destination")->endLineDebug();
-    fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    //fp->populateEnemyObstacles(enemies);
+    if (isSimpleAstarPlayer) {
+        std::vector<std::vector<int>> gridTemporary;
+        std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
+        populateEnemyObstacles(gridTemporary, enemies);
+        fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
+    } else {
+        fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
+    }
     return fp->findPathToDestination();
 }
 
@@ -164,7 +175,6 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
         current_y = source_y;
         resumeCount = resumeCount == MAX_RESUME? 0 : resumeCount;
     }
-
     destination_x = dest_x;
     destination_y = dest_y;
     life_left = MAX_LIFE;
@@ -172,7 +182,7 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
 
 }
 
-int player::selectAction(observation& currentState) {
+int player::selectAction(const observation& currentState) {
     return RLNN_Agent::selectAction(currentState, epoch, &isExploring);
 }
 
@@ -293,5 +303,20 @@ void player::runTrainingAsync() {
         logger->logInfo("Network Loss: ")->logInfo(loss)->endLineInfo();
     }
 }
+
+void player::enableBaseLinePlayer() {
+    isSimpleAstarPlayer = true;
+}
+
+void player::populateEnemyObstacles(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+    logger->logDebug("populateEnemyObstacles")->endLineDebug();
+    for(const enemy& e: enemies) {
+        if (max(abs(current_x - e.current_x), abs(current_y - e.current_y)) <= VISION_RADIUS) {
+            grid[e.current_x][e.current_y] = -e.id;
+        }
+    }
+
+}
+
 
 

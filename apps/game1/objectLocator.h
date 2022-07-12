@@ -72,6 +72,8 @@ public:
     float getObjectAngle();
 
     float getObjectRiskFeature();
+
+    float dotDirectionVector(int direction, float vector_x, float vector_y);
 };
 
 

@@ -13,7 +13,7 @@
 using namespace std;
 using namespace torch;
 
-int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *explore) {
+int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, bool *explore) {
 
     int action;
     *explore = isTrainingMode and isExplore(episodeCount);

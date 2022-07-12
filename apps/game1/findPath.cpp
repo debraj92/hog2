@@ -7,8 +7,9 @@
 
 using namespace std;
 
-bool findPath::findPathToDestination() {
-    bool pathFound = aStar.findPathToDestination();
+bool findPath::findPathToDestination(int destinationDirection) {
+    logger->logDebug("findPath::findPathToDestination")->endLineDebug();
+    bool pathFound = aStar.findPathToDestination(destinationDirection);
     visited_x_onpath = -1;
     visited_y_onpath = -1;
     return pathFound;
@@ -77,35 +78,7 @@ int findPath::pathDirection(int x, int y) {
     node_ next = aStar.getNextNode(current);
     logger->logDebug("Current Position ")->logDebug(x)->logDebug(", ")->logDebug(y)->endLineDebug();
     logger->logDebug("Next Position ")->logDebug(next.x)->logDebug(", ")->logDebug(next.y)->endLineDebug();
-    int x_plus = x+1;
-    int x_minus = x-1;
-    int y_plus = y+1;
-    int y_minus = y-1;
-    if (x_plus == next.x && y_plus == next.y) {
-        return SE;
-    } else if (x == next.x && y_plus == next.y) {
-        return E;
-    } else if (x_minus == next.x && y_plus == next.y) {
-        return NE;
-    } else if (x_minus == next.x && y == next.y) {
-        return N;
-    } else if (x_minus == next.x && y_minus == next.y) {
-        return NW;
-    } else if (x == next.x && y_minus == next.y) {
-        return W;
-    } else if (x_plus == next.x && y_minus == next.y) {
-        return SW;
-    } else if (x_plus == next.x && y == next.y) {
-        return S;
-    }
-
-    logger->logInfo("ERROR : Invalid pathDirection")->endLineDebug();
-    return -1;
-
-}
-
-void findPath::populateEnemyObstacles(vector<enemy> &enemies) {
-    aStar.populateEnemyObstacles(enemies);
+    return inferDirection(x, y, next.x, next.y);
 }
 
 int findPath::getDistanceToDestination() {
@@ -145,4 +118,42 @@ int findPath::findDistanceToGoal(int &x, int &y) {
 int findPath::getNodeOrder(int &x, int &y) {
     node_ givenLocation(x, y);
     return aStar.getNodeOrder(givenLocation);
+}
+
+float findPath::getStraightLineDistanceToDestination() {
+    return aStar.findShortestDistanceEuclidean({current_x, current_y}, {destination_x, destination_y});
+}
+
+float findPath::getShortestDistanceToDestination() {
+    return aStar.findShortestDistance({current_x, current_y}, {destination_x, destination_y});
+}
+
+int findPath::inferDirection(int x, int y, int next_x, int next_y) {
+    logger->logDebug("findPath::inferDirection")->endLineDebug();
+    if (x == next_x and y == next_y) {
+        return 0;
+    }
+    int x_plus = x + 1;
+    int x_minus = x - 1;
+    int y_plus = y + 1;
+    int y_minus = y - 1;
+    if (x_plus == next_x && y_plus == next_y) {
+        return SE;
+    } else if (x == next_x && y_plus == next_y) {
+        return E;
+    } else if (x_minus == next_x && y_plus == next_y) {
+        return NE;
+    } else if (x_minus == next_x && y == next_y) {
+        return N;
+    } else if (x_minus == next_x && y_minus == next_y) {
+        return NW;
+    } else if (x == next_x && y_minus == next_y) {
+        return W;
+    } else if (x_plus == next_x && y_minus == next_y) {
+        return SW;
+    } else if (x_plus == next_x && y == next_y) {
+        return S;
+    }
+    logger->logInfo("ERROR : Invalid pathDirection")->endLineInfo();
+    return -1;
 }

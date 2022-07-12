@@ -56,10 +56,13 @@ class player : public RLNN_Agent {
 
     void runTrainingAsync();
 
+    void populateEnemyObstacles(vector<std::vector<int>> &grid, vector<enemy> &enemies);
+
 public:
 
     int current_x;
     int current_y;
+
     int source_x;
     int source_y;
     int destination_x;
@@ -77,6 +80,8 @@ public:
     float aggregated_rewards = 0;
     float count_aggregation = 0;
     vector<double> rewards;
+
+    bool isSimpleAstarPlayer = false;
 
     player(bool isTrainingMode) : cnnController(grid) {
         createEmptyGrid(grid);
@@ -101,7 +106,7 @@ public:
 
     bool findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
-    int selectAction(observation& currentState);
+    int selectAction(const observation& currentState);
 
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done);
 
@@ -112,6 +117,8 @@ public:
     bool isResuming();
 
     void copyGrid(std::vector<std::vector<int>> &gridSource);
+
+    void enableBaseLinePlayer();
 
     /// Testing
 #ifdef TESTING

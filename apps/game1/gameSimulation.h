@@ -21,15 +21,15 @@ class gameSimulation : public coordinatesUtil {
 
     std::unique_ptr<Logger> logger;
 
-    int movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, observation &currentObservation, int* error);
-    void moveEnemies(std::vector<enemy>& enemies);
-    void fight(std::vector<enemy>& enemies);
-    float calculateReward(std::vector<enemy>& enemies, const observation &ob, int action, int action_error);
+    int movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, const observation &currentObservation, int* error);
+    void moveEnemies(std::vector<enemy>& enemies, vector<std::vector<int>> &grid, observation &ob);
+    void fight(std::vector<enemy>& enemies, vector<std::vector<int>> &grid);
+    float calculateReward(const observation &ob, int action, int action_error);
     void populateEnemies(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
 
     bool isEpisodeComplete();
 
-    void headStraightToDestination(vector<vector<int>> &grid, std::vector<enemy>& enemies, bool isInference);
+    void headStraightToDestination(vector<vector<int>> &grid, std::vector<enemy>& enemies);
 
     bool isMDPDone(observation &nextObservation);
 

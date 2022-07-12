@@ -33,7 +33,7 @@ include_directories(${OPENGL_INCLUDE_DIR} "./")
 add_definitions(-DXTENSOR_ENABLE_XSIMD)
 add_definitions(-DXTENSOR_USE_OPENMP)
 
-add_executable(example example.cpp gameEnv.h gameEnv.cpp fixedobstacles.h fixedobstacles.cpp gameConstants.h enemy/enemy.h enemy/fixedEnemy.cpp enemy/fixedEnemy.h gameSimulation.cpp gameSimulation.h findPath.cpp findPath.h player.cpp player.h state.h state.cpp rl_control.cpp rl_control.h observation.h coordinatesUtil.cpp coordinatesUtil.h
+add_executable(example example.cpp fixedobstacles.h fixedobstacles.cpp gameConstants.h enemy/enemy.h enemy/enemy.cpp gameSimulation.cpp gameSimulation.h findPath.cpp findPath.h player.cpp player.h state.h state.cpp rl_control.cpp rl_control.h observation.h coordinatesUtil.cpp coordinatesUtil.h
         plot/pbPlots.hpp plot/pbPlots.cpp plot/supportLib.hpp plot/supportLib.cpp objectLocator.cpp objectLocator.h observation.cpp AStar_.cpp AStar_.h AStarOpenList.cpp AStarOpenList.h node_.cpp node_.h TestResult.h DQN/DQN_interface.h DQN/ReplayMemory.cpp DQN/ReplayMemory.h
         #DQN/dueling-DQN/DQNNet.cpp DQN/dueling-DQN/DQNNet.h DQN/dueling-DQN/RLNN_Agent.cpp DQN/dueling-DQN/RLNN_Agent.h
         #DQN/DDQN/DQNNet.cpp DQN/DDQN/DQNNet.h DQN/DDQN/RLNN_Agent.cpp DQN/DDQN/RLNN_Agent.h

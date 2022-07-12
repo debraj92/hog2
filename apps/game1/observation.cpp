@@ -353,7 +353,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
     }
 }
 
-void observation::flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) {
+void observation::flattenObservationToVector (float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) const{
     int nextPosOffset = 0;
     /// set trajectory. Takes 5 positions - on track, Left, Right, Front, off track
     // ONE HOT

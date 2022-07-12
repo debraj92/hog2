@@ -20,7 +20,7 @@ public:
 
     virtual void setTrainingMode(bool value) = 0;
 
-    virtual int selectAction(observation& currentState, int episodeCount, bool *explore) = 0;
+    virtual int selectAction(const observation& currentState, int episodeCount, bool *explore) = 0;
 
     /// Returns the network loss
     virtual double learnWithDQN() = 0;

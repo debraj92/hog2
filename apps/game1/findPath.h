@@ -11,7 +11,6 @@
 #include <map>
 #include "gameConstants.h"
 #include "AStar_.h"
-#include "enemy/enemy.h"
 #include "gameConstants.h"
 #include "Logger.h"
 
@@ -47,7 +46,7 @@ public:
         destination_y = dest_y;
         logger = std::make_unique<Logger>(LogLevel);
     }
-    bool findPathToDestination();
+    bool findPathToDestination(int destinationDirection=0);
     void calculateNextPosition();
     void getNextPositionAfterGivenLocation(int &given_x, int &given_y, int &next_x, int &next_y);
     int getNext_x();
@@ -55,7 +54,7 @@ public:
     bool isOnTrack(int current_x, int current_y);
     bool isOnTrackNoMemorizing(int current_x, int current_y);
     int pathDirection(int current_x, int current_y);
-    void populateEnemyObstacles(vector<enemy> &enemies);
+    int inferDirection(int x, int y, int next_x, int next_y);
     int getDistanceToDestination();
     void printMap();
     void changeSourceAndDestination(int startX, int startY, int endX, int endY);
@@ -70,6 +69,8 @@ public:
     int findDistanceToGoal(int &x, int &y);
 
     int getNodeOrder(int &x, int &y);
+    float getStraightLineDistanceToDestination();
+    float getShortestDistanceToDestination();
 
 };
 

@@ -9,9 +9,9 @@
 #include <unordered_set>
 #include "node_.h"
 #include <unordered_map>
-#include "enemy/enemy.h"
 #include "iostream"
 #include "Logger.h"
+#include "objectLocator.h"
 
 using namespace std;
 using namespace RTS;
@@ -34,9 +34,11 @@ class AStar_ {
 
     const int GRID_SPAN_;
 
-    void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
+    objectLocator locator;
 
-    float findShortestDistance(pair<int, int> src, pair<int, int> dst);
+    int destinationDirection_;
+
+    void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
 
     bool isDestinationFound(node_ node);
 
@@ -69,13 +71,17 @@ public:
         destination = make_pair(endX, endY);
     }
 
-    bool findPathToDestination();
+    float findShortestDistance(pair<int, int> src, pair<int, int> dst);
+
+    float findShortestDistanceEuclidean(pair<int, int> src, pair<int, int> dst);
+
+    float findShortestTime(pair<int, int> src, pair<int, int> dst);
+
+    bool findPathToDestination(int destinationDirection=0);
 
     node_ getNextNode(node_& current);
 
     bool isOnPath(node_& current);
-
-    void populateEnemyObstacles(vector<enemy> &enemies);
 
     void printTrack(node_ root);
 

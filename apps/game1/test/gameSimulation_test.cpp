@@ -8,7 +8,7 @@
 #include "../gameSimulation.h"
 #include "../player.h"
 #include "../Logger.h"
-#include "../enemy/fixedEnemy.h"
+#include "../enemy/enemy.h"
 
 using namespace std;
 
@@ -47,7 +47,7 @@ TEST_F(Simulation_test, test1) {
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    fixedEnemy f1(2, 2, 1);
+    enemy f1(2, 2, 1, true);
     enemies.push_back(f1);
 
     pl1.initialize(0, 0, 6, 6);

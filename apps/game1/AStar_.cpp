@@ -12,16 +12,41 @@
 using namespace std;
 
 float AStar_::findShortestDistance(pair<int, int> src, pair<int, int> dst) {
+    return max(abs(src.first - dst.first), abs(src.second - dst.second));
+}
+
+float AStar_::findShortestDistanceEuclidean(pair<int, int> src, pair<int, int> dst) {
     float x_sqr = pow((src.first - dst.first),2);
     float y_sqr = pow((src.second - dst.second),2);
     return sqrt(x_sqr + y_sqr);
 }
 
-bool AStar_::findPathToDestination() {
+float AStar_::findShortestTime(pair<int, int> src, pair<int, int> dst) {
+    float d = findShortestDistance(src, dst);
+    float d_eu = findShortestDistanceEuclidean(src, dst);
+    float n_u = locator.dotDirectionVector(destinationDirection_, src.first, src.second);
+    float p_u = locator.dotDirectionVector(destinationDirection_, dst.first, dst.second);
+    float d_sqr = d * d_eu;
+    return d_sqr / (n_u - p_u + d_eu * 1.001);
+}
+
+
+bool AStar_::findPathToDestination(int destinationDirection) {
+    logger->logDebug("AStar_::findPathToDestination")->endLineDebug();
     logger->printBoardDebug(grid);
     reset();
+    float (AStar_::* heuristicFunction)(pair<int, int> src, pair<int, int> dst);
+    destinationDirection_ = destinationDirection;
+    if (destinationDirection == 0) {
+        heuristicFunction = &AStar_::findShortestDistanceEuclidean;
+    } else {
+        heuristicFunction = &AStar_::findShortestTime;
+        //heuristicFunction = &AStar_::findShortestDistance;
+    }
+
+
     node_ root(source.first, source.second);
-    root.computeF(0, findShortestDistance(source, destination));
+    root.computeF(0, (this->*heuristicFunction)(source, destination));
     childParent.insert(make_pair(root, root));
     AStarOpenList openList;
     openList.insert(root);
@@ -48,7 +73,7 @@ bool AStar_::findPathToDestination() {
             if(!openList.isPresent(temp)) {
                 // insert (parent: next closest node and child: reachable node)
                 childParent.insert(make_pair(temp, nextNode));
-                temp.computeF(nextNode.g + 1, findShortestDistance(node_pair, destination));
+                temp.computeF(nextNode.g + 1, (this->*heuristicFunction)(node_pair, destination));
                 openList.insert(temp);
             } else {
                 if (openList.updateIfBetterPath(temp, nextNode.g + 1)) {
@@ -159,14 +184,6 @@ double AStar_::computeDistance(int x, int y) {
     double d1 = x - source.first;
     double d2 = y - source.second;
     return sqrt(pow(d1, 2) + pow(d2, 2));
-}
-
-void AStar_::populateEnemyObstacles(vector<enemy> &enemies) {
-    for(const enemy& e: enemies) {
-        if (computeDistance(e.current_x, e.current_y) <= VISION_RADIUS * sqrt(2)) {
-            grid[e.current_x][e.current_y] = -e.id;
-        }
-    }
 }
 
 void AStar_::printTrack(node_ root) {

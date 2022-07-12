@@ -60,7 +60,7 @@ public:
 
     void setTrainingMode(bool value);
 
-    int selectAction(observation& currentState, int episodeCount, bool *explore);
+    int selectAction(const observation& currentState, int episodeCount, bool *explore);
 
     double learnWithDQN();
 

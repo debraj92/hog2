@@ -109,7 +109,7 @@ public:
 
     void printData();
 
-    void flattenObservationToVector(float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]);
+    void flattenObservationToVector (float (&observation_vector)[MAX_ABSTRACT_OBSERVATIONS]) const;
 
     void setGoalInSight(int probeX, int probeY);
 
