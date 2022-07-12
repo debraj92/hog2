@@ -163,19 +163,18 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
                 logger->logDebug("Player killed")->endLineDebug();
                 player1->takeDamage(e.getAttackPoints());
                 e.isFixed = true;
-                return;
             }
             auto enemyLocation = enemyLocations.find(node_(e.current_x, e.current_y));
             if (enemyLocation != enemyLocations.end()) {
-                enemyLocations.insert(make_pair(node_(e.current_x, e.current_y),
-                                                enemyLocation->second + 1));
+                enemyLocation->second++;
             } else {
                 enemyLocations.insert(make_pair(node_(e.current_x, e.current_y), 1));
             }
         }
     }
+
     // damage enemies
-    for(auto enemy_iterator = enemies.begin(); enemy_iterator != enemies.end(); ++enemy_iterator) {
+    for(auto enemy_iterator = enemies.begin(); enemy_iterator != enemies.end();) {
         if (enemy_iterator->getLifeLeft() > 0) {
             if (enemyLocations.find(node_(enemy_iterator->current_x, enemy_iterator->current_y))->second >= 2) {
                 logger->logDebug("Enemy killed, id: ")->logDebug(enemy_iterator->id)->endLineDebug();
@@ -186,6 +185,8 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
         if (enemy_iterator->getLifeLeft() <= 0) {
             // clean up dead enemies
             enemies.erase(enemy_iterator);
+        } else {
+            ++enemy_iterator;
         }
     }
 }

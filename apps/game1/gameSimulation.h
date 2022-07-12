@@ -51,6 +51,15 @@ public:
 
     bool isDestinationReached();
 
+    /// Testing
+#ifdef TESTING
+
+    friend class Simulation_test;
+    FRIEND_TEST(Simulation_test, test3);
+    FRIEND_TEST(Simulation_test, test4);
+
+#endif
+
 };
 
 

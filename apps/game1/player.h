@@ -130,6 +130,7 @@ public:
     FRIEND_TEST(Simulation_test, test1);
     FRIEND_TEST(Simulation_test, test2);
     FRIEND_TEST(Simulation_test, test3);
+    FRIEND_TEST(Simulation_test, test4);
 
 #endif
 
