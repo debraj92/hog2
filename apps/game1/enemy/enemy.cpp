@@ -29,7 +29,7 @@ void enemy::doNextMove(vector<std::vector<int>> &grid, enemy::playerInfo pl_info
 
     if(isPlayerInSight()) {
         int playerDistanceFromLastKnownLocation = max(abs(pl_info.player_x - lastKnownPlayerX), abs(pl_info.player_y - lastKnownPlayerY));
-        if (lastKnownPlayerX > 0 and playerDistanceFromLastKnownLocation == 1) {
+        if (lastKnownPlayerX >= 0 and playerDistanceFromLastKnownLocation == 1) {
             pl_info.player_direction = fp->inferDirection(lastKnownPlayerX, lastKnownPlayerY, pl_info.player_x, pl_info.player_y);
             lastKnownPlayerX = pl_info.player_x;
             lastKnownPlayerY = pl_info.player_y;
@@ -82,7 +82,7 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
         playerY = pl_info.player_y;
         // randomly choose left-diagonal or right-diagonal of player
         const auto p1 = std::chrono::system_clock::now();
-        long long isLeft = (std::chrono::duration_cast<std::chrono::seconds>(
+        long long isLeft = (std::chrono::duration_cast<std::chrono::milliseconds>(
                 p1.time_since_epoch()).count()%10) % 2 == 0;
         if (isLeft) {
             error = cu.setDodgeDiagonalLeftActionCoordinates(playerX, playerY, pl_info.player_direction);

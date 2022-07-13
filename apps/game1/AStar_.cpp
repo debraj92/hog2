@@ -199,21 +199,6 @@ void AStar_::printTrack(node_ root) {
     logger->logDebug(path)->endLineDebug();
 }
 
-// TODO: Delete after removing calls from tests
-void AStar_::printBoard() {
-    cout<<"AStar_::print board"<<endl;
-    for (int row=0; row<GRID_SPAN_; row++) {
-        for (int col=0; col<GRID_SPAN_; col++) {
-            if(grid[row][col]<0) {
-                cout<<grid[row][col]<<" ";
-            } else {
-                cout<<" "<<grid[row][col]<<" ";
-            }
-        }
-        cout<<"\n";
-    }
-}
-
 int AStar_::getCountOfNodesToDestination() {
     return countOfNodesToDestination;
 }

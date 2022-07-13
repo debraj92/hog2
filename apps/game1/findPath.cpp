@@ -85,10 +85,6 @@ int findPath::getDistanceToDestination() {
     return aStar.getCountOfNodesToDestination();
 }
 
-void findPath::printMap() {
-    aStar.printBoard();
-}
-
 void findPath::changeSourceAndDestination(int startX, int startY, int endX, int endY) {
     aStar.changeSourceAndDestination(startX, startY, endX, endY);
 }

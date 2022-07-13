@@ -56,7 +56,6 @@ public:
     int pathDirection(int current_x, int current_y);
     int inferDirection(int x, int y, int next_x, int next_y);
     int getDistanceToDestination();
-    void printMap();
     void changeSourceAndDestination(int startX, int startY, int endX, int endY);
     void changeMap(vector<vector<int>> &grid);
 

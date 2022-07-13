@@ -50,7 +50,6 @@ TEST(ObservationDirectionTrajectory, BasicAssertions) {
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
     fp->changeMap(grid);
-    fp->printMap();
     fp->findPathToDestination();
 
     ob.direction = 0;

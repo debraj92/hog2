@@ -85,8 +85,6 @@ public:
 
     void printTrack(node_ root);
 
-    void printBoard();
-
     int getCountOfNodesToDestination();
 
     void changeSourceAndDestination(int startX, int startY, int endX, int endY);
