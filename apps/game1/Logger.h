@@ -16,7 +16,14 @@ using namespace RTS;
 class Logger {
 
     ofstream logfile;
+    ofstream logfileObstacles;
+    ofstream logfileEnemies;
+    ofstream logfilePath;
+
     const string LOG_FILE = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/log/log.txt";
+    const string LOG_FILE_OBSTACLES = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/log/log_obstacles.txt";
+    const string LOG_FILE_ENEMIES = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/log/log_enemies.txt";
+    const string LOG_FILE_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/log/log_path.txt";
 
     void printBoard_(std::vector<std::vector<int>> &grid);
 
@@ -57,6 +64,12 @@ public:
     Logger* printBoardDebug(std::vector<std::vector<int>> &grid);
 
     Logger* printBoardInfo(std::vector<std::vector<int>> &grid);
+
+    void logObstaclesToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]);
+
+    void logEnemiesToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]);
+
+    void logPathToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]);
 
 };
 

@@ -177,10 +177,48 @@ Logger *Logger::endLineInfoFile() {
 
 void Logger::openLogFile() {
     logfile.open(LOG_FILE);
+    logfileObstacles.open(LOG_FILE_OBSTACLES);
+    logfileEnemies.open(LOG_FILE_ENEMIES);
+    logfilePath.open(LOG_FILE_PATH);
 }
 
 void Logger::closeLogFile() {
     logfile.close();
+    logfileObstacles.close();
+    logfileEnemies.close();
+    logfilePath.close();
 }
 
+void Logger::logObstaclesToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]) {
+    for (int row=0; row<FOV_WIDTH; row++) {
+        for (int col=0; col<FOV_WIDTH; col++) {
+            logfileObstacles<<fov[row][col]<<" ";
+        }
+        logfileObstacles<<"\n";
+    }
+    logfileObstacles<<"\n";
+    std::flush(logfileObstacles);
+}
+
+void Logger::logEnemiesToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]) {
+    for (int row=0; row<FOV_WIDTH; row++) {
+        for (int col=0; col<FOV_WIDTH; col++) {
+            logfileEnemies<<fov[row][col]<<" ";
+        }
+        logfileEnemies<<"\n";
+    }
+    logfileEnemies<<"\n";
+    std::flush(logfileEnemies);
+}
+
+void Logger::logPathToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]) {
+    for (int row=0; row<FOV_WIDTH; row++) {
+        for (int col=0; col<FOV_WIDTH; col++) {
+            logfilePath<<fov[row][col]<<" ";
+        }
+        logfilePath<<"\n";
+    }
+    logfilePath<<"\n";
+    std::flush(logfilePath);
+}
 

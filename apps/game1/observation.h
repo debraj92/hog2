@@ -25,6 +25,10 @@ class observation {
         float angle;
         float risk_measure;
         int id;
+        bool isFixed;
+        int moves_left;
+        int enemyX;
+        int enemyY;
     };
 
     void updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties);
@@ -47,6 +51,7 @@ public:
 
     bool isGoalInSight = false;
     bool isLastActionLeftRight = false;
+    int actionInPreviousState;
 
     /**
      * Assumption: Maximum 4 enemies within the vision radius
@@ -55,22 +60,36 @@ public:
     float enemy_angle_1 = 0;
     float enemy_risk_1 = 0;
     int enemy_id_1 = -1;
+    int enemy_is_fixed_1 = 1;
+    int enemy_moves_left_1 = 0;
 
     float enemy_distance_2 = MAX_DISTANCE;
     float enemy_angle_2 = 0;
     float enemy_risk_2 = 0;
     int enemy_id_2 = -1;
+    int enemy_is_fixed_2 = 1;
+    int enemy_moves_left_2 = 0;
 
     float enemy_distance_3 = MAX_DISTANCE;
     float enemy_angle_3 = 0;
     float enemy_risk_3 = 0;
     int enemy_id_3 = -1;
+    int enemy_is_fixed_3 = 1;
+    int enemy_moves_left_3 = 0;
 
     // For backward compatibility with table based rl
     float enemy_distance_4 = MAX_DISTANCE;
     float enemy_angle_4 = 0;
     float enemy_risk_4 = 0;
     int enemy_id_4 = -1;
+
+    float action_straight_atRisk = 0;
+    float action_frontLeft_atRisk = 0;
+    float action_frontRight_atRisk = 0;
+    float action_left_atRisk = 0;
+    float action_right_atRisk = 0;
+
+    bool isPlayerInHotPursuit = false;
 
     int rerouteDistance = MAX_DISTANCE;
 
@@ -105,7 +124,7 @@ public:
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp);
     void locateRelativeTrajectory();
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);
-    void locateEnemies(std::vector<enemy>& enemies);
+    void locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy>& enemies);
 
     void printData();
 
@@ -121,7 +140,10 @@ public:
 
     void printEnemyDistanceAndAngles();
 
-    void processLastAction(int action);
+    void markRiskyActions(std::vector <std::vector<int>> &grid, vector<enemy_attributes>& enemy_properties);
+
+    int getShortestDistanceBetweenPoints(int x1, int y1, int x2, int y2);
+
 };
 
 #endif //EXAMPLE_OBSERVATION_H

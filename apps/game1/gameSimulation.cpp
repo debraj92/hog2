@@ -49,14 +49,13 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         time++;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
-            logger->logDebug("Marching towards destination");
+            logger->logDebug("Marching towards destination")->endLineDebug();
             headStraightToDestination(grid, enemies);
         }
     }
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
 }
 
-// TODO: Implement HOT PURSUIT
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {
     logger->logDebug("gameSimulation::learnToPlay")->endLineDebug();
     populateEnemies(grid, enemies);
@@ -160,9 +159,11 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
         // ignore dead enemies
         if (e.getLifeLeft() > 0) {
             if (e.current_x == player1->current_x && e.current_y == player1->current_y) {
-                logger->logDebug("Player killed")->endLineDebug();
+                logger->logDebug("Player killed at (")->logDebug(player1->current_x)->logDebug(",")->logDebug(player1->current_y)
+                        ->logDebug(")")->endLineDebug();
                 player1->takeDamage(e.getAttackPoints());
-                e.isFixed = true;
+                // enemy is also killed
+                e.takeDamage(e.getAttackPoints());
             }
             auto enemyLocation = enemyLocations.find(node_(e.current_x, e.current_y));
             if (enemyLocation != enemyLocations.end()) {
@@ -184,6 +185,7 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
         }
         if (enemy_iterator->getLifeLeft() <= 0) {
             // clean up dead enemies
+            grid[enemy_iterator->current_x][enemy_iterator->current_y] = 0;
             enemies.erase(enemy_iterator);
         } else {
             ++enemy_iterator;
@@ -191,9 +193,8 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
     }
 }
 
-
-float gameSimulation::calculateReward(const observation &ob, int action, int action_error) {
-    if(ob.playerLifeLeft <= 0) {
+float gameSimulation::calculateReward(const observation &nextObservation, int action, int action_error) {
+    if(nextObservation.playerLifeLeft <= 0) {
         return REWARD_DEATH;
     }
     if(action_error == -1) {
@@ -202,13 +203,18 @@ float gameSimulation::calculateReward(const observation &ob, int action, int act
     if (action == ACTION_DODGE_LEFT or action == ACTION_DODGE_RIGHT) {
         return REWARD_ACTION_LR;
     }
-    if(ob.trajectory == on_track) {
+
+    if(nextObservation.trajectory == on_track) {
+        if (nextObservation.isPlayerInHotPursuit) {
+            return REWARD_TRACK_ONE_DIV;
+        }
         return REWARD_REACH;
-    } else if (ob.trajectory >= lower_bound_one_deviation && ob.trajectory <= upper_bound_one_deviation) {
+    } else if (nextObservation.trajectory >= lower_bound_one_deviation && nextObservation.trajectory <= upper_bound_one_deviation) {
         return REWARD_TRACK_ONE_DIV;
-    } else if (ob.trajectory >= lower_bound_two_deviation && ob.trajectory <= upper_bound_two_deviation) {
+    } else if (nextObservation.trajectory >= lower_bound_two_deviation && nextObservation.trajectory <= upper_bound_two_deviation) {
         return REWARD_TRACK_TWO_DIV;
     } else {
+        // Placeholder - will never hit as player is dead
         return REWARD_OFFTRACK;
     }
 }
@@ -269,7 +275,9 @@ void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, std::v
 }
 
 bool gameSimulation::isMDPDone(observation &nextObservation) {
-    bool mdpDone = nextObservation.trajectory_on_track or nextObservation.trajectory_off_track or player1->life_left <= 0;
+    bool mdpDone = (not nextObservation.isPlayerInHotPursuit and nextObservation.trajectory_on_track)
+            or nextObservation.trajectory_off_track
+            or player1->life_left <= 0;
     logger->logDebug("MDPDone ")->logDebug(mdpDone)->endLineDebug();
     return mdpDone;
 }

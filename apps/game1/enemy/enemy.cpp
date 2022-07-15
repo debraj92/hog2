@@ -25,6 +25,11 @@ void enemy::doNextMove(vector<std::vector<int>> &grid, enemy::playerInfo pl_info
     if(isFixed) {
         return;
     }
+    // moving enemies die after exhausting moves
+    if (max_moves == 0) {
+        life_left = 0;
+        return;
+    }
     fp = std::make_shared<findPath>(grid, current_x, current_y, pl_info.player_x, pl_info.player_y);
 
     if(isPlayerInSight()) {
@@ -56,7 +61,6 @@ void enemy::doNextMove(vector<std::vector<int>> &grid, enemy::playerInfo pl_info
         fp->getNextPositionAfterGivenLocation(current_x, current_y, current_x, current_y);
         grid[current_x][current_y] = id;
         max_moves--;
-        isFixed = max_moves == 0;
     }
 }
 

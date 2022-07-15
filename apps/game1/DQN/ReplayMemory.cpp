@@ -218,16 +218,36 @@ void ReplayMemory::logStateVector(observation &ob) {
     if (ob.obstacle_front_right <= VISION_RADIUS) {
         state += "FR |";
     }
+    if (ob.obstacle_left <= VISION_RADIUS) {
+        state += "L |";
+    }
+    if (ob.obstacle_right <= VISION_RADIUS) {
+        state += "R |";
+    }
+    if (ob.obstacle_blind_left <= VISION_RADIUS) {
+        state += "BL |";
+    }
+    if (ob.obstacle_blind_right <= VISION_RADIUS) {
+        state += "BR |";
+    }
     state += " Enmy: ";
     if (ob.enemy_distance_1 < MAX_DISTANCE) {
-        state += "1. D:"+to_string(ob.enemy_distance_1)+" A:"+to_string(ob.enemy_angle_1 * 10) + " | ";
+        state += "1. D:"+to_string(ob.enemy_distance_1)+" A:"+to_string(ob.enemy_angle_1 * 10);
+        state += " F:"+to_string(ob.enemy_is_fixed_1)+" M:"+to_string(ob.enemy_moves_left_1) + " | ";
     }
     if (ob.enemy_distance_2 < MAX_DISTANCE) {
-        state += "2. D:"+to_string(ob.enemy_distance_2)+" A:"+to_string(ob.enemy_angle_2 * 10) + " | ";
+        state += "2. D:"+to_string(ob.enemy_distance_2)+" A:"+to_string(ob.enemy_angle_2 * 10);
+        state += " F:"+to_string(ob.enemy_is_fixed_2)+" M:"+to_string(ob.enemy_moves_left_2) + " | ";
     }
     if (ob.enemy_distance_3 < MAX_DISTANCE) {
-        state += "3. D:"+to_string(ob.enemy_distance_3)+" A:"+to_string(ob.enemy_angle_3 * 10) + " | ";
+        state += "3. D:"+to_string(ob.enemy_distance_3)+" A:"+to_string(ob.enemy_angle_3 * 10);
+        state += " F:"+to_string(ob.enemy_is_fixed_3)+" M:"+to_string(ob.enemy_moves_left_3) + " | ";
     }
+    state += "HP: "+to_string(ob.isPlayerInHotPursuit) +" | ";
+    state += "LA: "+to_string(ob.actionInPreviousState) +" | ";
     logger->logToFileInfo(state)->endLineInfoFile();
+    logger->logObstaclesToFile(ob.obstaclesFOV);
+    logger->logEnemiesToFile(ob.enemiesFOV);
+    logger->logPathToFile(ob.pathFOV);
 }
 

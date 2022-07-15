@@ -15,6 +15,7 @@ set(
         /Users/debrajray/MyComputer/RTS/xsimd/build
         CACHE STRING "" FORCE
 )
+set (CMAKE_CXX_FLAGS "-g ${CMAKE_CXX_FLAGS}")
 
 set(torch_DIR "/Users/debrajray/MyComputer/libtorch-latest-1.12/libtorch/share/cmake/Torch")
 

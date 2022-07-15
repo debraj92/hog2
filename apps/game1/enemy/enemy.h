@@ -51,6 +51,7 @@ public:
         this->id = id;
         this->isFixed = fixed;
         this->life_left = 10;
+        this->max_moves = fixed? 0 : FOV_WIDTH;
         logger = std::make_shared<Logger>(LogLevel);
     }
 

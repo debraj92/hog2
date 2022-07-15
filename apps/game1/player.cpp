@@ -139,12 +139,12 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.locateRelativeTrajectory();
 
     if (ob.direction > 0) {
-        ob.locateEnemies(enemies);
+        ob.locateEnemies(grid, enemies);
         ob.updateObstacleDistances(grid);
     }
 
     ob.recordFOVForCNN(cnnController, fp);
-    ob.processLastAction(lastAction);
+    ob.actionInPreviousState = lastAction;
 }
 
 bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
@@ -187,7 +187,9 @@ int player::selectAction(const observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    if (not next.isGoalInSight and not stopLearning) {
+    // Cannot avoid transition into pursuit by any strategy. Therefore, nothing to learn.
+    auto transitionIntoHotPursuit = not current.isPlayerInHotPursuit and next.isPlayerInHotPursuit;
+    if (not stopLearning and not next.isGoalInSight and not transitionIntoHotPursuit) {
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
     }
 }

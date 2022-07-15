@@ -286,15 +286,28 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
     countNodeNumbersInDirection = 0;
 }
 
-void observation::locateEnemies(std::vector<enemy> &enemies) {
+void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy> &enemies) {
     objectLocator ol;
     vector<enemy_attributes> enemy_properties;
     for(const enemy& e: enemies) {
-        ol.locateObject(playerX, playerY, direction, e.current_x, e.current_y);
-        double distance = ol.getObjectDistance();
-        if (distance <= VISION_RADIUS) {
-            ol.measureRiskAndObjectAngle();
-            enemy_properties.push_back({ol.getObjectDistance(), ol.getObjectAngle(), ol.getObjectRiskFeature(), e.id});
+        if (e.life_left > 0) {
+            ol.locateObject(playerX, playerY, direction, e.current_x, e.current_y);
+            double distance = ol.getObjectDistance();
+            if (distance <= VISION_RADIUS) {
+                ol.measureRiskAndObjectAngle();
+                enemy_properties.push_back({ol.getObjectDistance(),
+                                            ol.getObjectAngle(),
+                                            ol.getObjectRiskFeature(),
+                                            e.id,
+                                            e.isFixed,
+                                            e.max_moves,
+                                            e.current_x,
+                                            e.current_y});
+                if (not isPlayerInHotPursuit) {
+                    isPlayerInHotPursuit = (not e.isFixed) and e.max_moves > 0;
+                }
+
+            }
         }
     }
 
@@ -306,6 +319,7 @@ void observation::locateEnemies(std::vector<enemy> &enemies) {
              return e1.risk_measure > e2.risk_measure;
          });
 
+    markRiskyActions(grid, enemy_properties);
     updateEnemyDistanceAndAngles(enemy_properties);
 
 }
@@ -318,12 +332,16 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_3 = enemy_properties[2].angle;
         enemy_risk_3 = enemy_properties[2].risk_measure;
         enemy_id_3 = enemy_properties[2].id;
+        enemy_is_fixed_3 = enemy_properties[2].isFixed;
+        enemy_moves_left_3 = enemy_properties[2].moves_left;
         enemy_properties.pop_back();
     } else {
         enemy_distance_3 = MAX_DISTANCE;
         enemy_angle_3 = 0;
         enemy_risk_3 = 0;
         enemy_id_3 = -1;
+        enemy_is_fixed_3 = 1;
+        enemy_moves_left_3 = 0;
     }
 
     if(enemy_properties.size() >= 2) {
@@ -331,12 +349,16 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_2 = enemy_properties[1].angle;
         enemy_risk_2 = enemy_properties[1].risk_measure;
         enemy_id_2 = enemy_properties[1].id;
+        enemy_is_fixed_2 = enemy_properties[1].isFixed;
+        enemy_moves_left_2 = enemy_properties[1].moves_left;
         enemy_properties.pop_back();
     } else {
         enemy_distance_2 = MAX_DISTANCE;
         enemy_angle_2 = 0;
         enemy_risk_2 = 0;
         enemy_id_2 = -1;
+        enemy_is_fixed_2 = 1;
+        enemy_moves_left_2 = 0;
     }
 
     if(enemy_properties.size() >= 1) {
@@ -344,12 +366,16 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_1 = enemy_properties[0].angle;
         enemy_risk_1 = enemy_properties[0].risk_measure;
         enemy_id_1 = enemy_properties[0].id;
+        enemy_is_fixed_1 = enemy_properties[0].isFixed;
+        enemy_moves_left_1 = enemy_properties[0].moves_left;
         enemy_properties.pop_back();
     } else {
         enemy_distance_1 = MAX_DISTANCE;
         enemy_angle_1 = 0;
         enemy_risk_1 = 0;
         enemy_id_1 = -1;
+        enemy_is_fixed_1 = 1;
+        enemy_moves_left_1 = 0;
     }
 }
 
@@ -379,18 +405,32 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
     int offset = enemy_angle_1 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_1) * 10;
     nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_is_fixed_1);
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_moves_left_1);
 
     observation_vector[nextPosOffset++] = enemy_distance_2;
     offset = enemy_angle_2 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_2) * 10;
     nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_is_fixed_2);
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_moves_left_2);
 
     observation_vector[nextPosOffset++] = enemy_distance_3;
     offset = enemy_angle_3 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_3) * 10;
     nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_is_fixed_3);
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_moves_left_3);
 
-    observation_vector[nextPosOffset++] = isLastActionLeftRight ? 1 : 0;
+    observation_vector[nextPosOffset++] = static_cast< float >(isPlayerInHotPursuit? 1:0);
+    observation_vector[nextPosOffset + actionInPreviousState] = 1;
+    nextPosOffset += 5;
+
+    observation_vector[nextPosOffset++] = action_straight_atRisk;
+    observation_vector[nextPosOffset++] = action_frontLeft_atRisk;
+    observation_vector[nextPosOffset++] = action_left_atRisk;
+    observation_vector[nextPosOffset++] = action_frontRight_atRisk;
+    observation_vector[nextPosOffset++] = action_right_atRisk;
 }
 
 void observation::locateRelativeTrajectory() {
@@ -524,10 +564,65 @@ void observation::recordFOVForCNN(CNN_controller& cnn, const shared_ptr<findPath
     cnn.populateFOVChannels(playerX, playerY, direction, trajectory_on_track == 1, fp, obstaclesFOV, enemiesFOV, pathFOV);
 }
 
-void observation::processLastAction(int action) {
-    logger->logDebug("processLastAction")->endLineDebug();
-    isLastActionLeftRight = (action == ACTION_DODGE_LEFT) or (action == ACTION_DODGE_RIGHT);
+/**
+ * Risky actions are those that move the player to a cell which a moving enemy might attack in the current time step
+ */
+void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<enemy_attributes>& enemy_properties) {
+    coordinatesUtil coordinates(grid);
+    int x, y, error;
+
+    for (const enemy_attributes &e: enemy_properties) {
+
+        if (e.isFixed) {
+            continue;
+        }
+
+        // straight action
+        x = playerX;
+        y = playerY;
+        error = coordinates.setStraightActionCoordinates(x, y, direction);
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+            action_straight_atRisk++;
+        }
+
+        // front left action
+        x = playerX;
+        y = playerY;
+        error = coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction);
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+            action_frontLeft_atRisk++;
+        }
+
+        // front right action
+        x = playerX;
+        y = playerY;
+        error = coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction);
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+            action_frontRight_atRisk++;
+        }
+
+        // left action
+        x = playerX;
+        y = playerY;
+        error = coordinates.setDodgeLeftActionCoordinates(x, y, direction);
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+            action_left_atRisk++;
+        }
+
+        // right action
+        x = playerX;
+        y = playerY;
+        error = coordinates.setDodgeRightActionCoordinates(x, y, direction);
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+            action_right_atRisk++;
+        }
+    }
 }
+
+int observation::getShortestDistanceBetweenPoints(int x1, int y1, int x2, int y2) {
+    return max(abs(x1 - x2), abs(y1 - y2));
+}
+
 
 
 
