@@ -86,6 +86,10 @@ int findPath::getDistanceToDestination() {
 }
 
 void findPath::changeSourceAndDestination(int startX, int startY, int endX, int endY) {
+    current_x = startX;
+    current_y = startY;
+    destination_x = endX;
+    destination_y = endY;
     aStar.changeSourceAndDestination(startX, startY, endX, endY);
 }
 

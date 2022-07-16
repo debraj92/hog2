@@ -31,7 +31,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         fight(enemies, grid);
         // Enemy operations
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation);
+            moveEnemies(enemies, grid, currentObservation, time);
             fight(enemies, grid);
         }
         logger->printBoardDebug(grid);
@@ -77,7 +77,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
         fight(enemies, grid);
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation);
+            moveEnemies(enemies, grid, currentObservation, time);
             fight(enemies, grid);
         }
         logger->printBoardDebug(grid);
@@ -145,10 +145,10 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
     return nextAction;
 }
 
-void gameSimulation::moveEnemies(std::vector<enemy>& enemies, vector<std::vector<int>> &grid, observation &ob) {
+void gameSimulation::moveEnemies(std::vector<enemy>& enemies, vector<std::vector<int>> &grid, observation &ob, int time) {
     for(enemy &e: enemies){
         // ignore dead enemies
-        e.doNextMove(grid, {ob.playerX, ob.playerY, 0});
+        e.doNextMove(time, grid, {ob.playerX, ob.playerY, 0});
     }
 }
 

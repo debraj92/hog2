@@ -46,6 +46,11 @@ public:
         destination_y = dest_y;
         logger = std::make_unique<Logger>(LogLevel);
     }
+
+    findPath(std::vector<std::vector<int>> &grid) : aStar(grid){
+        logger = std::make_unique<Logger>(LogLevel);
+    }
+
     bool findPathToDestination(int destinationDirection=0);
     void calculateNextPosition();
     void getNextPositionAfterGivenLocation(int &given_x, int &given_y, int &next_x, int &next_y);

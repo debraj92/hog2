@@ -32,6 +32,7 @@ void player::learnGame() {
 
     /// Start training async
     stopLearning = false;
+    epoch = 1;
     thread trainingRunner([this]{runTrainingAsync();});
 
     while (epoch <= MAX_EPISODES) {
@@ -278,7 +279,8 @@ void player::copyGrid(std::vector<std::vector<int>> &gridSource) {
 
 
 void player::runTrainingAsync() {
-    for(epoch = 1; epoch <= MAX_EPISODES and not stopLearning; epoch++) {
+
+    for(; epoch <= MAX_EPISODES and not stopLearning; epoch++) {
 
         /// Let the writer thread run a few times before executing a training pass
         {

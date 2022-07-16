@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 35000;   /// Must be greater than 8
+const int MAX_EPISODES = 50000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 40;
 
 const int GRID_SPAN=10; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -101,7 +101,7 @@ const int MAX_LIFE = 10;
 
 const int MAX_DISTANCE = 100;
 
-const int MAX_ABSTRACT_OBSERVATIONS = 22;
+const int MAX_ABSTRACT_OBSERVATIONS = 38;
 
 const int MAX_CAPACITY_REPLAY_BUFFER = 12000;
 
@@ -119,9 +119,9 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const int INPUT_SIZE = 54;
-const int HIDDEN_LAYER_1_SIZE = 38;
-const int HIDDEN_LAYER_2_SIZE = 26;
+const int INPUT_SIZE = 70;
+const int HIDDEN_LAYER_1_SIZE = 46;
+const int HIDDEN_LAYER_2_SIZE = 35;
 
 namespace RTS {
     enum LOG_LEVEL {

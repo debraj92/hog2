@@ -17,11 +17,14 @@ void enemy::takeDamage(int points) {
     life_left -= points;
 }
 
-bool enemy::isPlayerInSight() {
-    return fp->getShortestDistanceToDestination() <= static_cast<float>(enemyVisionRadius);
+bool enemy::isPlayerInSight(int player_x, int player_y) {
+    return max(abs(current_x - player_x), abs(current_y - player_y)) <= static_cast<float>(enemyVisionRadius);
 }
 
-void enemy::doNextMove(vector<std::vector<int>> &grid, enemy::playerInfo pl_info) {
+void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerInfo pl_info) {
+    if (timeStep > 0 and time <= timeStep) {
+        timeStep = 0;
+    }
     if(isFixed) {
         return;
     }
@@ -30,21 +33,20 @@ void enemy::doNextMove(vector<std::vector<int>> &grid, enemy::playerInfo pl_info
         life_left = 0;
         return;
     }
-    fp = std::make_shared<findPath>(grid, current_x, current_y, pl_info.player_x, pl_info.player_y);
-
-    if(isPlayerInSight()) {
+    if(isPlayerInSight(pl_info.player_x, pl_info.player_y)) {
+        bool wasPlayerInSightInLastTimeStep = (time - timeStep) == 1;
+        timeStep = time;
         int playerDistanceFromLastKnownLocation = max(abs(pl_info.player_x - lastKnownPlayerX), abs(pl_info.player_y - lastKnownPlayerY));
-        if (lastKnownPlayerX >= 0 and playerDistanceFromLastKnownLocation == 1) {
+        if (wasPlayerInSightInLastTimeStep and lastKnownPlayerX >= 0 and playerDistanceFromLastKnownLocation == 1) {
             pl_info.player_direction = fp->inferDirection(lastKnownPlayerX, lastKnownPlayerY, pl_info.player_x, pl_info.player_y);
             lastKnownPlayerX = pl_info.player_x;
             lastKnownPlayerY = pl_info.player_y;
             predictNextPlayerLocation(grid, pl_info);
-            fp->changeSourceAndDestination(current_x, current_y, pl_info.player_x, pl_info.player_y);
         } else {
             lastKnownPlayerX = pl_info.player_x;
             lastKnownPlayerY = pl_info.player_y;
         }
-
+        fp->changeSourceAndDestination(current_x, current_y, pl_info.player_x, pl_info.player_y);
 
         logger->logDebug("Player in sight of enemy: ")->logDebug(id)->endLineDebug();
         bool pathFound;

@@ -64,11 +64,15 @@ public:
      */
     AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) : GRID_SPAN_(grid.size()) {
         logger = std::make_unique<Logger>(LogLevel);
-        logger->logDebug("AStar created, source: ");
         logger->logDebug(startX)->logDebug(", ")->logDebug(startY)->endLineDebug();
         std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
         source = make_pair(startX, startY);
         destination = make_pair(endX, endY);
+    }
+
+    AStar_(vector<vector<int>> &grid) : GRID_SPAN_(grid.size()) {
+        logger = std::make_unique<Logger>(LogLevel);
+        std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
     }
 
     float findShortestDistance(pair<int, int> src, pair<int, int> dst);

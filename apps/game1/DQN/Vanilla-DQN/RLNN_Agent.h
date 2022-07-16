@@ -64,7 +64,6 @@ public:
 
     double learnWithDQN();
 
-    // TODO: Interface changes in other DQNs
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring);
 
     /// provide file path

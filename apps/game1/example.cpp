@@ -1,8 +1,4 @@
-#include <torch/torch.h>
-
 #include <iostream>
-#include "gameEnv.h"
-#include "AStar_.h"
 #include "gameConstants.h"
 #include "Logger.h"
 #include "player.h"
@@ -29,86 +25,170 @@ void increaseStackSize() {
     }
 }
 
-void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &enemies) {
+void runTest2(player &player1) {
+    TestResult t{};
+    int sx=0;
+    int sy=0;
+    int dx=0;
+    int dy=0;
+    trainingMaps tm;
+    float countDestinationReach = 0;
+    float death = 0;
+    float max_ep = 2000;
+    for (int i=1; i<= max_ep; i++) {
+        cout<<"Episode: "<<i<<endl;
+        vector<vector<int>> grid;
+        for (int i=0; i<GRID_SPAN; i++) {
+            std::vector<int> row(GRID_SPAN, 0);
+            grid.push_back(row);
+        }
+        std::vector<enemy> enemies;
+        //trainingMaps::createMapLarge1(grid, enemies);
+        trainingMaps::createMap3(grid, enemies);
+
+        tm.setSourceAndDestination(grid, sx, sy, dx, dy);
+        player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+        if(t.final_x == t.destination_x and t.final_y == t.destination_y) {
+            countDestinationReach++;
+        }
+        if(player1.life_left == 0) {
+            death++;
+        }
+    }
+
+    float reach_percent = countDestinationReach * 100 / max_ep;
+    float death_percent = countDestinationReach * 100 / max_ep;
+    cout<<"% reach "<<reach_percent<<endl;
+    cout<<"% death "<<death_percent<<endl;
+}
+
+
+void runTest(player &player1) {
+    int i=1;
+    vector<vector<int>> grid;
+    for (int i=0; i<GRID_SPAN; i++) {
+        std::vector<int> row(GRID_SPAN, 0);
+        grid.push_back(row);
+    }
+    std::vector<enemy> enemies;
+    trainingMaps tm;
+
     TestResult t{};
     int sx=0;
     int sy=0;
     int dx=GRID_SPAN-1;
     int dy=GRID_SPAN-1;
 
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
 
+    tm.generateNextMap(grid, enemies);
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
 
     sx=GRID_SPAN-1;
     sy=GRID_SPAN-1;
     dx=0;
     dy=(GRID_SPAN-1)/2;
+    tm.generateNextMap(grid, enemies);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
 
     sx=0;
     sy=(GRID_SPAN-1)/2;
     dx=GRID_SPAN-1;
     dy=0;
+    tm.generateNextMap(grid, enemies);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
 
-
-    sx=0;
-    sy=(GRID_SPAN-1)/2;
-    dx=GRID_SPAN-1;
-    dy=0;
+    sx=GRID_SPAN-1;
+    sy=0;
+    dx=(GRID_SPAN)/2 + 1;
+    dy=GRID_SPAN-1;
+    tm.generateNextMap(grid, enemies);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
+
 
     sx=(GRID_SPAN)/2 + 1;
     sy=GRID_SPAN-1;
     dx=GRID_SPAN-1;
     dy=(GRID_SPAN-1)/2;
+    tm.generateNextMap(grid, enemies);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-    sx=GRID_SPAN-4;
-    sy=0;
-    dx=0;
-    dy=GRID_SPAN - 1;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-    sx=GRID_SPAN-1;
-    sy=GRID_SPAN-4;
-    dx=0;
-    dy=GRID_SPAN-3;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-
-    sx=0;
-    sy=5;
-    dx=GRID_SPAN-1;
-    dy=2;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
 
     sx=(GRID_SPAN-1)/2;
     sy=0;
     dx=GRID_SPAN/2 + 3;
     dy=GRID_SPAN - 1;
+    tm.generateNextMap(grid, enemies);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
 
-    sx=9;
-    sy=9;
-    dx=4;
-    dy=0;
 
+    sx=GRID_SPAN-4;
+    sy=0;
+    dx=0;
+    dy=GRID_SPAN - 1;
+    tm.generateNextMap(grid, enemies);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
+
+    sx=GRID_SPAN-1;
+    sy=GRID_SPAN-4;
+    dx=0;
+    dy=GRID_SPAN-3;
+    tm.generateNextMap(grid, enemies);
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
+
+    sx=0;
+    sy=5;
+    dx=GRID_SPAN-1;
+    dy=2;
+    tm.generateNextMap(grid, enemies);
+    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+    if (not(t.final_x == dx and t.final_y == dy)){
+        cout<<i++<<endl;
+    } else {
+        i++;
+    }
+
 }
+
 
 int main() {
 
@@ -117,25 +197,20 @@ int main() {
     using namespace RTS;
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
-    //player player1(true);
+    player player1(true);
+    player1.learnGame();
+
+    //player player1(false);
     //player1.loadExistingModel();
     //player1.learnGame();
 
-
-    vector<vector<int>> grid;
-    for (int i=0; i<GRID_SPAN; i++) {
-        std::vector<int> row(GRID_SPAN, 0);
-        grid.push_back(row);
-    }
-    std::vector<enemy> enemies;
-
-    trainingMaps::createMap3(grid, enemies);
-
-
-
+    /*
     player player1(false);
+    /// Enable baseline for comparison
+    //player1.enableBaseLinePlayer();
     TestResult t{};
-    runTest(player1, grid, enemies);
+    runTest(player1);
+    */
 
 
 }

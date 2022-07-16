@@ -19,6 +19,8 @@ class enemy {
 
     std::shared_ptr<findPath> fp;
 
+    int timeStep = 0;
+
 public:
     int id;
 
@@ -43,7 +45,7 @@ public:
         int player_direction;
     };
 
-    enemy(int start_x, int start_y, int id, bool fixed) {
+    enemy(vector<std::vector<int>> &grid, int start_x, int start_y, int id, bool fixed) {
         this->start_x = start_x;
         this->start_y = start_y;
         this->current_x = start_x;
@@ -52,14 +54,15 @@ public:
         this->isFixed = fixed;
         this->life_left = 10;
         this->max_moves = fixed? 0 : FOV_WIDTH;
+        fp = std::make_shared<findPath>(grid);
         logger = std::make_shared<Logger>(LogLevel);
     }
 
-    void doNextMove(vector<std::vector<int>> &grid, playerInfo pl_info = {});
+    void doNextMove(int time, vector<std::vector<int>> &grid, playerInfo pl_info = {});
     int getAttackPoints();
     int getLifeLeft();
     void takeDamage(int points);
-    bool isPlayerInSight();
+    bool isPlayerInSight(int player_x, int player_y);
 
     void predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo &pl_info);
 
