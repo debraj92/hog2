@@ -35,7 +35,7 @@ public:
     int lastKnownPlayerX = -1;
     int lastKnownPlayerY = -1;
 
-    int max_moves = FOV_WIDTH;
+    int max_moves = FOV_WIDTH * 2;
 
     int enemyVisionRadius = VISION_RADIUS;
 

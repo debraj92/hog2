@@ -19,7 +19,7 @@ void player::takeDamage(int points) {
 
 void player::learnGame() {
     vector<enemy> enemies;
-    trainingMaps train;
+    trainingMaps train(false);
 
     gameSimulation game(grid);
     game.player1 = this;

@@ -25,16 +25,16 @@ void increaseStackSize() {
     }
 }
 
-void runTest2(player &player1) {
+void runTesting(player &player1) {
     TestResult t{};
     int sx=0;
     int sy=0;
     int dx=0;
     int dy=0;
-    trainingMaps tm;
+    trainingMaps tm(true);
     float countDestinationReach = 0;
     float death = 0;
-    float max_ep = 2000;
+    float max_ep = 5000;
     for (int i=1; i<= max_ep; i++) {
         cout<<"Episode: "<<i<<endl;
         vector<vector<int>> grid;
@@ -43,8 +43,7 @@ void runTest2(player &player1) {
             grid.push_back(row);
         }
         std::vector<enemy> enemies;
-        //trainingMaps::createMapLarge1(grid, enemies);
-        trainingMaps::createMap3(grid, enemies);
+        tm.generateNextMap(grid, enemies);
 
         tm.setSourceAndDestination(grid, sx, sy, dx, dy);
         player1.playGame(grid, enemies, sx, sy, dx, dy, t);
@@ -57,136 +56,9 @@ void runTest2(player &player1) {
     }
 
     float reach_percent = countDestinationReach * 100 / max_ep;
-    float death_percent = countDestinationReach * 100 / max_ep;
+    float death_percent = death * 100 / max_ep;
     cout<<"% reach "<<reach_percent<<endl;
     cout<<"% death "<<death_percent<<endl;
-}
-
-
-void runTest(player &player1) {
-    int i=1;
-    vector<vector<int>> grid;
-    for (int i=0; i<GRID_SPAN; i++) {
-        std::vector<int> row(GRID_SPAN, 0);
-        grid.push_back(row);
-    }
-    std::vector<enemy> enemies;
-    trainingMaps tm;
-
-    TestResult t{};
-    int sx=0;
-    int sy=0;
-    int dx=GRID_SPAN-1;
-    int dy=GRID_SPAN-1;
-
-
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-    sx=GRID_SPAN-1;
-    sy=GRID_SPAN-1;
-    dx=0;
-    dy=(GRID_SPAN-1)/2;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-    sx=0;
-    sy=(GRID_SPAN-1)/2;
-    dx=GRID_SPAN-1;
-    dy=0;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-    sx=GRID_SPAN-1;
-    sy=0;
-    dx=(GRID_SPAN)/2 + 1;
-    dy=GRID_SPAN-1;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-
-    sx=(GRID_SPAN)/2 + 1;
-    sy=GRID_SPAN-1;
-    dx=GRID_SPAN-1;
-    dy=(GRID_SPAN-1)/2;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-    sx=(GRID_SPAN-1)/2;
-    sy=0;
-    dx=GRID_SPAN/2 + 3;
-    dy=GRID_SPAN - 1;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-
-    sx=GRID_SPAN-4;
-    sy=0;
-    dx=0;
-    dy=GRID_SPAN - 1;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-    sx=GRID_SPAN-1;
-    sy=GRID_SPAN-4;
-    dx=0;
-    dy=GRID_SPAN-3;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
-    sx=0;
-    sy=5;
-    dx=GRID_SPAN-1;
-    dy=2;
-    tm.generateNextMap(grid, enemies);
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    if (not(t.final_x == dx and t.final_y == dy)){
-        cout<<i++<<endl;
-    } else {
-        i++;
-    }
-
 }
 
 
@@ -197,20 +69,29 @@ int main() {
     using namespace RTS;
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
-    player player1(true);
-    player1.learnGame();
+    //player player1(true);
+    //player1.learnGame();
 
     //player player1(false);
     //player1.loadExistingModel();
     //player1.learnGame();
 
-    /*
+
     player player1(false);
     /// Enable baseline for comparison
-    //player1.enableBaseLinePlayer();
+    player1.enableBaseLinePlayer();
     TestResult t{};
-    runTest(player1);
+    runTesting(player1);
+
+
+    /*
+    /// GENERATE NEW RANDOM MAP
+    trainingMaps tm(true);
+    long randomNumber = std::chrono::system_clock::now().time_since_epoch().count();
+    tm.serializeRandomMap("map4", randomNumber);
+    cout<<endl;
+    tm.serializeRandomMap("map5", randomNumber * 7);
+    cout<<endl;
+    tm.serializeRandomMap("map6", randomNumber * 13);
     */
-
-
 }

@@ -50,7 +50,6 @@ public:
     int direction = 0; // one hot (8 values + 1 unknown = total 9 combinations)
 
     bool isGoalInSight = false;
-    bool isLastActionLeftRight = false;
     int actionInPreviousState;
 
     /**
