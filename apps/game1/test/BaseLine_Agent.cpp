@@ -53,7 +53,7 @@ TEST(Baseline, dodge1) {
     int sy = 5;
     int dx = GRID_SPAN - 1;
     int dy = GRID_SPAN - 1;
-    enemy e1 = enemy(4, 7, 1, false);
+    enemy e1 = enemy(grid, 4, 7, 1, false);
     std::vector<enemy> enemies;
     enemies.push_back(e1);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
@@ -70,9 +70,9 @@ TEST(Baseline, dodge2) {
     int sy = 5;
     int dx = GRID_SPAN - 1;
     int dy = 5;
-    enemy e1 = enemy(4, 7, 1, false);
+    enemy e1 = enemy(grid, 4, 7, 1, false);
     std::vector<enemy> enemies;
     enemies.push_back(e1);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(player1.life_left > 0);
+    assert(player1.life_left == 0);
 }

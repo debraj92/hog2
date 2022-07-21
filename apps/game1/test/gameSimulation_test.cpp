@@ -47,7 +47,7 @@ TEST_F(Simulation_test, test1) {
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(2, 2, 1, true);
+    enemy f1(grid, 2, 2, 1, true);
     enemies.push_back(f1);
 
     pl1.initialize(0, 0, 6, 6);
@@ -74,9 +74,6 @@ TEST_F(Simulation_test, test1) {
 
 }
 
-
-/// The outputs are different because Left and Right actions were added so the actions selected by the random
-/// seed are different
 
 TEST_F(Simulation_test, test2) {
     /**
@@ -106,8 +103,8 @@ TEST_F(Simulation_test, test2) {
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(3, 1, 1, false);
-    enemy f2(5, 4, 2, true);
+    enemy f1(grid, 3, 1, 1, true);
+    enemy f2(grid, 5, 4, 2, true);
     enemies.push_back(f1);
     enemies.push_back(f2);
 
@@ -167,10 +164,10 @@ TEST_F(Simulation_test, test3) {
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(1, 2, 1, false);
-    enemy f2(5, 4, 2, true);
-    enemy f3(3, 1, 3, false);
-    enemy f4(1, 2, 4, true);
+    enemy f1(grid, 1, 2, 1, false);
+    enemy f2(grid, 5, 4, 2, true);
+    enemy f3(grid, 3, 1, 3, false);
+    enemy f4(grid, 1, 2, 4, true);
 
     enemies.push_back(f1);
     enemies.push_back(f2);
@@ -213,10 +210,10 @@ TEST_F(Simulation_test, test4) {
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(1, 2, 1, false);
-    enemy f2(5, 4, 2, true);
-    enemy f3(3, 1, 3, false);
-    enemy f4(1, 2, 4, true);
+    enemy f1(grid, 1, 2, 1, false);
+    enemy f2(grid, 5, 4, 2, true);
+    enemy f3(grid, 3, 1, 3, false);
+    enemy f4(grid, 1, 2, 4, true);
 
     enemies.push_back(f1);
     enemies.push_back(f2);
@@ -229,11 +226,9 @@ TEST_F(Simulation_test, test4) {
 
     assert(pl1.life_left == 0);
 
-    assert(enemies.size() == 2);
+    assert(enemies.size() == 1);
     assert(enemies[0].id == 2);
-    assert(enemies[1].id == 3);
-    assert(enemies[1].isFixed);
     assert(grid[1][2] == 0);
-    assert(grid[3][1] == 3);
+    assert(grid[3][1] == 0);
 
 }

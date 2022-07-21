@@ -35,7 +35,7 @@ public:
     int lastKnownPlayerX = -1;
     int lastKnownPlayerY = -1;
 
-    int max_moves = FOV_WIDTH * 2;
+    int max_moves = FOV_WIDTH;
 
     int enemyVisionRadius = VISION_RADIUS;
 
@@ -53,7 +53,7 @@ public:
         this->id = id;
         this->isFixed = fixed;
         this->life_left = 10;
-        this->max_moves = fixed? 0 : FOV_WIDTH;
+        this->max_moves = fixed? 0 : this->max_moves;
         fp = std::make_shared<findPath>(grid);
         logger = std::make_shared<Logger>(LogLevel);
     }

@@ -65,13 +65,14 @@ TEST(AStarChase, t1) {
     int dst_x = GRID_SPAN - 1;
     int dst_y = 0;
     p.life_left = 10;
-    enemy e1 = enemy(4, 7, 1, false);
+    enemy e1 = enemy(grid, 4, 7, 1, false);
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
 
     auto fp = findPath(grid, p.current_x, p.current_y, dst_x, dst_y);
     fp.findPathToDestination();
     logger.printBoardDebug(grid);
+    int t = 1;
     do {
 
         grid[p.current_x][p.current_y] = 0;
@@ -94,7 +95,7 @@ TEST(AStarChase, t1) {
             p.takeDamage(e1.getAttackPoints());
             break;
         } else {
-            e1.doNextMove(grid, {playerSavedX, playerSavedY, 0});
+            e1.doNextMove(t++, grid, {playerSavedX, playerSavedY, 0});
             logger.printBoardDebug(grid);
             // move enemy and check for kill
             if (e1.current_x == p.current_x and e1.current_y == p.current_y) {
@@ -121,13 +122,14 @@ TEST(AStarChase, t2) {
     int dst_x = GRID_SPAN - 1;
     int dst_y = 0;
     p.life_left = 10;
-    enemy e1 = enemy(4, 2, 1, false);
+    enemy e1 = enemy(grid, 4, 2, 1, false);
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
 
     auto fp = findPath(grid, p.current_x, p.current_y, dst_x, dst_y);
     fp.findPathToDestination();
     logger.printBoardDebug(grid);
+    int t = 1;
     do {
 
         grid[p.current_x][p.current_y] = 0;
@@ -150,7 +152,7 @@ TEST(AStarChase, t2) {
             p.takeDamage(e1.getAttackPoints());
             break;
         } else {
-            e1.doNextMove(grid, {playerSavedX, playerSavedY, 0});
+            e1.doNextMove(t++, grid, {playerSavedX, playerSavedY, 0});
             logger.printBoardDebug(grid);
             // move enemy and check for kill
             if (e1.current_x == p.current_x and e1.current_y == p.current_y) {
@@ -161,7 +163,7 @@ TEST(AStarChase, t2) {
         }
     } while (p.current_x != dst_x or p.current_y != dst_y);
 
-    assert(p.life_left == 0);
+    assert(p.life_left > 0);
 
 }
 
@@ -177,7 +179,7 @@ TEST(AStarChase, t4) {
     int dst_x = 0;
     int dst_y = 4;
     p.life_left = 10;
-    enemy e1 = enemy(6, 8, 1, false);
+    enemy e1 = enemy(grid, 6, 8, 1, false);
     e1.enemyVisionRadius = VISION_RADIUS + 2;
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
@@ -185,6 +187,7 @@ TEST(AStarChase, t4) {
     auto fp = findPath(grid, p.current_x, p.current_y, dst_x, dst_y);
     fp.findPathToDestination();
     logger.printBoardDebug(grid);
+    int t=1;
     do {
 
         grid[p.current_x][p.current_y] = 0;
@@ -207,7 +210,7 @@ TEST(AStarChase, t4) {
             p.takeDamage(e1.getAttackPoints());
             break;
         } else {
-            e1.doNextMove(grid, {playerSavedX, playerSavedY, 0});
+            e1.doNextMove(t++, grid, {playerSavedX, playerSavedY, 0});
             logger.printBoardDebug(grid);
             // move enemy and check for kill
             if (e1.current_x == p.current_x and e1.current_y == p.current_y) {
@@ -235,13 +238,14 @@ TEST(AStarChase, t3) {
     int dst_x = GRID_SPAN - 1;
     int dst_y = 5;
     p.life_left = 10;
-    enemy e1 = enemy(4, 7, 1, false);
+    enemy e1 = enemy(grid, 4, 7, 1, false);
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
 
     auto fp = findPath(grid, p.current_x, p.current_y, dst_x, dst_y);
     fp.findPathToDestination();
     logger.printBoardDebug(grid);
+    int t=1;
     do {
 
         grid[p.current_x][p.current_y] = 0;
@@ -264,7 +268,7 @@ TEST(AStarChase, t3) {
             p.takeDamage(e1.getAttackPoints());
             break;
         } else {
-            e1.doNextMove(grid, {playerSavedX, playerSavedY, 0});
+            e1.doNextMove(t++, grid, {playerSavedX, playerSavedY, 0});
             logger.printBoardDebug(grid);
             // move enemy and check for kill
             if (e1.current_x == p.current_x and e1.current_y == p.current_y) {
