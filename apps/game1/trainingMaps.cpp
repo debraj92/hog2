@@ -244,6 +244,7 @@ void trainingMaps::selectRandomEmptyCoordinateAtBorder(vector<std::vector<int>> 
     Y = emptyLocationY[y_pos];
 }
 
+#ifdef TESTING
 void trainingMaps::registerCreateMapFunction(
         const createMapFuncPtr createMapFunc) {
     gameMaps.push_back(createMapFunc);
@@ -252,6 +253,7 @@ void trainingMaps::registerCreateMapFunction(
 void trainingMaps::unregisterAllCreateMapFunctions() {
     gameMaps.clear();
 }
+#endif
 
 void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int &endX,
                                                    int &endY) {
