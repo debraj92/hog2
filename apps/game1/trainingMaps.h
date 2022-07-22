@@ -52,12 +52,15 @@ public:
     void createMap1(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void createMap2(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void createMap3(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
-
-    /// testing maps
     void createMap4(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void createMap5(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void createMap6(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap7(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap8(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap9(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap10(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
 
+    /// testing maps
     bool isMap1Cached;
     vector<std::vector<int>> map1_cached_grid;
     std::vector<enemy> map1_cached_enemy;
@@ -81,6 +84,22 @@ public:
     bool isMap6Cached;
     vector<std::vector<int>> map6_cached_grid;
     std::vector<enemy> map6_cached_enemy;
+
+    bool isMap7Cached;
+    vector<std::vector<int>> map7_cached_grid;
+    std::vector<enemy> map7_cached_enemy;
+
+    bool isMap8Cached;
+    vector<std::vector<int>> map8_cached_grid;
+    std::vector<enemy> map8_cached_enemy;
+
+    bool isMap9Cached;
+    vector<std::vector<int>> map9_cached_grid;
+    std::vector<enemy> map9_cached_enemy;
+
+    bool isMap10Cached;
+    vector<std::vector<int>> map10_cached_grid;
+    std::vector<enemy> map10_cached_enemy;
 
 
 #ifdef TESTING

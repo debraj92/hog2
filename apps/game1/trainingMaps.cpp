@@ -76,11 +76,6 @@ void trainingMaps::createMap3(std::vector<std::vector<int>>& grid, std::vector<e
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-
-
-///////////////// Game Maps for testing //////////////////////////////////////////
-
 void trainingMaps::createMap4(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
     if(not trainingMaps::isMap4Cached) {
         JsonParser jp("map4");
@@ -142,6 +137,93 @@ void trainingMaps::createMap6(std::vector<std::vector<int>>& grid, std::vector<e
     }
 }
 
+void trainingMaps::createMap7(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
+    if(not trainingMaps::isMap7Cached) {
+        JsonParser jp("map7");
+        jp.readFromFileObstacles(grid);
+        jp.readFromFileEnemies(grid, enemies);
+        /// store in cache
+        std::copy(grid.begin(), grid.end(), back_inserter(trainingMaps::map7_cached_grid));
+        std::copy(enemies.begin(), enemies.end(), back_inserter(trainingMaps::map7_cached_enemy));
+        trainingMaps::isMap7Cached = true;
+        return;
+    }
+    // restore from cache
+    std::copy(trainingMaps::map7_cached_enemy.begin(), trainingMaps::map7_cached_enemy.end(), back_inserter(enemies));
+    for(int i=0; i<GRID_SPAN; i++) {
+        for(int j=0; j<GRID_SPAN; j++) {
+            grid[i][j] = map7_cached_grid[i][j];
+        }
+    }
+}
+
+void trainingMaps::createMap8(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
+    if(not trainingMaps::isMap8Cached) {
+        JsonParser jp("map8");
+        jp.readFromFileObstacles(grid);
+        jp.readFromFileEnemies(grid, enemies);
+        /// store in cache
+        std::copy(grid.begin(), grid.end(), back_inserter(trainingMaps::map8_cached_grid));
+        std::copy(enemies.begin(), enemies.end(), back_inserter(trainingMaps::map8_cached_enemy));
+        trainingMaps::isMap8Cached = true;
+        return;
+    }
+    // restore from cache
+    std::copy(trainingMaps::map8_cached_enemy.begin(), trainingMaps::map8_cached_enemy.end(), back_inserter(enemies));
+    for(int i=0; i<GRID_SPAN; i++) {
+        for(int j=0; j<GRID_SPAN; j++) {
+            grid[i][j] = map8_cached_grid[i][j];
+        }
+    }
+}
+
+void trainingMaps::createMap9(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
+    if(not trainingMaps::isMap9Cached) {
+        JsonParser jp("map9");
+        jp.readFromFileObstacles(grid);
+        jp.readFromFileEnemies(grid, enemies);
+        /// store in cache
+        std::copy(grid.begin(), grid.end(), back_inserter(trainingMaps::map9_cached_grid));
+        std::copy(enemies.begin(), enemies.end(), back_inserter(trainingMaps::map9_cached_enemy));
+        trainingMaps::isMap9Cached = true;
+        return;
+    }
+    // restore from cache
+    std::copy(trainingMaps::map9_cached_enemy.begin(), trainingMaps::map9_cached_enemy.end(), back_inserter(enemies));
+    for(int i=0; i<GRID_SPAN; i++) {
+        for(int j=0; j<GRID_SPAN; j++) {
+            grid[i][j] = map9_cached_grid[i][j];
+        }
+    }
+}
+
+void trainingMaps::createMap10(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
+    if(not trainingMaps::isMap10Cached) {
+        JsonParser jp("map10");
+        jp.readFromFileObstacles(grid);
+        jp.readFromFileEnemies(grid, enemies);
+        /// store in cache
+        std::copy(grid.begin(), grid.end(), back_inserter(trainingMaps::map10_cached_grid));
+        std::copy(enemies.begin(), enemies.end(), back_inserter(trainingMaps::map10_cached_enemy));
+        trainingMaps::isMap10Cached = true;
+        return;
+    }
+    // restore from cache
+    std::copy(trainingMaps::map10_cached_enemy.begin(), trainingMaps::map10_cached_enemy.end(), back_inserter(enemies));
+    for(int i=0; i<GRID_SPAN; i++) {
+        for(int j=0; j<GRID_SPAN; j++) {
+            grid[i][j] = map10_cached_grid[i][j];
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////// Game Maps for testing //////////////////////////////////////////
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 trainingMaps::trainingMaps(bool isTesting) {
@@ -150,16 +232,25 @@ trainingMaps::trainingMaps(bool isTesting) {
         gameMaps.emplace_back(&trainingMaps::createMap1);
         gameMaps.emplace_back(&trainingMaps::createMap2);
         gameMaps.emplace_back(&trainingMaps::createMap3);
-        isMap1Cached = false;
-        isMap2Cached = false;
-        isMap3Cached = false;
-    } else {
         gameMaps.emplace_back(&trainingMaps::createMap4);
         gameMaps.emplace_back(&trainingMaps::createMap5);
         gameMaps.emplace_back(&trainingMaps::createMap6);
+        gameMaps.emplace_back(&trainingMaps::createMap7);
+        gameMaps.emplace_back(&trainingMaps::createMap8);
+        gameMaps.emplace_back(&trainingMaps::createMap9);
+        gameMaps.emplace_back(&trainingMaps::createMap10);
+        isMap1Cached = false;
+        isMap2Cached = false;
+        isMap3Cached = false;
         isMap4Cached = false;
         isMap5Cached = false;
         isMap6Cached = false;
+        isMap7Cached = false;
+        isMap8Cached = false;
+        isMap9Cached = false;
+        isMap10Cached = false;
+    } else {
+
     }
 
 }
@@ -244,17 +335,6 @@ void trainingMaps::selectRandomEmptyCoordinateAtBorder(vector<std::vector<int>> 
     Y = emptyLocationY[y_pos];
 }
 
-#ifdef TESTING
-void trainingMaps::registerCreateMapFunction(
-        const createMapFuncPtr createMapFunc) {
-    gameMaps.push_back(createMapFunc);
-}
-
-void trainingMaps::unregisterAllCreateMapFunctions() {
-    gameMaps.clear();
-}
-#endif
-
 void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int &endX,
                                                    int &endY) {
     int sources[9][2] = {
@@ -317,7 +397,7 @@ void trainingMaps::serializeRandomMap(string mapId, long randomNumber) {
 
     JsonParser jp(std::move(mapId));
 
-    const int TOTAL_FIXED_OBSTACLES = (GRID_SPAN * 2)/3;
+    const int TOTAL_FIXED_OBSTACLES = 150;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4];
     bool horizontal = true;
     long seedX = 1 + randomNumber;
@@ -355,11 +435,14 @@ void trainingMaps::serializeRandomMap(string mapId, long randomNumber) {
     jp.serializeObstacles(TOTAL_FIXED_OBSTACLES, blockObstacles);
 
     /// control percentage of enemies by changing calls to placeEnemies
-    // place moving enemies uniformly
     std::vector<enemy> enemies;
-    placeEnemies(grid, enemies, 2, randomNumber);
     // place fixed enemies uniformly
     auto lastId = placeEnemies(grid, enemies, 1, randomNumber);
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber);
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber);
+    // place moving enemies uniformly
+    lastId = placeEnemies(grid, enemies, 2, randomNumber);
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber);
     placeEnemies(grid, enemies, lastId, randomNumber);
 
     const int TOTAL_ENEMIES = enemies.size();
@@ -396,10 +479,10 @@ int trainingMaps::placeEnemies(std::vector<std::vector<int>>& grid, std::vector<
         seedX = 1 + randomNumber;
         seedY = 100 + randomNumber;
     }
-    for(current_row_start=VISION_RADIUS; current_row_start<GRID_SPAN-FOV_WIDTH; current_row_start+=FOV_WIDTH) {
-        for(current_col_start=VISION_RADIUS; current_col_start<GRID_SPAN-FOV_WIDTH; current_col_start+=FOV_WIDTH) {
-            int central_x = current_row_start + VISION_RADIUS;
-            int central_y = current_col_start + VISION_RADIUS;
+    for(current_row_start=VISION_RADIUS; current_row_start<GRID_SPAN; current_row_start+=MAP_SECTOR_SIZE) {
+        for(current_col_start=VISION_RADIUS; current_col_start<GRID_SPAN; current_col_start+=MAP_SECTOR_SIZE) {
+            int central_x = current_row_start + FOV_WIDTH + VISION_RADIUS;
+            int central_y = current_col_start + FOV_WIDTH + VISION_RADIUS;
             if(grid[central_x][central_y] == 0) {
                 grid[central_x][central_y] = startId;
                 auto e = enemy(grid, central_x, central_y, startId, startId % 2 == 1);
@@ -410,14 +493,11 @@ int trainingMaps::placeEnemies(std::vector<std::vector<int>>& grid, std::vector<
                 bool done = false;
                 while(not done) {
                     int x_diff, y_diff;
-                    if (startId % 2 == 1) {
-                        x_diff = trainingMaps::selectRandomNumberInRange(-2, 2, seedX);
-                        y_diff = trainingMaps::selectRandomNumberInRange(-2, 2, seedY);
-                    } else {
-                        x_diff = trainingMaps::selectRandomNumberInRange(-1, 1, seedX);
-                        y_diff = trainingMaps::selectRandomNumberInRange(-1, 1, seedY);
-                    }
-                    if(grid[central_x - x_diff][central_y - y_diff] == 0) {
+                    x_diff = trainingMaps::selectRandomNumberInRange(-FOV_WIDTH, FOV_WIDTH, seedX);
+                    y_diff = trainingMaps::selectRandomNumberInRange(-FOV_WIDTH, FOV_WIDTH, seedY);
+                    bool isXOnBorder = (central_x - x_diff) < VISION_RADIUS or (GRID_SPAN - 1 - (central_x - x_diff)) < VISION_RADIUS;
+                    bool isYOnBorder = (central_y - y_diff) < VISION_RADIUS or (GRID_SPAN - 1 - (central_y - y_diff)) < VISION_RADIUS;
+                    if(not isXOnBorder and not isYOnBorder and grid[central_x - x_diff][central_y - y_diff] == 0) {
                         done = true;
                         grid[central_x - x_diff][central_y - y_diff] = startId;
                         auto e = enemy(grid, central_x - x_diff, central_y - y_diff, startId, startId % 2 == 1);
@@ -494,5 +574,14 @@ void trainingMaps::createMapUnitTesting2(vector<std::vector<int>> &grid, vector<
         int y_e = blockObstacles[obstacle][3];
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
+}
+
+void trainingMaps::registerCreateMapFunction(
+        const createMapFuncPtr createMapFunc) {
+    gameMaps.push_back(createMapFunc);
+}
+
+void trainingMaps::unregisterAllCreateMapFunctions() {
+    gameMaps.clear();
 }
 #endif
