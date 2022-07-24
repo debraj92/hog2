@@ -23,11 +23,11 @@ class RLNN_Agent : public DQN_interface {
     // discount factor
     const double gamma = 0.9;
     double epsilon = 1;
-    const double epsilon_min = 0.01;
+    const double epsilon_min = 0.1;
     const double epsilon_decay = 0.998;
     const double alpha = 1;
-    const int epsilon_annealing_percent = 60;
-    int batchSize = 4000;
+    const int epsilon_annealing_percent = EXPLOITATION_START_PERCENT;
+    int batchSize = 3000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;
@@ -74,7 +74,7 @@ public:
 
     void updateTargetNet();
 
-    void decayEpsilon();
+    void decayEpsilon(int currentEpisode);
 
     void printAction(int action);
 

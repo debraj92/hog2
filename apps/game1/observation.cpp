@@ -325,7 +325,55 @@ void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vecto
 }
 
 void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties) {
-    // Ignoring enemy count above 3
+    // Ignoring enemy count above 6
+
+    if(enemy_properties.size() >= 6) {
+        enemy_distance_6 = enemy_properties[5].distance;
+        enemy_angle_6 = enemy_properties[5].angle;
+        enemy_risk_6 = enemy_properties[5].risk_measure;
+        enemy_id_6 = enemy_properties[5].id;
+        enemy_is_fixed_6 = enemy_properties[5].isFixed;
+        enemy_moves_left_6 = enemy_properties[5].moves_left;
+    } else {
+        enemy_distance_6 = MAX_DISTANCE;
+        enemy_angle_6 = 0;
+        enemy_risk_6 = 0;
+        enemy_id_6 = -1;
+        enemy_is_fixed_6 = 1;
+        enemy_moves_left_6 = 0;
+    }
+
+    if(enemy_properties.size() >= 5) {
+        enemy_distance_5 = enemy_properties[4].distance;
+        enemy_angle_5 = enemy_properties[4].angle;
+        enemy_risk_5 = enemy_properties[4].risk_measure;
+        enemy_id_5 = enemy_properties[4].id;
+        enemy_is_fixed_5 = enemy_properties[4].isFixed;
+        enemy_moves_left_5 = enemy_properties[4].moves_left;
+    } else {
+        enemy_distance_5 = MAX_DISTANCE;
+        enemy_angle_5 = 0;
+        enemy_risk_5 = 0;
+        enemy_id_5 = -1;
+        enemy_is_fixed_5 = 1;
+        enemy_moves_left_5 = 0;
+    }
+
+    if(enemy_properties.size() >= 4) {
+        enemy_distance_4 = enemy_properties[3].distance;
+        enemy_angle_4 = enemy_properties[3].angle;
+        enemy_risk_4 = enemy_properties[3].risk_measure;
+        enemy_id_4 = enemy_properties[3].id;
+        enemy_is_fixed_4 = enemy_properties[3].isFixed;
+        enemy_moves_left_4 = enemy_properties[3].moves_left;
+    } else {
+        enemy_distance_4 = MAX_DISTANCE;
+        enemy_angle_4 = 0;
+        enemy_risk_4 = 0;
+        enemy_id_4 = -1;
+        enemy_is_fixed_4 = 1;
+        enemy_moves_left_4 = 0;
+    }
 
     if(enemy_properties.size() >= 3) {
         enemy_distance_3 = enemy_properties[2].distance;
@@ -334,7 +382,6 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_id_3 = enemy_properties[2].id;
         enemy_is_fixed_3 = enemy_properties[2].isFixed;
         enemy_moves_left_3 = enemy_properties[2].moves_left;
-        enemy_properties.pop_back();
     } else {
         enemy_distance_3 = MAX_DISTANCE;
         enemy_angle_3 = 0;
@@ -351,7 +398,6 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_id_2 = enemy_properties[1].id;
         enemy_is_fixed_2 = enemy_properties[1].isFixed;
         enemy_moves_left_2 = enemy_properties[1].moves_left;
-        enemy_properties.pop_back();
     } else {
         enemy_distance_2 = MAX_DISTANCE;
         enemy_angle_2 = 0;
@@ -368,7 +414,6 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_id_1 = enemy_properties[0].id;
         enemy_is_fixed_1 = enemy_properties[0].isFixed;
         enemy_moves_left_1 = enemy_properties[0].moves_left;
-        enemy_properties.pop_back();
     } else {
         enemy_distance_1 = MAX_DISTANCE;
         enemy_angle_1 = 0;
@@ -421,6 +466,27 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
     nextPosOffset += 2;
     observation_vector[nextPosOffset++] = static_cast< float >(enemy_is_fixed_3);
     observation_vector[nextPosOffset++] = static_cast< float >(enemy_moves_left_3);
+
+    observation_vector[nextPosOffset++] = enemy_distance_4;
+    offset = enemy_angle_4 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_4) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_is_fixed_4);
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_moves_left_4);
+
+    observation_vector[nextPosOffset++] = enemy_distance_5;
+    offset = enemy_angle_5 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_5) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_is_fixed_5);
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_moves_left_5);
+
+    observation_vector[nextPosOffset++] = enemy_distance_6;
+    offset = enemy_angle_6 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_6) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_is_fixed_6);
+    observation_vector[nextPosOffset++] = static_cast< float >(enemy_moves_left_6);
 
     observation_vector[nextPosOffset++] = static_cast< float >(isPlayerInHotPursuit? 1:0);
     observation_vector[nextPosOffset + actionInPreviousState] = 1;

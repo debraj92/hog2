@@ -40,7 +40,7 @@ class player : public RLNN_Agent {
 
     std::atomic<int> epoch;
 
-    int dqnTargetUpdateNextEpisode = MAX_EPISODES / 20;
+    int dqnTargetUpdateNextEpisode = MAX_EPISODES / 8;
 
     std::unique_ptr<Logger> logger;
 

@@ -47,19 +47,20 @@ int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, 
         currentState.flattenObservationToVector(observation_vector);
         auto tensor_states = torch::zeros({1, MAX_ABSTRACT_OBSERVATIONS}, options);
         tensor_states.slice(0, 0, 1) = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options);
+        Tensor actions;
         {
             // critical
             std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
-            auto actions = policyNetSaved->forwardPass(tensor_fov_channels, tensor_states);
-            action = torch::argmax(actions).detach().item<int>();
-            /*
-            cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
-            cout<<"direction: "<<currentState.direction<<endl;
-            cout<<endl;
-            cout<<"Abstract State:\n"<<tensor_states<<endl;
-            cout<<"FOV\n"<<tensor_fov_channels<<endl;
-             */
+            actions = policyNetSaved->forwardPass(tensor_fov_channels, tensor_states);
         }
+        action = torch::argmax(actions).detach().item<int>();
+        /*
+        cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
+        cout<<"direction: "<<currentState.direction<<endl;
+        cout<<endl;
+        cout<<"Abstract State:\n"<<tensor_states<<endl;
+        cout<<"FOV\n"<<tensor_fov_channels<<endl;
+         */
     }
 
     printAction(action);
@@ -80,13 +81,6 @@ double RLNN_Agent::learnWithDQN() {
     // select n samples picked uniformly at random from the experience replay memory, such that n=batchsize
     memory.sampleBatch(batchSize);
 
-    /// Save policy net for action selection
-    {
-        // critical
-        std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
-        savePolicyNet();
-    }
-
     // states have dimension: batch_size X observation_feature_size
     // output would have dimensions: batch_size X action_space
 
@@ -105,7 +99,12 @@ double RLNN_Agent::learnWithDQN() {
     auto y = discounted_reward + q_target;
 
     // calculate the loss as the mean-squared error of y and qpred
-    return policyNet->computeLossAndBackPropagate(y, q_pred);
+    auto loss = policyNet->computeLossAndBackPropagate(y, q_pred);
+
+    /// Save policy net for action selection
+    savePolicyNet();
+
+    return loss;
 }
 
 
@@ -130,11 +129,13 @@ void RLNN_Agent::updateTargetNet() {
     targetNet->loadModel(stream3, DQNNet::POOL1);
 }
 
-void RLNN_Agent::decayEpsilon() {
+void RLNN_Agent::decayEpsilon(int currentEpisode) {
     if (not startEpsilonDecay) {
         return;
     }
-    epsilon = max(epsilon_min, epsilon * epsilon_decay);
+    if (currentEpisode % (MAX_EPISODES * (100 - EXPLOITATION_START_PERCENT)) / (100 * 2500) == 0) {
+        epsilon = max(epsilon_min, epsilon * epsilon_decay);
+    }
 }
 
 void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring) {
@@ -200,11 +201,14 @@ void RLNN_Agent::setTrainingMode(bool value) {
 
 void RLNN_Agent::savePolicyNet() {
     std::stringstream stream1, stream2, stream3;
-
     policyNet->saveModel(stream1, DQNNet::SEQUENTIAL);
-    policyNetSaved->loadModel(stream1, DQNNet::SEQUENTIAL);
     policyNet->saveModel(stream2, DQNNet::CNN1);
-    policyNetSaved->loadModel(stream2, DQNNet::CNN1);
     policyNet->saveModel(stream3, DQNNet::POOL1);
-    policyNetSaved->loadModel(stream3, DQNNet::POOL1);
+    {
+        // critical
+        std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
+        policyNetSaved->loadModel(stream1, DQNNet::SEQUENTIAL);
+        policyNetSaved->loadModel(stream2, DQNNet::CNN1);
+        policyNetSaved->loadModel(stream3, DQNNet::POOL1);
+    }
 }

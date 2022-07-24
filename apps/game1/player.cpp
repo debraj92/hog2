@@ -64,7 +64,7 @@ void player::learnGame() {
         logger->printBoardDebug(grid);
 
         game.removeCharacters(grid);
-        decayEpsilon();
+        decayEpsilon(epoch);
 
         /// Wake up the reader to run training
         {

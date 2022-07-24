@@ -163,7 +163,7 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
         storeExperience(current, next, action, reward, done);
     }
 
-    exploitation_window_start += (10.00 - MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY) / MAX_EPISODES;
+    exploitation_window_start += ((10.00 - MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY) * 100 ) / (MAX_EPISODES * (100 - EXPLOITATION_START_PERCENT));
 }
 
 void ReplayMemory::logStateVector(observation &ob) {

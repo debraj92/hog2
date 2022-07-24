@@ -53,7 +53,7 @@ public:
     int actionInPreviousState;
 
     /**
-     * Assumption: Maximum 4 enemies within the vision radius
+     * Assumption: Maximum 6 enemies within the vision radius
      */
     float enemy_distance_1 = MAX_DISTANCE;
     float enemy_angle_1 = 0;
@@ -76,11 +76,26 @@ public:
     int enemy_is_fixed_3 = 1;
     int enemy_moves_left_3 = 0;
 
-    // For backward compatibility with table based rl
     float enemy_distance_4 = MAX_DISTANCE;
     float enemy_angle_4 = 0;
     float enemy_risk_4 = 0;
     int enemy_id_4 = -1;
+    int enemy_is_fixed_4 = 1;
+    int enemy_moves_left_4 = 0;
+
+    float enemy_distance_5 = MAX_DISTANCE;
+    float enemy_angle_5 = 0;
+    float enemy_risk_5 = 0;
+    int enemy_id_5 = -1;
+    int enemy_is_fixed_5 = 1;
+    int enemy_moves_left_5 = 0;
+
+    float enemy_distance_6 = MAX_DISTANCE;
+    float enemy_angle_6 = 0;
+    float enemy_risk_6 = 0;
+    int enemy_id_6 = -1;
+    int enemy_is_fixed_6 = 1;
+    int enemy_moves_left_6 = 0;
 
     float action_straight_atRisk = 0;
     float action_frontLeft_atRisk = 0;
