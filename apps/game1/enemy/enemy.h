@@ -35,9 +35,9 @@ public:
     int lastKnownPlayerX = -1;
     int lastKnownPlayerY = -1;
 
-    int max_moves = FOV_WIDTH;
+    int max_moves = FOV_WIDTH * 2;
 
-    int enemyVisionRadius = 2 * VISION_RADIUS;
+    int enemyVisionRadius = VISION_RADIUS;
 
     struct playerInfo {
         int player_x;

@@ -83,20 +83,6 @@ public:
     int enemy_is_fixed_4 = 1;
     int enemy_moves_left_4 = 0;
 
-    float enemy_distance_5 = MAX_DISTANCE;
-    float enemy_angle_5 = 0;
-    float enemy_risk_5 = 0;
-    int enemy_id_5 = -1;
-    int enemy_is_fixed_5 = 1;
-    int enemy_moves_left_5 = 0;
-
-    float enemy_distance_6 = MAX_DISTANCE;
-    float enemy_angle_6 = 0;
-    float enemy_risk_6 = 0;
-    int enemy_id_6 = -1;
-    int enemy_is_fixed_6 = 1;
-    int enemy_moves_left_6 = 0;
-
     float action_straight_atRisk = 0;
     float action_frontLeft_atRisk = 0;
     float action_frontRight_atRisk = 0;

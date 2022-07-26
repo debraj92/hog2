@@ -78,6 +78,55 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     int playerY = pl_info.player_y;
     int error = cu.setStraightActionCoordinates(playerX, playerY, pl_info.player_direction);
     if (error == -1) {
+        // try out other locations reachable by the player
+        // front left
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeDiagonalLeftActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
+        // front right
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeDiagonalRightActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
+        // left
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeLeftActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
+        // right
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeRightActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
         // straight unavailable
         // target current player location
         return;
