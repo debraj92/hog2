@@ -120,7 +120,7 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, bool wasPreviousStateHotPursuit) {
     logger->logDebug("player::observe")->endLineDebug();
 
     ob.playerX = this->current_x;
@@ -145,7 +145,8 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     }
 
     ob.recordFOVForCNN(cnnController, fp);
-    ob.actionInPreviousState = lastAction;
+    ob.actionInPreviousState = wasPreviousStateHotPursuit ? lastAction : -1;
+
 }
 
 bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {

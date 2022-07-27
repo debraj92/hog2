@@ -338,7 +338,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_4 = 0;
         enemy_risk_4 = 0;
         enemy_id_4 = -1;
-        enemy_is_fixed_4 = 1;
+        enemy_is_fixed_4 = -1;
         enemy_moves_left_4 = 0;
     }
 
@@ -354,7 +354,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_3 = 0;
         enemy_risk_3 = 0;
         enemy_id_3 = -1;
-        enemy_is_fixed_3 = 1;
+        enemy_is_fixed_3 = -1;
         enemy_moves_left_3 = 0;
     }
 
@@ -370,7 +370,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_2 = 0;
         enemy_risk_2 = 0;
         enemy_id_2 = -1;
-        enemy_is_fixed_2 = 1;
+        enemy_is_fixed_2 = -1;
         enemy_moves_left_2 = 0;
     }
 
@@ -386,7 +386,7 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_1 = 0;
         enemy_risk_1 = 0;
         enemy_id_1 = -1;
-        enemy_is_fixed_1 = 1;
+        enemy_is_fixed_1 = -1;
         enemy_moves_left_1 = 0;
     }
 }
@@ -600,7 +600,7 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
         x = playerX;
         y = playerY;
         error = coordinates.setStraightActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
             action_straight_atRisk++;
         }
 
@@ -608,7 +608,7 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
         x = playerX;
         y = playerY;
         error = coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
             action_frontLeft_atRisk++;
         }
 
@@ -616,7 +616,7 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
         x = playerX;
         y = playerY;
         error = coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
             action_frontRight_atRisk++;
         }
 
@@ -624,7 +624,7 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
         x = playerX;
         y = playerY;
         error = coordinates.setDodgeLeftActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
             action_left_atRisk++;
         }
 
@@ -632,7 +632,7 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
         x = playerX;
         y = playerY;
         error = coordinates.setDodgeRightActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) == 1) {
+        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
             action_right_atRisk++;
         }
     }

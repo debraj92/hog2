@@ -22,7 +22,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     int time = 1;
     int actionError = 0;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT);
+    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, false);
     while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
@@ -37,7 +37,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         logger->printBoardDebug(grid);
         // Observe next State
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action);
+        player1->observe(nextObservation, grid, enemies, action, currentObservation.isPlayerInHotPursuit);
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
@@ -67,7 +67,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT);
+    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, false);
     int time = 1;
     while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
@@ -83,7 +83,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         logger->printBoardDebug(grid);
         // Observe after action
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action);
+        player1->observe(nextObservation, grid, enemies, action, currentObservation.isPlayerInHotPursuit);
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
