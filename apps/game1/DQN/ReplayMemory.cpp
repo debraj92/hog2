@@ -233,15 +233,15 @@ void ReplayMemory::logStateVector(observation &ob) {
     state += " Enmy: ";
     if (ob.enemy_distance_1 < MAX_DISTANCE) {
         state += "1. D:"+to_string(ob.enemy_distance_1)+" A:"+to_string(ob.enemy_angle_1 * 10);
-        state += " F:"+to_string(ob.enemy_is_fixed_1)+" M:"+to_string(ob.enemy_moves_left_1) + " | ";
+        state += " F:" + to_string(ob.enemy_is_fixed_1) + " L:" + to_string(ob.isLastMove1) + " | ";
     }
     if (ob.enemy_distance_2 < MAX_DISTANCE) {
         state += "2. D:"+to_string(ob.enemy_distance_2)+" A:"+to_string(ob.enemy_angle_2 * 10);
-        state += " F:"+to_string(ob.enemy_is_fixed_2)+" M:"+to_string(ob.enemy_moves_left_2) + " | ";
+        state += " F:" + to_string(ob.enemy_is_fixed_2) + " L:" + to_string(ob.isLastMove2) + " | ";
     }
     if (ob.enemy_distance_3 < MAX_DISTANCE) {
         state += "3. D:"+to_string(ob.enemy_distance_3)+" A:"+to_string(ob.enemy_angle_3 * 10);
-        state += " F:"+to_string(ob.enemy_is_fixed_3)+" M:"+to_string(ob.enemy_moves_left_3) + " | ";
+        state += " F:" + to_string(ob.enemy_is_fixed_3) + " L:" + to_string(ob.isLastMove3) + " | ";
     }
     state += "HP: "+to_string(ob.isPlayerInHotPursuit) +" | ";
     state += "LA: "+to_string(ob.actionInPreviousState) +" | ";

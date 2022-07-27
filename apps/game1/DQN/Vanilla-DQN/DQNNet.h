@@ -21,7 +21,6 @@ class DQNNet : public nn::Module {
 
     nn::Sequential m_sequential;
     torch::nn::Conv2d m_conv1;
-    torch::nn::AvgPool2d m_pool1;
 
     int count = 1;
 
@@ -33,8 +32,7 @@ public:
 
     enum MODEL_TYPE{
         SEQUENTIAL,
-        CNN1,
-        POOL1
+        CNN1
     };
 
     DQNNet(double learning_rate, const std::string& module_name);

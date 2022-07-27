@@ -125,8 +125,6 @@ void RLNN_Agent::updateTargetNet() {
     targetNet->loadModel(stream1, DQNNet::SEQUENTIAL);
     policyNet->saveModel(stream2, DQNNet::CNN1);
     targetNet->loadModel(stream2, DQNNet::CNN1);
-    policyNet->saveModel(stream3, DQNNet::POOL1);
-    targetNet->loadModel(stream3, DQNNet::POOL1);
 }
 
 void RLNN_Agent::decayEpsilon(int currentEpisode) {
@@ -203,12 +201,10 @@ void RLNN_Agent::savePolicyNet() {
     std::stringstream stream1, stream2, stream3;
     policyNet->saveModel(stream1, DQNNet::SEQUENTIAL);
     policyNet->saveModel(stream2, DQNNet::CNN1);
-    policyNet->saveModel(stream3, DQNNet::POOL1);
     {
         // critical
         std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
         policyNetSaved->loadModel(stream1, DQNNet::SEQUENTIAL);
         policyNetSaved->loadModel(stream2, DQNNet::CNN1);
-        policyNetSaved->loadModel(stream3, DQNNet::POOL1);
     }
 }

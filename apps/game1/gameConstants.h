@@ -121,11 +121,13 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const int INPUT_SIZE = 107;//75;//171;
-const int HIDDEN_LAYER_1_SIZE = 72;//50;//150;
-const int HIDDEN_LAYER_2_SIZE = 54;//50;//120;
+const int INPUT_SIZE = 331;
+const int HIDDEN_LAYER_1_SIZE = 220;
+const int HIDDEN_LAYER_2_SIZE = 170;
 
 const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
+
+const int MAX_ENEMIES_TO_TRACK = 4; /// CHANGE WOULD REQUIRE ADDITIONAL CHANGES IN OBSERVATION
 
 namespace RTS {
     enum LOG_LEVEL {
