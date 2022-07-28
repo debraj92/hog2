@@ -448,7 +448,9 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
     observation_vector[nextPosOffset++] = isLastMove4;
 
     observation_vector[nextPosOffset++] = static_cast< float >(isPlayerInHotPursuit? 1:0);
-    observation_vector[nextPosOffset + actionInPreviousState] = 1;
+    if(actionInPreviousState > -1) {
+        observation_vector[nextPosOffset + actionInPreviousState] = 1;
+    }
     nextPosOffset += 5;
 
     observation_vector[nextPosOffset++] = action_straight_atRisk;

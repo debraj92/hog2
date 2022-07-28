@@ -45,8 +45,6 @@ public:
     int destinationX = 0;
     int destinationY = 0;
 
-    float playerLifeLeft = 0;
-
     int direction = 0; // one hot (8 values + 1 unknown = total 9 combinations)
 
     bool isGoalInSight = false;

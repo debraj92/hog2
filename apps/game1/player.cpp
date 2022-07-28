@@ -120,14 +120,14 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, bool wasPreviousStateHotPursuit) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction,
+                     bool wasPreviousStateHotPursuit, int previousStateDirection) {
     logger->logDebug("player::observe")->endLineDebug();
 
     ob.playerX = this->current_x;
     ob.playerY = this->current_y;
     ob.destinationX = this->destination_x;
     ob.destinationY = this->destination_y;
-    ob.playerLifeLeft = static_cast<float>(this->life_left);
 
     if (isSimpleAstarPlayer and (current_x != destination_x or current_y != destination_y)) {
         if (not findPathToDestination(grid, enemies, current_x, current_y, destination_x, destination_y)) {
@@ -142,10 +142,19 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     if (ob.direction > 0) {
         ob.locateEnemies(grid, enemies);
         ob.updateObstacleDistances(grid);
+        if (wasPreviousStateHotPursuit) {
+            if (previousStateDirection != ob.direction) {
+                // unit has changed direction
+                ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
+            } else {
+                ob.actionInPreviousState = lastAction;
+            }
+        } else {
+            ob.actionInPreviousState = -1;
+        }
     }
 
     ob.recordFOVForCNN(cnnController, fp);
-    ob.actionInPreviousState = wasPreviousStateHotPursuit ? lastAction : -1;
 
 }
 
@@ -190,8 +199,8 @@ int player::selectAction(const observation& currentState) {
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
     // Cannot avoid transition into pursuit by any strategy. Therefore, nothing to learn.
-    auto transitionIntoHotPursuit = not current.isPlayerInHotPursuit and next.isPlayerInHotPursuit;
-    if (not stopLearning and not next.isGoalInSight and not transitionIntoHotPursuit) {
+    auto transitionIntoHotPursuit = (not current.isPlayerInHotPursuit) and next.isPlayerInHotPursuit;
+    if ((not stopLearning) and (not next.isGoalInSight) and (not transitionIntoHotPursuit)) {
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
     }
 }
@@ -321,6 +330,30 @@ void player::populateEnemyObstacles(vector<std::vector<int>> &grid, vector<enemy
         }
     }
 
+}
+
+int player::rotatePreviousAction(int oldDirection, int newDirection, int previousAction) {
+    int action = previousAction;
+    /// Match action in anticlockwise direction
+    for (int d = oldDirection; d != newDirection and action < ACTION_SPACE; ++action) {
+        d++;
+        d = d == 9 ? 1 : d;
+    }
+    if (action < ACTION_SPACE) {
+        return action;
+    }
+
+    action = previousAction;
+    /// Match action in clockwise direction
+    for (int d = oldDirection; d != newDirection and action >= 0; --action) {
+        d--;
+        d = d == 0 ? 8 : d;
+    }
+    if (action >= 0) {
+        return action;
+    }
+
+    return -1;
 }
 
 

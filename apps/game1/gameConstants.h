@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 80000;   /// Must be greater than 8
+const int MAX_EPISODES = 40000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 35;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -43,15 +43,6 @@ const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
 
 const int GOAL_RADIUS = 1;
 
-const int N_Angle=0;
-const int S_Angle=180;
-const int E_Angle=90;
-const int W_Angle=270;
-const int NE_Angle=45;
-const int NW_Angle=315;
-const int SE_Angle=135;
-const int SW_Angle=225;
-
 const int on_track = 10;
 const int lower_bound_one_deviation = 11;
 const int upper_bound_one_deviation = 14;
@@ -72,10 +63,10 @@ const int two_deviation_E = 24;
 
 /// ACTIONS
 
-const int ACTION_DODGE_DIAGONAL_LEFT = 0;
-const int ACTION_DODGE_DIAGONAL_RIGHT = 1;
+const int ACTION_DODGE_LEFT = 0;
+const int ACTION_DODGE_DIAGONAL_LEFT = 1;
 const int ACTION_STRAIGHT = 2;
-const int ACTION_DODGE_LEFT = 3;
+const int ACTION_DODGE_DIAGONAL_RIGHT = 3;
 const int ACTION_DODGE_RIGHT = 4;
 
 const int ACTION_SPACE = 5;
@@ -89,12 +80,12 @@ const int ACTION_FOLLOW = 8; // deprecated
 
 const float REWARD_FACTOR = 12;
 const float REWARD_REACH =  3 * REWARD_FACTOR;
-const float REWARD_ACTION_UNAVAILABLE = -2 * REWARD_FACTOR;
-const float REWARD_ACTION_LR = -1.2 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -2.5 * REWARD_FACTOR;
+const float REWARD_ACTION_LR = -1 * REWARD_FACTOR;
 const float REWARD_TRACK_ONE_DIV = -0.4 * REWARD_FACTOR;
 const float REWARD_TRACK_TWO_DIV = -0.7 * REWARD_FACTOR;
-const float REWARD_DEATH = -4 * REWARD_FACTOR;
-const float REWARD_OFFTRACK = -4 * REWARD_FACTOR;
+const float REWARD_DEATH = -5 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -5 * REWARD_FACTOR;
 
 
 const int MAX_LIFE = 10;
@@ -121,9 +112,9 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const int INPUT_SIZE = 331;
-const int HIDDEN_LAYER_1_SIZE = 220;
-const int HIDDEN_LAYER_2_SIZE = 170;
+const int INPUT_SIZE = 115;//331;
+const int HIDDEN_LAYER_1_SIZE = 80;//220;
+const int HIDDEN_LAYER_2_SIZE = 60;//170;
 
 const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
 
