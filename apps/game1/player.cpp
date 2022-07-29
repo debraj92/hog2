@@ -14,7 +14,7 @@
 #include <iostream>
 
 void player::takeDamage(int points) {
-    life_left -= points;
+    if (life_left > 0) life_left -= points;
 }
 
 void player::learnGame() {
@@ -120,7 +120,7 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction,
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, int actionError,
                      bool wasPreviousStateHotPursuit, int previousStateDirection) {
     logger->logDebug("player::observe")->endLineDebug();
 
@@ -140,9 +140,9 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.locateRelativeTrajectory();
 
     if (ob.direction > 0) {
-        ob.locateEnemies(grid, enemies);
+        ob.locateEnemies(grid, enemies, timeStep);
         ob.updateObstacleDistances(grid);
-        if (wasPreviousStateHotPursuit) {
+        if (wasPreviousStateHotPursuit and (actionError != -1)) {
             if (previousStateDirection != ob.direction) {
                 // unit has changed direction
                 ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
@@ -153,21 +153,17 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
             ob.actionInPreviousState = -1;
         }
     }
-
+    ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
     ob.recordFOVForCNN(cnnController, fp);
 
 }
 
 bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
     logger->logDebug("Find path to destination")->endLineDebug();
-    if (isSimpleAstarPlayer) {
-        std::vector<std::vector<int>> gridTemporary;
-        std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
-        populateEnemyObstacles(gridTemporary, enemies);
-        fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
-    } else {
-        fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    }
+    std::vector<std::vector<int>> gridTemporary;
+    std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
+    populateEnemyObstacles(gridTemporary, enemies);
+    fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
     return fp->findPathToDestination();
 }
 
@@ -335,11 +331,11 @@ void player::populateEnemyObstacles(vector<std::vector<int>> &grid, vector<enemy
 int player::rotatePreviousAction(int oldDirection, int newDirection, int previousAction) {
     int action = previousAction;
     /// Match action in anticlockwise direction
-    for (int d = oldDirection; d != newDirection and action < ACTION_SPACE; ++action) {
+    for (int d = oldDirection; d != newDirection and action <= ACTION_DODGE_RIGHT; ++action) {
         d++;
         d = d == 9 ? 1 : d;
     }
-    if (action < ACTION_SPACE) {
+    if (action <= ACTION_DODGE_RIGHT) {
         return action;
     }
 
@@ -355,6 +351,7 @@ int player::rotatePreviousAction(int oldDirection, int newDirection, int previou
 
     return -1;
 }
+
 
 
 

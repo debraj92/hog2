@@ -22,7 +22,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     int time = 1;
     int actionError = 0;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, false, 0);
+    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, 0, false, 0);
     int action = ACTION_STRAIGHT;
     while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
@@ -38,7 +38,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         logger->printBoardDebug(grid);
         // Observe next State
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
+        player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
@@ -47,8 +47,8 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         auto reward = calculateReward(nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         currentObservation = nextObservation;
-        time++;
         player1->total_rewards += reward;
+        time++;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
             headStraightToDestination(grid, enemies);
@@ -68,11 +68,12 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, false, 0);
+    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, 0, false, 0);
     int time = 1;
     while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(time)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
+        player1->timeStep = time;
         int actionError = 0;
         // Next Action
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
@@ -84,7 +85,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         logger->printBoardDebug(grid);
         // Observe after action
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
+        player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;

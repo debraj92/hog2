@@ -286,7 +286,7 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
     countNodeNumbersInDirection = 0;
 }
 
-void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy> &enemies) {
+void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy> &enemies, int time) {
     objectLocator ol;
     vector<enemy_attributes> enemy_properties;
     int totalEnemiesTracked = 0;
@@ -300,12 +300,13 @@ void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vecto
                                             ol.getObjectAngle(),
                                             ol.getObjectRiskFeature(),
                                             e.id,
-                                            e.isFixed,
                                             e.max_moves,
                                             e.current_x,
-                                            e.current_y});
+                                            e.current_y,
+                                            e.isPlayerTracked(time)
+                                            });
                 if (not isPlayerInHotPursuit) {
-                    isPlayerInHotPursuit = (not e.isFixed) and e.max_moves > 0;
+                    isPlayerInHotPursuit = e.max_moves > 0;
                 }
                 totalEnemiesTracked++;
                 if (totalEnemiesTracked == MAX_ENEMIES_TO_TRACK) {
@@ -335,15 +336,15 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_4 = enemy_properties[3].angle;
         enemy_risk_4 = enemy_properties[3].risk_measure;
         enemy_id_4 = enemy_properties[3].id;
-        enemy_is_fixed_4 = enemy_properties[3].isFixed ? 1 : 0;
         isLastMove4 = enemy_properties[3].moves_left == 1 ? 1 : 0;
+        isTracking4 = enemy_properties[3].isPlayerTracked ? 1 : 0;
     } else {
         enemy_distance_4 = MAX_DISTANCE;
         enemy_angle_4 = 0;
         enemy_risk_4 = 0;
         enemy_id_4 = -1;
-        enemy_is_fixed_4 = -1;
         isLastMove4 = -1;
+        isTracking4 = -1;
     }
 
     if(enemy_properties.size() >= 3) {
@@ -351,15 +352,15 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_3 = enemy_properties[2].angle;
         enemy_risk_3 = enemy_properties[2].risk_measure;
         enemy_id_3 = enemy_properties[2].id;
-        enemy_is_fixed_3 = enemy_properties[2].isFixed ? 1 : 0;
         isLastMove3 = enemy_properties[2].moves_left == 1 ? 1 : 0;
+        isTracking3 = enemy_properties[2].isPlayerTracked ? 1 : 0;
     } else {
         enemy_distance_3 = MAX_DISTANCE;
         enemy_angle_3 = 0;
         enemy_risk_3 = 0;
         enemy_id_3 = -1;
-        enemy_is_fixed_3 = -1;
         isLastMove3 = -1;
+        isTracking3 = -1;
     }
 
     if(enemy_properties.size() >= 2) {
@@ -367,15 +368,15 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_2 = enemy_properties[1].angle;
         enemy_risk_2 = enemy_properties[1].risk_measure;
         enemy_id_2 = enemy_properties[1].id;
-        enemy_is_fixed_2 = enemy_properties[1].isFixed ? 1 : 0;
         isLastMove2 = enemy_properties[1].moves_left == 1 ? 1 : 0;
+        isTracking2 = enemy_properties[1].isPlayerTracked ? 1 : 0;
     } else {
         enemy_distance_2 = MAX_DISTANCE;
         enemy_angle_2 = 0;
         enemy_risk_2 = 0;
         enemy_id_2 = -1;
-        enemy_is_fixed_2 = -1;
         isLastMove2 = -1;
+        isTracking2 = -1;
     }
 
     if(enemy_properties.size() >= 1) {
@@ -383,15 +384,15 @@ void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_p
         enemy_angle_1 = enemy_properties[0].angle;
         enemy_risk_1 = enemy_properties[0].risk_measure;
         enemy_id_1 = enemy_properties[0].id;
-        enemy_is_fixed_1 = enemy_properties[0].isFixed ? 1 : 0;
         isLastMove1 = enemy_properties[0].moves_left == 1 ? 1 : 0;
+        isTracking1 = enemy_properties[0].isPlayerTracked ? 1 : 0;
     } else {
         enemy_distance_1 = MAX_DISTANCE;
         enemy_angle_1 = 0;
         enemy_risk_1 = 0;
         enemy_id_1 = -1;
-        enemy_is_fixed_1 = -1;
         isLastMove1 = -1;
+        isTracking1 = -1;
     }
 }
 
@@ -423,35 +424,37 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
     int offset = enemy_angle_1 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_1) * 10;
     nextPosOffset += 2;
-    observation_vector[nextPosOffset++] = enemy_is_fixed_1;
     observation_vector[nextPosOffset++] = isLastMove1;
+    observation_vector[nextPosOffset++] = isTracking1;
 
     observation_vector[nextPosOffset++] = enemy_distance_2;
     offset = enemy_angle_2 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_2) * 10;
     nextPosOffset += 2;
-    observation_vector[nextPosOffset++] = enemy_is_fixed_2;
     observation_vector[nextPosOffset++] = isLastMove2;
+    observation_vector[nextPosOffset++] = isTracking2;
 
     observation_vector[nextPosOffset++] = enemy_distance_3;
     offset = enemy_angle_3 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_3) * 10;
     nextPosOffset += 2;
-    observation_vector[nextPosOffset++] = enemy_is_fixed_3;
     observation_vector[nextPosOffset++] = isLastMove3;
+    observation_vector[nextPosOffset++] = isTracking3;
 
     observation_vector[nextPosOffset++] = enemy_distance_4;
     offset = enemy_angle_4 > 0;
     observation_vector[nextPosOffset + offset] = abs(enemy_angle_4) * 10;
     nextPosOffset += 2;
-    observation_vector[nextPosOffset++] = enemy_is_fixed_4;
     observation_vector[nextPosOffset++] = isLastMove4;
+    observation_vector[nextPosOffset++] = isTracking4;
 
     observation_vector[nextPosOffset++] = static_cast< float >(isPlayerInHotPursuit? 1:0);
     if(actionInPreviousState > -1) {
         observation_vector[nextPosOffset + actionInPreviousState] = 1;
     }
     nextPosOffset += 5;
+
+    observation_vector[nextPosOffset++] = isTrueLastActionLeftOrRight;
 
     observation_vector[nextPosOffset++] = action_straight_atRisk;
     observation_vector[nextPosOffset++] = action_frontLeft_atRisk;
@@ -600,48 +603,69 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
 
     for (const enemy_attributes &e: enemy_properties) {
 
-        if (e.isFixed) {
-            continue;
+        if (action_straight_atRisk >= 0) {
+            // straight action
+            x = playerX;
+            y = playerY;
+            error = coordinates.setStraightActionCoordinates(x, y, direction);
+            if (error == -1) {
+                // unavailable
+                action_straight_atRisk = -1;
+            } else if (getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
+                action_straight_atRisk++;
+            }
         }
 
-        // straight action
-        x = playerX;
-        y = playerY;
-        error = coordinates.setStraightActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
-            action_straight_atRisk++;
+        if (action_frontLeft_atRisk >= 0) {
+            // front left action
+            x = playerX;
+            y = playerY;
+            error = coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction);
+            if (error == -1) {
+                // unavailable
+                action_frontLeft_atRisk = -1;
+            } else if (getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
+                action_frontLeft_atRisk++;
+            }
         }
 
-        // front left action
-        x = playerX;
-        y = playerY;
-        error = coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
-            action_frontLeft_atRisk++;
+        if (action_frontRight_atRisk >= 0) {
+            // front right action
+            x = playerX;
+            y = playerY;
+            error = coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction);
+            if (error == -1) {
+                // unavailable
+                action_frontRight_atRisk = -1;
+            } else if (getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
+                action_frontRight_atRisk++;
+            }
         }
 
-        // front right action
-        x = playerX;
-        y = playerY;
-        error = coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
-            action_frontRight_atRisk++;
+        if (action_left_atRisk >= 0) {
+            // left action
+            x = playerX;
+            y = playerY;
+            error = coordinates.setDodgeLeftActionCoordinates(x, y, direction);
+            if (error == -1) {
+                // unavailable
+                action_left_atRisk = -1;
+            } else if (getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
+                action_left_atRisk++;
+            }
         }
 
-        // left action
-        x = playerX;
-        y = playerY;
-        error = coordinates.setDodgeLeftActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
-            action_left_atRisk++;
-        }
-
-        // right action
-        x = playerX;
-        y = playerY;
-        error = coordinates.setDodgeRightActionCoordinates(x, y, direction);
-        if (error != -1 and getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
-            action_right_atRisk++;
+        if (action_right_atRisk >= 0) {
+            // left action
+            x = playerX;
+            y = playerY;
+            error = coordinates.setDodgeRightActionCoordinates(x, y, direction);
+            if (error == -1) {
+                // unavailable
+                action_right_atRisk = -1;
+            } else if (getShortestDistanceBetweenPoints(e.enemyX, e.enemyY, x, y) <= 1) {
+                action_right_atRisk++;
+            }
         }
     }
 }

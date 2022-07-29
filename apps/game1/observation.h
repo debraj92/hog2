@@ -25,10 +25,10 @@ class observation {
         float angle;
         float risk_measure;
         int id;
-        bool isFixed;
         int moves_left;
         int enemyX;
         int enemyY;
+        bool isPlayerTracked;
     };
 
     void updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties);
@@ -49,37 +49,38 @@ public:
 
     bool isGoalInSight = false;
     int actionInPreviousState;
+    float isTrueLastActionLeftOrRight;
 
     /**
-     * Assumption: Maximum 6 enemies within the vision radius
+     * Assumption: Maximum 4 enemies within the vision radius are tracked
      */
     float enemy_distance_1 = MAX_DISTANCE;
     float enemy_angle_1 = 0;
     float enemy_risk_1 = 0;
     int enemy_id_1 = -1;
-    float enemy_is_fixed_1 = -1;
     float isLastMove1 = 0;
+    float isTracking1 = 0;
 
     float enemy_distance_2 = MAX_DISTANCE;
     float enemy_angle_2 = 0;
     float enemy_risk_2 = 0;
     int enemy_id_2 = -1;
-    float enemy_is_fixed_2 = -1;
     float isLastMove2 = 0;
+    float isTracking2 = 0;
 
     float enemy_distance_3 = MAX_DISTANCE;
     float enemy_angle_3 = 0;
     float enemy_risk_3 = 0;
     int enemy_id_3 = -1;
-    float enemy_is_fixed_3 = -1;
     float isLastMove3 = 0;
+    float isTracking3 = 0;
 
     float enemy_distance_4 = MAX_DISTANCE;
     float enemy_angle_4 = 0;
     float enemy_risk_4 = 0;
     int enemy_id_4 = -1;
-    float enemy_is_fixed_4 = -1;
     float isLastMove4 = 0;
+    float isTracking4 = 0;
 
     float action_straight_atRisk = 0;
     float action_frontLeft_atRisk = 0;
@@ -122,7 +123,7 @@ public:
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp);
     void locateRelativeTrajectory();
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);
-    void locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy>& enemies);
+    void locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy>& enemies, int time);
 
     void printData();
 

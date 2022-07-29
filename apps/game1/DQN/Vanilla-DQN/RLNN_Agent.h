@@ -27,7 +27,7 @@ class RLNN_Agent : public DQN_interface {
     const double epsilon_decay = 0.998;
     const double alpha = 1;
     const int epsilon_annealing_percent = EXPLOITATION_START_PERCENT;
-    int batchSize = 3500;
+    int batchSize = 4500;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;

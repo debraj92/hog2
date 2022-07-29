@@ -29,7 +29,8 @@ public:
 
     int current_x;
     int current_y;
-    bool isFixed = true;
+    // TODO: Remove
+    bool isFixed = false;
     int life_left;
 
     int lastKnownPlayerX = -1;
@@ -63,6 +64,7 @@ public:
     int getLifeLeft();
     void takeDamage(int points);
     bool isPlayerInSight(int player_x, int player_y);
+    bool isPlayerTracked (int time) const;
 
     void predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo &pl_info);
 

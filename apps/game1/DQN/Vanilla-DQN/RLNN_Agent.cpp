@@ -60,7 +60,7 @@ int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, 
         cout<<endl;
         cout<<"Abstract State:\n"<<tensor_states<<endl;
         cout<<"FOV\n"<<tensor_fov_channels<<endl;
-         */
+        */
     }
 
     printAction(action);

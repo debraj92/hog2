@@ -12,8 +12,8 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 40000;   /// Must be greater than 8
-const int SESSION_TIMEOUT = 35;
+const int MAX_EPISODES = 10000;   /// Must be greater than 8
+const int SESSION_TIMEOUT = 100;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
 
@@ -78,21 +78,21 @@ const int ACTION_FOLLOW = 8; // deprecated
 
 /// REWARDS
 
-const float REWARD_FACTOR = 12;
+const float REWARD_FACTOR = 6;
 const float REWARD_REACH =  3 * REWARD_FACTOR;
 const float REWARD_ACTION_UNAVAILABLE = -2.5 * REWARD_FACTOR;
 const float REWARD_ACTION_LR = -1 * REWARD_FACTOR;
 const float REWARD_TRACK_ONE_DIV = -0.4 * REWARD_FACTOR;
 const float REWARD_TRACK_TWO_DIV = -0.7 * REWARD_FACTOR;
-const float REWARD_DEATH = -5 * REWARD_FACTOR;
-const float REWARD_OFFTRACK = -5 * REWARD_FACTOR;
+const float REWARD_DEATH = -9 * REWARD_FACTOR;
+const float REWARD_OFFTRACK = -9 * REWARD_FACTOR;
 
 
 const int MAX_LIFE = 10;
 
 const int MAX_DISTANCE = 100;
 
-const int MAX_ABSTRACT_OBSERVATIONS = 43;
+const int MAX_ABSTRACT_OBSERVATIONS = 44;
 
 const int MAX_CAPACITY_REPLAY_BUFFER = 12000;
 
@@ -112,9 +112,9 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const int INPUT_SIZE = 115;//331;
-const int HIDDEN_LAYER_1_SIZE = 80;//220;
-const int HIDDEN_LAYER_2_SIZE = 60;//170;
+const int INPUT_SIZE = 188;//112;//331;
+const int HIDDEN_LAYER_1_SIZE = 130;//80;//220;
+const int HIDDEN_LAYER_2_SIZE = 95;//60;//170;
 
 const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
 

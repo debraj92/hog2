@@ -14,7 +14,7 @@ int enemy::getLifeLeft() {
 }
 
 void enemy::takeDamage(int points) {
-    life_left -= points;
+    if (life_left > 0) life_left -= points;
 }
 
 bool enemy::isPlayerInSight(int player_x, int player_y) {
@@ -24,9 +24,6 @@ bool enemy::isPlayerInSight(int player_x, int player_y) {
 void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerInfo pl_info) {
     if (timeStep > 0 and time <= timeStep) {
         timeStep = 0;
-    }
-    if(isFixed) {
-        return;
     }
     // moving enemies die after exhausting moves
     if (max_moves == 0) {
@@ -165,4 +162,8 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     }
     pl_info.player_x = playerX;
     pl_info.player_y = playerY;
+}
+
+bool enemy::isPlayerTracked (int time) const {
+    return timeStep > 0 and (time - timeStep) == 1 and lastKnownPlayerX >= 0;
 }

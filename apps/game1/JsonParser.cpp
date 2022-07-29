@@ -120,7 +120,7 @@ void JsonParser::createEnemiesAtLocations(std::vector<std::vector<int>>& grid, v
                                  enemyLocations[enemy_id][0],
                                  enemyLocations[enemy_id][1],
                                  fixed_enemy_id,
-                                 true);
+                                 false);
             fixed_enemy_id += 2;
             fixed_enemy_id = fixed_enemy_id == PLAYER_ID ? fixed_enemy_id + 2 : fixed_enemy_id;
         } else {
