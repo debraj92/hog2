@@ -31,7 +31,7 @@ void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerIn
         return;
     }
     if(isPlayerInSight(pl_info.player_x, pl_info.player_y)) {
-        bool wasPlayerInSightInLastTimeStep = (time - timeStep) == 1;
+        bool wasPlayerInSightInLastTimeStep = time > 1 and ((time - timeStep) == 1);
         timeStep = time;
         int playerDistanceFromLastKnownLocation = max(abs(pl_info.player_x - lastKnownPlayerX), abs(pl_info.player_y - lastKnownPlayerY));
         if (wasPlayerInSightInLastTimeStep and lastKnownPlayerX >= 0 and playerDistanceFromLastKnownLocation == 1) {
@@ -165,5 +165,5 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
 }
 
 bool enemy::isPlayerTracked (int time) const {
-    return timeStep > 0 and (time - timeStep) == 1 and lastKnownPlayerX >= 0;
+    return time > 1 and timeStep > 0 and (time - timeStep) == 1 and lastKnownPlayerX >= 0;
 }

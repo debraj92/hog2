@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 10000;   /// Must be greater than 8
+const int MAX_EPISODES = 200000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 100;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -100,7 +100,7 @@ const int MIN_BUFFERED_EXPERIENCE_FOR_LEARNING = 1000;
 
 const int SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 95;
 
-const int MAX_RESUME = (GRID_SPAN * 3) / 2; // Approx average path size
+const int MAX_RESUME = GRID_SPAN * 3; // Approx average path size
 
 const double MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY = 0.5;
 
@@ -112,9 +112,9 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const int INPUT_SIZE = 188;//112;//331;
-const int HIDDEN_LAYER_1_SIZE = 130;//80;//220;
-const int HIDDEN_LAYER_2_SIZE = 95;//60;//170;
+const int INPUT_SIZE = 188;
+const int HIDDEN_LAYER_1_SIZE = 130;
+const int HIDDEN_LAYER_2_SIZE = 95;
 
 const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
 

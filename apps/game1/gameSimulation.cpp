@@ -19,23 +19,23 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     }
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
-    int time = 1;
-    int actionError = 0;
+    player1->timeStep = 1;
     observation currentObservation;
     player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, 0, false, 0);
-    int action = ACTION_STRAIGHT;
-    while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
-        logger->logDebug("Time ")->logDebug(time)->endLineDebug();
+    while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
+        logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
+        int actionError = 0;
         // Next Action
-        action = movePlayer(grid, enemies, currentObservation, &actionError);
+        int action = movePlayer(grid, enemies, currentObservation, &actionError);
         fight(enemies, grid);
         // Enemy operations
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation, time);
+            moveEnemies(enemies, grid, currentObservation, player1->timeStep);
             fight(enemies, grid);
         }
         logger->printBoardDebug(grid);
+        ++player1->timeStep;
         // Observe next State
         observation nextObservation;
         player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
@@ -48,7 +48,6 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         currentObservation = nextObservation;
         player1->total_rewards += reward;
-        time++;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
             headStraightToDestination(grid, enemies);
@@ -67,22 +66,22 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     }
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
+    player1->timeStep = 1;
     observation currentObservation;
     player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, 0, false, 0);
-    int time = 1;
-    while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
-        logger->logDebug("Time ")->logDebug(time)->endLineDebug();
+    while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
+        logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
-        player1->timeStep = time;
         int actionError = 0;
         // Next Action
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
         fight(enemies, grid);
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation, time);
+            moveEnemies(enemies, grid, currentObservation, player1->timeStep);
             fight(enemies, grid);
         }
         logger->printBoardDebug(grid);
+        ++player1->timeStep;
         // Observe after action
         observation nextObservation;
         player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
@@ -94,7 +93,6 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
         currentObservation = nextObservation;
-        time++;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
