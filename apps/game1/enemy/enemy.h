@@ -47,6 +47,7 @@ public:
     };
 
     enemy(vector<std::vector<int>> &grid, int start_x, int start_y, int id, bool fixed) {
+        logger = std::make_shared<Logger>(LogLevel);
         this->start_x = start_x;
         this->start_y = start_y;
         this->current_x = start_x;
@@ -56,7 +57,6 @@ public:
         this->life_left = 10;
         this->max_moves = fixed? 0 : this->max_moves;
         fp = std::make_shared<findPath>(grid);
-        logger = std::make_shared<Logger>(LogLevel);
     }
 
     void doNextMove(int time, vector<std::vector<int>> &grid, playerInfo pl_info = {});

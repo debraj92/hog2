@@ -40,8 +40,8 @@ bool AStar_::findPathToDestination(int destinationDirection) {
     if (destinationDirection == 0) {
         heuristicFunction = &AStar_::findShortestDistanceEuclidean;
     } else {
-        heuristicFunction = &AStar_::findShortestTime;
-        //heuristicFunction = &AStar_::findShortestDistance;
+        //heuristicFunction = &AStar_::findShortestTime;
+        heuristicFunction = &AStar_::findShortestDistanceEuclidean;
     }
 
 

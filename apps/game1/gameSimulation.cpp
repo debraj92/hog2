@@ -42,6 +42,8 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
+            logger->logDebug("Player poisoned at (")->logDebug(player1->current_x)->logDebug(",")->logDebug(player1->current_y)
+                    ->logDebug(")")->endLineDebug();
         }
         // Next state reward
         auto reward = calculateReward(nextObservation, action, actionError);
@@ -88,6 +90,8 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
+            logger->logDebug("Player poisoned at (")->logDebug(player1->current_x)->logDebug(",")->logDebug(player1->current_y)
+                    ->logDebug(")")->endLineDebug();
         }
         auto reward = calculateReward(nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
