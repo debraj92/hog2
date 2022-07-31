@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 using namespace std;
 using namespace RTS;

@@ -12,6 +12,7 @@
 #include "iostream"
 #include "Logger.h"
 #include "objectLocator.h"
+#include <cmath>
 
 using namespace std;
 using namespace RTS;

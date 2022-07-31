@@ -3,7 +3,7 @@
 //
 
 #include "JsonParser.h"
-#include <json/json.h>
+#include <dist/json/json.h>
 #include <iostream>
 #include <iostream>
 #include <fstream>
