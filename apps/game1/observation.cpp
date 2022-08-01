@@ -452,7 +452,7 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
     if(actionInPreviousState > -1) {
         observation_vector[nextPosOffset + actionInPreviousState] = 1;
     }
-    nextPosOffset += 5;
+    nextPosOffset += 8;
 
     observation_vector[nextPosOffset++] = isTrueLastActionLeftOrRight;
 

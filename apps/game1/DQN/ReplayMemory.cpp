@@ -150,7 +150,7 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
     /**
      * Check if a random number generated from an exponential distribution is within a moving sliding window
      */
-    double const exp_dist_mean   = 1;
+    double const exp_dist_mean   = 10;
     double const exp_dist_lambda = 1 / exp_dist_mean;
 
     std::random_device rd;
@@ -167,6 +167,7 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
 }
 
 void ReplayMemory::logStateVector(observation &ob) {
+    /*
     string state="(" + to_string(ob.playerX) + "," + to_string(ob.playerY) +") dir: ";
     if (ob.direction == N) {
         state += "N";
@@ -249,5 +250,6 @@ void ReplayMemory::logStateVector(observation &ob) {
     logger->logObstaclesToFile(ob.obstaclesFOV);
     logger->logEnemiesToFile(ob.enemiesFOV);
     logger->logPathToFile(ob.pathFOV);
+    */
 }
 

@@ -349,7 +349,17 @@ int player::rotatePreviousAction(int oldDirection, int newDirection, int previou
         return action;
     }
 
-    return -1;
+    /// hypothetical back actions
+    /// Search new direction in backside of old direction
+    int count = 0;
+    action = previousAction;
+    for (int d = oldDirection; d != newDirection; action++) {
+        count++;
+        d++;
+        d = d == 9 ? 1 : d;
+    }
+
+    return action;
 }
 
 

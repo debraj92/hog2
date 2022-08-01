@@ -54,6 +54,8 @@ class AStar_ {
 
     void orderNodeLinks(node_ root);
 
+    float computeGCost(node_ first, node_ second);
+
 
 public:
 
