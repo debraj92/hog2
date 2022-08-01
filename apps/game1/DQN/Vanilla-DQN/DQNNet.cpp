@@ -102,7 +102,7 @@ void DQNNet::plotLoss() {
     auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &losses_averaged, errorMessage);
     if(success){
         vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot2/loss_output.png");
+        WriteToFile(pngdata, "/data/home/debraj1/plots/loss_output.png");
         DeleteImage(imageReference->image);
     }else{
         cerr << "Error: ";

@@ -242,7 +242,7 @@ void player::plotRewards(vector<double> &rewards) {
     auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &rewards_averaged, errorMessage);
     if(success){
         vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot2/episode_rewards.png");
+        WriteToFile(pngdata, "/data/home/debraj1/plots/episode_rewards.png");
         DeleteImage(imageReference->image);
     }else{
         cerr << "Error: ";

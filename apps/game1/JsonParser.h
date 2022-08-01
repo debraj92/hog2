@@ -14,8 +14,8 @@ using namespace std;
 class JsonParser {
 
     string trainingMapId;
-    const string TRAINING_MAP_DIR_OBSTACLES = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/training_maps/obstacles/";
-    const string TRAINING_MAP_DIR_ENEMIES = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/training_maps/enemies/";
+    const string TRAINING_MAP_DIR_OBSTACLES = "/data/home/debraj1/training_maps/obstacles/";
+    const string TRAINING_MAP_DIR_ENEMIES = "/data/home/debraj1/training_maps/enemies/";
 
     void openFile(const string &filePath, ofstream &file);
 
