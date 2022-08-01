@@ -46,6 +46,7 @@ class ReplayMemory {
     vector<long> buffer_actions;
     vector<float> rewards;
     vector<bool> dones;
+    bool isDeviceTypeGpu = false;
 
     /// FOV for CNN - current state
     float (*obstaclesFOVcurrent)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
@@ -66,6 +67,12 @@ class ReplayMemory {
     double exploitation_window_start = MIN_EXPLOITATION_WINDOW_START_FOR_MEMORY;
 
     void storeExperience(observation &current, observation &next, int action, float reward, bool done);
+
+    string getDeviceType()
+    {
+        char * val = getenv("DEVICE_TYPE");
+        return val == NULL ? "CPU" : std::string(val);
+    }
 
 public:
 
@@ -101,6 +108,9 @@ public:
                 }
             }
         }
+
+        isDeviceTypeGpu = getDeviceType() != "CUDA";
+        if(isDeviceTypeGpu) logger->logInfo("Training on GPU");
 
 #ifdef ENABLE_STATE_VECTOR_DUMP
         logger->openLogFile();
