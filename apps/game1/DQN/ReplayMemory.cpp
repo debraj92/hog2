@@ -42,8 +42,14 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     auto enemiesFOV_next_temp = new float [batchSize][FOV_WIDTH][FOV_WIDTH]();
     auto pathFOV_next_temp = new float [batchSize][FOV_WIDTH][FOV_WIDTH]();
 
-    auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
-    auto options2 = torch::TensorOptions().dtype(torch::kLong).device(torch::kCPU);
+    torch::TensorOptions options, options2;
+    if (isDeviceTypeGpu) {
+        options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCUDA);
+        options2 = torch::TensorOptions().dtype(torch::kLong).device(torch::kCUDA);
+    } else {
+        options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
+        options2 = torch::TensorOptions().dtype(torch::kLong).device(torch::kCPU);
+    }
 
     tensor_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
     tensor_next_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options);
