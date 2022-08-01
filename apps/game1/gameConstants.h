@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 100000;   /// Must be greater than 8
+const int MAX_EPISODES = 150000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 100;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -38,7 +38,7 @@ const int SE=6;
 const int E=7;
 const int NE=8;
 
-const int VISION_RADIUS = 2;
+const int VISION_RADIUS = 3;
 const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
 
 const int GOAL_RADIUS = 1;
@@ -59,6 +59,12 @@ const int two_deviation_N = 21;
 const int two_deviation_S = 22;
 const int two_deviation_W = 23;
 const int two_deviation_E = 24;
+
+const int lower_bound_three_deviation = 31;
+const int upper_bound_three_deviation = 34;
+
+const int lower_bound_four_deviation = 41;
+const int upper_bound_four_deviation = 44;
 
 
 /// ACTIONS
@@ -82,8 +88,10 @@ const float REWARD_FACTOR = 6;
 const float REWARD_REACH =  3 * REWARD_FACTOR;
 const float REWARD_ACTION_UNAVAILABLE = -3 * REWARD_FACTOR;
 const float REWARD_ACTION_LR = -1 * REWARD_FACTOR;
-const float REWARD_TRACK_ONE_DIV = -0.4 * REWARD_FACTOR;
-const float REWARD_TRACK_TWO_DIV = -0.7 * REWARD_FACTOR;
+const float REWARD_TRACK_ONE_DIV = -0.2 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -0.5 * REWARD_FACTOR;
+const float REWARD_TRACK_THREE_DIV = -0.8 * REWARD_FACTOR;
+const float REWARD_TRACK_FOUR_DIV = -1.1 * REWARD_FACTOR;
 const float REWARD_DEATH = -10 * REWARD_FACTOR;
 const float REWARD_OFFTRACK = -10 * REWARD_FACTOR;
 
@@ -92,7 +100,7 @@ const int MAX_LIFE = 10;
 
 const int MAX_DISTANCE = 100;
 
-const int MAX_ABSTRACT_OBSERVATIONS = 47;
+const int MAX_ABSTRACT_OBSERVATIONS = 45;
 
 const int MAX_CAPACITY_REPLAY_BUFFER = 12000;
 
@@ -112,9 +120,10 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const int INPUT_SIZE = 335;//188;
-const int HIDDEN_LAYER_1_SIZE = 221;//130;
-const int HIDDEN_LAYER_2_SIZE = 166;//95;
+const int INPUT_SIZE = 445;//333;
+const int HIDDEN_LAYER_1_SIZE = 300;//221;
+const int HIDDEN_LAYER_2_SIZE = 225;//166;
+//const int HIDDEN_LAYER_3_SIZE = 111;
 
 const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
 

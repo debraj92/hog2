@@ -39,17 +39,17 @@ void FOV_Filters::init() {
 
 }
 
-
-
 void FOV_Filters::createFilterNE() {
     for(int i=0; i<FOV_WIDTH; i++) {
         for(int j=0; j<FOV_WIDTH; j++) {
             direction_mapping[NE][i][j] = {i, j};
         }
     }
-    rotateFilter(direction_mapping[NE], 1);
-    rotateFilter(direction_mapping[NE], 2);
-    rotateFilter(direction_mapping[NE], 2);
+    for(int ring = 1; ring <= VISION_RADIUS; ++ring) {
+        for(int rotationCount = 1; rotationCount <= ring; ++rotationCount) {
+            rotateFilter(direction_mapping[NE], ring);
+        }
+    }
 }
 
 void FOV_Filters::createFilterSE() {
@@ -58,16 +58,11 @@ void FOV_Filters::createFilterSE() {
             direction_mapping[SE][i][j] = {i, j};
         }
     }
-    rotateFilter(direction_mapping[SE], 1);
-    rotateFilter(direction_mapping[SE], 1);
-    rotateFilter(direction_mapping[SE], 1);
-
-    rotateFilter(direction_mapping[SE], 2);
-    rotateFilter(direction_mapping[SE], 2);
-    rotateFilter(direction_mapping[SE], 2);
-    rotateFilter(direction_mapping[SE], 2);
-    rotateFilter(direction_mapping[SE], 2);
-    rotateFilter(direction_mapping[SE], 2);
+    for(int ring = 1; ring <= VISION_RADIUS; ++ring) {
+        for(int rotationCount = 1; rotationCount <= ring * 3; ++rotationCount) {
+            rotateFilter(direction_mapping[SE], ring);
+        }
+    }
 }
 
 void FOV_Filters::createFilterSW() {
@@ -76,22 +71,11 @@ void FOV_Filters::createFilterSW() {
             direction_mapping[SW][i][j] = {i, j};
         }
     }
-    rotateFilter(direction_mapping[SW], 1);
-    rotateFilter(direction_mapping[SW], 1);
-    rotateFilter(direction_mapping[SW], 1);
-    rotateFilter(direction_mapping[SW], 1);
-    rotateFilter(direction_mapping[SW], 1);
-
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
-    rotateFilter(direction_mapping[SW], 2);
+    for(int ring = 1; ring <= VISION_RADIUS; ++ring) {
+        for(int rotationCount = 1; rotationCount <= ring * 5; ++rotationCount) {
+            rotateFilter(direction_mapping[SW], ring);
+        }
+    }
 }
 
 void FOV_Filters::createFilterNW() {
@@ -100,28 +84,11 @@ void FOV_Filters::createFilterNW() {
             direction_mapping[NW][i][j] = {i, j};
         }
     }
-    rotateFilter(direction_mapping[NW], 1);
-    rotateFilter(direction_mapping[NW], 1);
-    rotateFilter(direction_mapping[NW], 1);
-    rotateFilter(direction_mapping[NW], 1);
-    rotateFilter(direction_mapping[NW], 1);
-    rotateFilter(direction_mapping[NW], 1);
-    rotateFilter(direction_mapping[NW], 1);
-
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
-    rotateFilter(direction_mapping[NW], 2);
+    for(int ring = 1; ring <= VISION_RADIUS; ++ring) {
+        for(int rotationCount = 1; rotationCount <= ring * 7; ++rotationCount) {
+            rotateFilter(direction_mapping[NW], ring);
+        }
+    }
 }
 
 void FOV_Filters::createFilterE() {
@@ -130,12 +97,11 @@ void FOV_Filters::createFilterE() {
             direction_mapping[E][i][j] = {i, j};
         }
     }
-    rotateFilter(direction_mapping[E], 1);
-    rotateFilter(direction_mapping[E], 1);
-    rotateFilter(direction_mapping[E], 2);
-    rotateFilter(direction_mapping[E], 2);
-    rotateFilter(direction_mapping[E], 2);
-    rotateFilter(direction_mapping[E], 2);
+    for(int ring = 1; ring <= VISION_RADIUS; ++ring) {
+        for(int rotationCount = 1; rotationCount <= ring * 2; ++rotationCount) {
+            rotateFilter(direction_mapping[E], ring);
+        }
+    }
 }
 
 void FOV_Filters::createFilterW() {
@@ -144,25 +110,11 @@ void FOV_Filters::createFilterW() {
             direction_mapping[W][i][j] = {i, j};
         }
     }
-    rotateFilter(direction_mapping[W], 1);
-    rotateFilter(direction_mapping[W], 1);
-    rotateFilter(direction_mapping[W], 1);
-    rotateFilter(direction_mapping[W], 1);
-    rotateFilter(direction_mapping[W], 1);
-    rotateFilter(direction_mapping[W], 1);
-
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
-    rotateFilter(direction_mapping[W], 2);
+    for(int ring = 1; ring <= VISION_RADIUS; ++ring) {
+        for(int rotationCount = 1; rotationCount <= ring * 6; ++rotationCount) {
+            rotateFilter(direction_mapping[W], ring);
+        }
+    }
 }
 
 void FOV_Filters::rotateFilter (gridLocation (&directionFilter)[FOV_WIDTH][FOV_WIDTH], int ring) {

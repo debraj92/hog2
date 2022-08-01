@@ -216,6 +216,10 @@ float gameSimulation::calculateReward(const observation &nextObservation, int ac
         return REWARD_TRACK_ONE_DIV;
     } else if (nextObservation.trajectory >= lower_bound_two_deviation && nextObservation.trajectory <= upper_bound_two_deviation) {
         return REWARD_TRACK_TWO_DIV;
+    } else if (nextObservation.trajectory >= lower_bound_three_deviation && nextObservation.trajectory <= upper_bound_three_deviation) {
+        return REWARD_TRACK_THREE_DIV;
+    } else if (nextObservation.trajectory >= lower_bound_four_deviation && nextObservation.trajectory <= upper_bound_four_deviation) {
+        return REWARD_TRACK_FOUR_DIV;
     } else {
         // Placeholder - will never hit as player is dead
         return REWARD_OFFTRACK;

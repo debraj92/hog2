@@ -48,14 +48,14 @@ class ReplayMemory {
     vector<bool> dones;
 
     /// FOV for CNN - current state
-    float obstaclesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float enemiesFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float pathFOVcurrent[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
+    float (*obstaclesFOVcurrent)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
+    float (*enemiesFOVcurrent)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
+    float (*pathFOVcurrent)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
 
     /// FOV for CNN - next state
-    float obstaclesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float enemiesFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
-    float pathFOVnext[MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH];
+    float (*obstaclesFOVnext)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
+    float (*enemiesFOVnext)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
+    float (*pathFOVnext)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +93,11 @@ public:
                 for (int k=0; k<FOV_WIDTH; k++) {
                     obstaclesFOVcurrent[i][j][k] = 0;
                     enemiesFOVcurrent[i][j][k] = 0;
+                    pathFOVcurrent[i][j][k] = 0;
+
+                    obstaclesFOVnext[i][j][k] = 0;
+                    enemiesFOVnext[i][j][k] = 0;
+                    pathFOVnext[i][j][k] = 0;
                 }
             }
         }
@@ -107,6 +112,13 @@ public:
 #ifdef ENABLE_STATE_VECTOR_DUMP
         logger->closeLogFile();
 #endif
+        delete[] obstaclesFOVcurrent;
+        delete[] enemiesFOVcurrent;
+        delete[] pathFOVcurrent;
+
+        delete[] obstaclesFOVnext;
+        delete[] enemiesFOVnext;
+        delete[] pathFOVnext;
     }
 
     void sampleBatch(int batchSize);

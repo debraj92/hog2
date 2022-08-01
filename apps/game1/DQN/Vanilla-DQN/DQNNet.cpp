@@ -12,7 +12,7 @@
 using namespace std;
 
 DQNNet::DQNNet(double learning_rate, const std::string& module_name) :
-        m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 32, /*kernel_size=*/3)))
+        m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 16, /*kernel_size=*/3)))
 
 {
     logger = std::make_unique<Logger>(LogLevel);
@@ -38,6 +38,7 @@ Tensor DQNNet::forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstracti
     auto cnn_out1 = torch::relu(m_conv1(fov_cnn));
     auto cnn_out = nn::Flatten()(cnn_out1);
     auto cnn_with_abstractions = torch::cat({cnn_out, inputs_abstraction}, 1);
+    //cout<<cnn_with_abstractions<<endl;
     return m_sequential->forward(cnn_with_abstractions);
 }
 

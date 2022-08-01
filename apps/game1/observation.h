@@ -105,13 +105,8 @@ public:
     double destination_cosine = -1;
 
     int obstacle_front = MAX_DISTANCE; // default at infinity
-
     int obstacle_front_left = MAX_DISTANCE;
     int obstacle_front_right = MAX_DISTANCE;
-    int obstacle_blind_left = MAX_DISTANCE;
-    int obstacle_blind_right = MAX_DISTANCE;
-
-
     int obstacle_left = MAX_DISTANCE; // deprecated
     int obstacle_right = MAX_DISTANCE; // deprecated
 

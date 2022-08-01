@@ -8,6 +8,8 @@
 #include "../gameConstants.h"
 #include "../fixedobstacles.h"
 #include "../enemy/enemy.h"
+//#include "../trainingMaps.h"
+#include "../JsonParser.h"
 
 using namespace std;
 
@@ -203,4 +205,37 @@ TEST(AStarNodeOrder, BasicAssertions) {
 
     node_ n1(4, 4);
     assert(aStar.getNodeOrder(n1) == -1);
+}
+
+TEST(AStarFindPathSmoothening, BasicAssertions) {
+
+    Logger logger(LOG_LEVEL::DEBUG);
+    vector<vector<int>> grid;
+    for (int i=0; i<GRID_SPAN; i++) {
+        std::vector<int> row(GRID_SPAN, 0);
+        grid.push_back(row);
+    }
+    JsonParser jp("map12");
+    jp.readFromFileObstacles(grid);
+    //logger.printBoardDebug(grid);
+    int startX = 12;
+    int startY = 0;
+    int destX = 3 * (GRID_SPAN - 1)/4;
+    int destY = GRID_SPAN - 1;
+    cout<<startX<<","<<startY<<"|"<<destX<<","<<destY<<endl;
+    AStar_ aStar(grid, startX, startY, destX, destY);
+    bool found = aStar.findPathToDestination();
+    ASSERT_TRUE(found);
+
+    node_ current(startX, startY);
+    int pathLen = 0;
+    while(current.x != destX or current.y != destY) {
+        grid[current.x][current.y] = 9;
+        current = aStar.getNextNode(current);
+        pathLen++;
+    }
+    grid[current.x][current.y] = 9;
+    pathLen++;
+    logger.printBoardDebug(grid);
+    cout<<"Path Length "<<pathLen<<endl;
 }

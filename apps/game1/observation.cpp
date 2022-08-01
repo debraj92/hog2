@@ -33,44 +33,24 @@ void observation::updateObstacleDistances(std::vector <std::vector<int>> &grid) 
         }
     }
 
-    // front-left and blind-left
+    // front-left
     next_x = x;
     next_y = y;
 
     for(int i=1; i<=VISION_RADIUS; i++) {
-        if (i==VISION_RADIUS) {
-            int next_x_ = next_x;
-            int next_y_ = next_y;
-            if (coordinates.setStraightActionCoordinates(next_x_, next_y_, direction) == -1) {
-                obstacle_blind_left = i;
-            }
-        }
         if (coordinates.setDodgeDiagonalLeftActionCoordinates(next_x, next_y, direction) == -1) {
             obstacle_front_left = i;
-            if(i == 1) {
-                obstacle_blind_left = i;
-            }
             break;
         }
     }
 
-    // front-right and blind-right
+    // front-right
     next_x = x;
     next_y = y;
 
     for(int i=1; i<=VISION_RADIUS; i++) {
-        if (i==VISION_RADIUS) {
-            int next_x_ = next_x;
-            int next_y_ = next_y;
-            if (coordinates.setStraightActionCoordinates(next_x_, next_y_, direction) == -1) {
-                obstacle_blind_right = i;
-            }
-        }
         if (coordinates.setDodgeDiagonalRightActionCoordinates(next_x, next_y, direction) == -1) {
             obstacle_front_right = i;
-            if(i == 1) {
-                obstacle_blind_right = i;
-            }
             break;
         }
     }
@@ -146,7 +126,6 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
-                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 1;
@@ -178,7 +157,6 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(col=current_y - i; col<=current_y + i; col++) {
                 if (col >= 0 && col <= GRID_SPAN - 1) {
-                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 2;
@@ -213,7 +191,6 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
-                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 3;
@@ -248,7 +225,6 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
             directionOccurrences[0] = -100;
             for(row=current_x - i; row<=current_x + i; row++) {
                 if (row >= 0 && row <= GRID_SPAN - 1) {
-                    //setGoalInSight(row, col);
                     if (fp->isOnTrackNoMemorizing(row, col)) {
                         temp_direction = fp->pathDirection(row, col);
                         temp_trajectory = (i * 10) + 4;
@@ -408,10 +384,8 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
 
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_left);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_left);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_front_right);
-    observation_vector[nextPosOffset++] = static_cast< float >(obstacle_blind_right);
     observation_vector[nextPosOffset++] = static_cast< float >(obstacle_right);
 
 
@@ -472,61 +446,48 @@ void observation::locateRelativeTrajectory() {
     if(trajectory_off_track) {
         return;
     }
-    switch(trajectory) {
-        case one_deviation_N:
-            trajectory_front = direction == N;
-            trajectory_left = (direction == E) or (direction == NE) or (direction == SE);
-            trajectory_right = (direction != S) and (not trajectory_front) and (not trajectory_left);
-            break;
-        case one_deviation_S:
-            trajectory_front = direction == S;
-            trajectory_left = (direction == W) or (direction == NW) or (direction == SW);
-            trajectory_right = (direction != N) and (not trajectory_front) and (not trajectory_left);
-            break;
-        case one_deviation_E:
-            trajectory_front = direction == E;
-            trajectory_left = (direction == S) or (direction == SW) or (direction == SE);
-            trajectory_right = (direction != W) and (not trajectory_front) and (not trajectory_left);
-            break;
-        case one_deviation_W:
-            trajectory_front = direction == W;
-            trajectory_left = (direction == N) or (direction == NW) or (direction == NE);
-            trajectory_right = (direction != E) and (not trajectory_front) and (not trajectory_left);
-            break;
+    int multiplier;
+    if (trajectory < 20) {
+        multiplier = 1;
+    } else if (trajectory < 30) {
+        multiplier = 2;
+    } else if (trajectory < 40) {
+        multiplier = 3;
+    } else {
+        multiplier = 4;
+    }
+    int trajectoryPosition = trajectory % 10;
 
-        case two_deviation_N:
+    switch(trajectoryPosition) {
+        case 1:
+            //N
             trajectory_front = direction == N;
             trajectory_left = (direction == E) or (direction == NE) or (direction == SE);
             trajectory_right = (direction != S) and (not trajectory_front) and (not trajectory_left);
-            trajectory_front *= 2;
-            trajectory_left *= 2;
-            trajectory_right *= 2;
             break;
-        case two_deviation_S:
+        case 2:
+            //S
             trajectory_front = direction == S;
             trajectory_left = (direction == W) or (direction == NW) or (direction == SW);
             trajectory_right = (direction != N) and (not trajectory_front) and (not trajectory_left);
-            trajectory_front *= 2;
-            trajectory_left *= 2;
-            trajectory_right *= 2;
             break;
-        case two_deviation_E:
-            trajectory_front = direction == E;
-            trajectory_left = (direction == S) or (direction == SW) or (direction == SE);
-            trajectory_right = (direction != W) and (not trajectory_front) and (not trajectory_left);
-            trajectory_front *= 2;
-            trajectory_left *= 2;
-            trajectory_right *= 2;
-            break;
-        case two_deviation_W:
+        case 3:
+            //W
             trajectory_front = direction == W;
             trajectory_left = (direction == N) or (direction == NW) or (direction == NE);
             trajectory_right = (direction != E) and (not trajectory_front) and (not trajectory_left);
-            trajectory_front *= 2;
-            trajectory_left *= 2;
-            trajectory_right *= 2;
+            break;
+        case 4:
+            //E
+            trajectory_front = direction == E;
+            trajectory_left = (direction == S) or (direction == SW) or (direction == SE);
+            trajectory_right = (direction != W) and (not trajectory_front) and (not trajectory_left);
             break;
     }
+    trajectory_front *= multiplier;
+    trajectory_left *= multiplier;
+    trajectory_right *= multiplier;
+
     printRelativeTrajectory();
 }
 
