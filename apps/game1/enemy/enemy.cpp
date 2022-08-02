@@ -18,7 +18,7 @@ void enemy::takeDamage(int points) {
 }
 
 bool enemy::isPlayerInSight(int player_x, int player_y) {
-    return max(abs(current_x - player_x), abs(current_y - player_y)) <= static_cast<float>(enemyVisionRadius);
+    return max(abs(current_x - player_x), abs(current_y - player_y)) <= static_cast<float>(ENEMY_VISION_RADIUS);
 }
 
 void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerInfo pl_info) {

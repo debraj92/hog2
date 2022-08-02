@@ -281,7 +281,7 @@ void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vecto
                                             e.current_y,
                                             e.isPlayerTracked(time)
                                             });
-                if (not isPlayerInHotPursuit) {
+                if (not isPlayerInHotPursuit and distance <= ENEMY_VISION_RADIUS) {
                     isPlayerInHotPursuit = e.max_moves > 0;
                 }
                 totalEnemiesTracked++;

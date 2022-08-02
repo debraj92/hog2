@@ -38,8 +38,6 @@ public:
 
     int max_moves = FOV_WIDTH;
 
-    int enemyVisionRadius = 2;
-
     struct playerInfo {
         int player_x;
         int player_y;
