@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 200000;   /// Must be greater than 8
+const int MAX_EPISODES = 150000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 100;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -40,6 +40,7 @@ const int NE=8;
 
 const int VISION_RADIUS = 3;
 const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
+const int ENEMY_VISION_RADIUS = 2;
 
 const int GOAL_RADIUS = 1;
 
@@ -85,13 +86,13 @@ const int ACTION_FOLLOW = 8; // deprecated
 /// REWARDS
 
 const float REWARD_FACTOR = 6;
-const float REWARD_REACH =  3 * REWARD_FACTOR;
+const float REWARD_REACH =  5 * REWARD_FACTOR;
 const float REWARD_ACTION_UNAVAILABLE = -3 * REWARD_FACTOR;
-const float REWARD_ACTION_LR = -1 * REWARD_FACTOR;
+const float REWARD_ACTION_LR = -1.8 * REWARD_FACTOR;
 const float REWARD_TRACK_ONE_DIV = -0.2 * REWARD_FACTOR;
-const float REWARD_TRACK_TWO_DIV = -0.5 * REWARD_FACTOR;
-const float REWARD_TRACK_THREE_DIV = -0.8 * REWARD_FACTOR;
-const float REWARD_TRACK_FOUR_DIV = -1.1 * REWARD_FACTOR;
+const float REWARD_TRACK_TWO_DIV = -0.4 * REWARD_FACTOR;
+const float REWARD_TRACK_THREE_DIV = -0.7 * REWARD_FACTOR;
+const float REWARD_TRACK_FOUR_DIV = -0.9 * REWARD_FACTOR;
 const float REWARD_DEATH = -10 * REWARD_FACTOR;
 const float REWARD_OFFTRACK = -10 * REWARD_FACTOR;
 
