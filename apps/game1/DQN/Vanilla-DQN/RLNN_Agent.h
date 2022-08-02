@@ -38,9 +38,17 @@ class RLNN_Agent : public DQN_interface {
 
     std::mutex safeActionSelectionAndTraining;
 
+    torch::DeviceType device;
+
     bool isExplore(int episodeCount);
 
     void savePolicyNet();
+
+    string getDeviceType()
+    {
+        char * val = getenv("DEVICE_TYPE");
+        return val == NULL ? "CPU" : std::string(val);
+    }
 
 public:
 
@@ -55,6 +63,7 @@ public:
             policyNet->eval();
         }
         startEpsilonDecay = false;
+        device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;;
         logger = std::make_unique<Logger>(LogLevel);
     }
 

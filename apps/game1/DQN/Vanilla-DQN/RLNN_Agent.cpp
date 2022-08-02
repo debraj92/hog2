@@ -30,7 +30,7 @@ int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, 
         action = distri(re);
     } else {
         logger->logDebug("Selecting max action")->endLineDebug();
-        auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
+        auto options = torch::TensorOptions().dtype(torch::kFloat32);
 
         float obstaclesFOV[1][FOV_WIDTH][FOV_WIDTH];
         float enemiesFOV[1][FOV_WIDTH][FOV_WIDTH];
@@ -38,15 +38,15 @@ int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, 
         copy(&currentState.obstaclesFOV[0][0], &currentState.obstaclesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV[0][0][0]);
         copy(&currentState.enemiesFOV[0][0], &currentState.enemiesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV[0][0][0]);
         copy(&currentState.pathFOV[0][0], &currentState.pathFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOV[0][0][0]);
-        auto tensor_obstacles = torch::from_blob(obstaclesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
-        auto tensor_enemies = torch::from_blob(enemiesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
-        auto tensor_path = torch::from_blob(pathFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
-        auto tensor_fov_channels= torch::cat({tensor_obstacles, tensor_enemies, tensor_path}, 1);
+        auto tensor_obstacles = torch::from_blob(obstaclesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1);
+        auto tensor_enemies = torch::from_blob(enemiesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1);
+        auto tensor_path = torch::from_blob(pathFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1);
+        auto tensor_fov_channels= torch::cat({tensor_obstacles, tensor_enemies, tensor_path}, 1).to(device);
 
         float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
         currentState.flattenObservationToVector(observation_vector);
-        auto tensor_states = torch::zeros({1, MAX_ABSTRACT_OBSERVATIONS}, options);
-        tensor_states.slice(0, 0, 1) = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options);
+        auto tensor_states = torch::zeros({1, MAX_ABSTRACT_OBSERVATIONS}, options).to(device);
+        tensor_states.slice(0, 0, 1) = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options).to(device);
         Tensor actions;
         {
             // critical

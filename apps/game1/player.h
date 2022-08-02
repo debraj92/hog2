@@ -34,7 +34,7 @@ class player : public RLNN_Agent {
 
     const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
 
-    const std::string DQN_MODEL_PATH = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/model";
+    const std::string DQN_MODEL_PATH = "/data/home/debraj1/model";
 
     shared_ptr<findPath> fp;
 

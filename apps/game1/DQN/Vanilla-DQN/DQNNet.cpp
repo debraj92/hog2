@@ -19,12 +19,16 @@ DQNNet::DQNNet(double learning_rate, const std::string& module_name) :
 
     logger->logDebug("Creating DQNNet ")->logDebug(module_name)->endLineDebug();
 
+    auto device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;
+
     m_sequential = nn::Sequential(nn::Linear(INPUT_SIZE, HIDDEN_LAYER_1_SIZE),
                                   nn::ReLU(),
                                   nn::Linear(HIDDEN_LAYER_1_SIZE, HIDDEN_LAYER_2_SIZE),
                                   nn::ReLU(),
                                   nn::Linear(HIDDEN_LAYER_2_SIZE, ACTION_SPACE));
 
+    m_sequential->to(device);
+    m_conv1->to(device);
     register_module(module_name, m_sequential);
     register_module(module_name + "_primary_cnn_1", m_conv1);
 
@@ -99,7 +103,7 @@ void DQNNet::plotLoss() {
     auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &losses_averaged, errorMessage);
     if(success){
         vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot2/loss_output.png");
+        WriteToFile(pngdata, "/data/home/debraj1/plots/loss_output.png");
         DeleteImage(imageReference->image);
     }else{
         cerr << "Error: ";
