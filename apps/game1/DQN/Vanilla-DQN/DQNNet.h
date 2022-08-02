@@ -28,6 +28,12 @@ class DQNNet : public nn::Module {
 
     vector<double> losses;
 
+    string getDeviceType()
+    {
+        char * val = getenv("DEVICE_TYPE");
+        return val == NULL ? "CPU" : std::string(val);
+    }
+
 public:
 
     enum MODEL_TYPE{

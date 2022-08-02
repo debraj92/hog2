@@ -46,7 +46,7 @@ class ReplayMemory {
     vector<long> buffer_actions;
     vector<float> rewards;
     vector<bool> dones;
-    bool isDeviceTypeGpu = false;
+    DeviceType device;
 
     /// FOV for CNN - current state
     float (*obstaclesFOVcurrent)[FOV_WIDTH][FOV_WIDTH] = new float [MAX_CAPACITY_REPLAY_BUFFER][FOV_WIDTH][FOV_WIDTH]();
@@ -109,7 +109,7 @@ public:
             }
         }
 
-        isDeviceTypeGpu = getDeviceType() == "CUDA";
+        device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;
         if(isDeviceTypeGpu) logger->logInfo("Training on GPU");
 
 #ifdef ENABLE_STATE_VECTOR_DUMP

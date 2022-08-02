@@ -45,7 +45,6 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     auto options = torch::TensorOptions().dtype(torch::kFloat32);
     auto options2 = torch::TensorOptions().dtype(torch::kLong);
 
-    auto device = isDeviceTypeGpu ? torch::kCUDA : torch::kCPU;
     tensor_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options).to(device);
     tensor_next_states = torch::zeros({batchSize, MAX_ABSTRACT_OBSERVATIONS}, options).to(device);
 
@@ -78,23 +77,23 @@ void ReplayMemory::sampleBatch(const int batchSize) {
     tensor_rewards = torch::from_blob(temp_rewards.data(), {batchSize}, options).clone().to(device);
     tensor_dones = torch::from_blob(temp_dones.data(), {batchSize}, options2).clone().to(device);
 
-    auto tensor_obstacles_current = torch::from_blob(obstaclesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone().to(device);
+    auto tensor_obstacles_current = torch::from_blob(obstaclesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1).clone();
     delete[]  obstaclesFOV_current_temp;
-    auto tensor_enemies_current = torch::from_blob(enemiesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone().to(device);
+    auto tensor_enemies_current = torch::from_blob(enemiesFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1).clone();
     delete[]  enemiesFOV_current_temp;
-    auto tensor_path_current = torch::from_blob(pathFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone().to(device);
+    auto tensor_path_current = torch::from_blob(pathFOV_current_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1).clone();
     delete[]  pathFOV_current_temp;
     // dimensions: Batch X Channels X FOV_WIDTH X FOV_WIDTH
-    tensor_fov_channels_current = torch::cat({tensor_obstacles_current, tensor_enemies_current, tensor_path_current}, 1).clone().to(device);
+    tensor_fov_channels_current = torch::cat({tensor_obstacles_current, tensor_enemies_current, tensor_path_current}, 1).to(device).clone();
 
-    auto tensor_obstacles_next = torch::from_blob(obstaclesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone().to(device);
+    auto tensor_obstacles_next = torch::from_blob(obstaclesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1).clone();
     delete[]  obstaclesFOV_next_temp;
-    auto tensor_enemies_next = torch::from_blob(enemiesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone().to(device);
+    auto tensor_enemies_next = torch::from_blob(enemiesFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1).clone();
     delete[]  enemiesFOV_next_temp;
-    auto tensor_path_next = torch::from_blob(pathFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1).clone().to(device);
+    auto tensor_path_next = torch::from_blob(pathFOV_next_temp, {batchSize, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1).clone();
     delete[]  pathFOV_next_temp;
     // dimensions: Batch X Channels X FOV_WIDTH X FOV_WIDTH
-    tensor_fov_channels_next = torch::cat({tensor_obstacles_next, tensor_enemies_next, tensor_path_next}, 1).clone().to(device);
+    tensor_fov_channels_next = torch::cat({tensor_obstacles_next, tensor_enemies_next, tensor_path_next}, 1).to(device).clone();
 
 }
 
