@@ -109,7 +109,7 @@ public:
             }
         }
 
-        isDeviceTypeGpu = getDeviceType() != "CUDA";
+        isDeviceTypeGpu = getDeviceType() == "CUDA";
         if(isDeviceTypeGpu) logger->logInfo("Training on GPU");
 
 #ifdef ENABLE_STATE_VECTOR_DUMP
