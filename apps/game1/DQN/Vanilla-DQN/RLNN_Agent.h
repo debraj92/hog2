@@ -38,7 +38,7 @@ class RLNN_Agent : public DQN_interface {
 
     std::mutex safeActionSelectionAndTraining;
 
-    DeviceType device;
+    torch::DeviceType device;
 
     bool isExplore(int episodeCount);
 
