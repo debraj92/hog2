@@ -19,12 +19,16 @@ DQNNet::DQNNet(double learning_rate, const std::string& module_name) :
 
     logger->logDebug("Creating DQNNet ")->logDebug(module_name)->endLineDebug();
 
+    auto device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;
+
     m_sequential = nn::Sequential(nn::Linear(INPUT_SIZE, HIDDEN_LAYER_1_SIZE),
                                   nn::ReLU(),
                                   nn::Linear(HIDDEN_LAYER_1_SIZE, HIDDEN_LAYER_2_SIZE),
                                   nn::ReLU(),
                                   nn::Linear(HIDDEN_LAYER_2_SIZE, ACTION_SPACE));
 
+    m_sequential->to(device);
+    m_conv1->to(device);
     register_module(module_name, m_sequential);
     register_module(module_name + "_primary_cnn_1", m_conv1);
 

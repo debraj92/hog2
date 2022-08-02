@@ -34,7 +34,7 @@ void runTesting(player &player1) {
     trainingMaps tm(true);
     float countDestinationReach = 0;
     float death = 0;
-    float max_ep = 2000;
+    float max_ep = 1;
     for (int i=1; i<= max_ep; i++) {
         cout<<"Episode: "<<i<<endl;
         vector<vector<int>> grid;
@@ -48,7 +48,7 @@ void runTesting(player &player1) {
         tm.setSourceAndDestination(grid, sx, sy, dx, dy);
         //tm.setSourceAndDestinationFixed(sx, sy, dx, dy);
         player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-        //cout<<"("<<sx<<","<<sy<<") -> ("<<dx<<","<<dy<<")"<<endl;
+        cout<<"("<<sx<<","<<sy<<") -> ("<<dx<<","<<dy<<")"<<endl;
         if(t.final_x == t.destination_x and t.final_y == t.destination_y) {
             countDestinationReach++;
         }

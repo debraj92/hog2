@@ -67,6 +67,12 @@ class ReplayMemory {
 
     void storeExperience(observation &current, observation &next, int action, float reward, bool done);
 
+    string getDeviceType()
+    {
+        char * val = getenv("DEVICE_TYPE");
+        return val == NULL ? "CPU" : std::string(val);
+    }
+
 public:
 
     torch::Tensor tensor_states;
@@ -74,6 +80,7 @@ public:
     torch::Tensor tensor_actions;
     torch::Tensor tensor_rewards;
     torch::Tensor tensor_dones;
+    torch::DeviceType device;
 
     // CNN
     torch::Tensor tensor_fov_channels_current;
@@ -101,6 +108,8 @@ public:
                 }
             }
         }
+
+        device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;
 
 #ifdef ENABLE_STATE_VECTOR_DUMP
         logger->openLogFile();
