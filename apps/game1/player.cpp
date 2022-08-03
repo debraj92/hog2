@@ -195,7 +195,9 @@ int player::selectAction(const observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    if ((not stopLearning) and (not next.isGoalInSight)) {
+    // Do not avoid transition into pursuit by any strategy. Otherwise player would want to loop
+    auto transitionIntoHotPursuit = (not current.isPlayerInHotPursuit) and next.isPlayerInHotPursuit;
+    if ((not stopLearning) and (not next.isGoalInSight) and (not transitionIntoHotPursuit)) {
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
     }
 }

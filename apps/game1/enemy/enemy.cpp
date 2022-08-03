@@ -56,7 +56,10 @@ void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerIn
             logger->logInfo("ERROR: path to player not found, enemy-id:")->logDebug(id)->endLineInfo();
             return;
         }
-        grid[current_x][current_y] = 0;
+        if(grid[current_x][current_y] == id) {
+            // if another unit has not already occupied this place as part of their next move
+            grid[current_x][current_y] = 0;
+        }
         fp->getNextPositionAfterGivenLocation(current_x, current_y, current_x, current_y);
         grid[current_x][current_y] = id;
         max_moves--;

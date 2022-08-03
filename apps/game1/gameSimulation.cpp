@@ -208,7 +208,7 @@ float gameSimulation::calculateReward(const observation &nextObservation, int ac
         return REWARD_ACTION_LR;
     }
     if (nextObservation.isPlayerInHotPursuit) {
-        return REWARD_TRACK_TWO_DIV;
+        return REWARD_TRACK_THREE_DIV;
     }
     if(nextObservation.trajectory == on_track) {
         return REWARD_REACH;

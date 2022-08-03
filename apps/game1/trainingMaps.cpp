@@ -230,12 +230,11 @@ trainingMaps::trainingMaps(bool isTesting) {
     logger = std::make_unique<Logger>(LogLevel);
     if (not isTesting) {
         gameMaps.emplace_back(&trainingMaps::createMap1);
-
-        //gameMaps.emplace_back(&trainingMaps::createMap2);
-
-        /*gameMaps.emplace_back(&trainingMaps::createMap3);
+        gameMaps.emplace_back(&trainingMaps::createMap2);
+        gameMaps.emplace_back(&trainingMaps::createMap3);
         gameMaps.emplace_back(&trainingMaps::createMap4);
-        gameMaps.emplace_back(&trainingMaps::createMap5);
+
+        /*gameMaps.emplace_back(&trainingMaps::createMap5);
         gameMaps.emplace_back(&trainingMaps::createMap6);
         gameMaps.emplace_back(&trainingMaps::createMap7);
         gameMaps.emplace_back(&trainingMaps::createMap8);
@@ -244,10 +243,10 @@ trainingMaps::trainingMaps(bool isTesting) {
         //gameMaps.emplace_back(&trainingMaps::createMap10);
 
         isMap1Cached = false;
-        //isMap2Cached = false;
-        /*
+        isMap2Cached = false;
         isMap3Cached = false;
         isMap4Cached = false;
+        /*
         isMap5Cached = false;
         isMap6Cached = false;
         isMap7Cached = false;
@@ -258,10 +257,10 @@ trainingMaps::trainingMaps(bool isTesting) {
 
     } else {
         gameMaps.emplace_back(&trainingMaps::createMap1);
-        /*
         gameMaps.emplace_back(&trainingMaps::createMap2);
         gameMaps.emplace_back(&trainingMaps::createMap3);
         gameMaps.emplace_back(&trainingMaps::createMap4);
+        /*
         gameMaps.emplace_back(&trainingMaps::createMap5);
         gameMaps.emplace_back(&trainingMaps::createMap6);
         gameMaps.emplace_back(&trainingMaps::createMap7);
@@ -269,10 +268,10 @@ trainingMaps::trainingMaps(bool isTesting) {
          */
 
         isMap1Cached = false;
-        /*
         isMap2Cached = false;
         isMap3Cached = false;
         isMap4Cached = false;
+        /*
         isMap5Cached = false;
         isMap6Cached = false;
         isMap7Cached = false;
@@ -397,10 +396,10 @@ void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int
 void trainingMaps::setSourceAndDestinationFixed(int &startX, int &startY, int &endX,
                                                    int &endY) {
 
-    startX = 24;
-    startY = 3;
-    endX = 0;
-    endY = 17;
+    startX = 0;
+    startY = 9;
+    endX = 24;
+    endY = 12;
 }
 
 void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {

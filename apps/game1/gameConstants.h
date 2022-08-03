@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 80000;   /// Must be greater than 8
+const int MAX_EPISODES = 300000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 100;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -71,7 +71,6 @@ const int upper_bound_four_deviation = 44;
 
 
 /// ACTIONS
-
 const int ACTION_DODGE_LEFT = 0;
 const int ACTION_DODGE_DIAGONAL_LEFT = 1;
 const int ACTION_STRAIGHT = 2;
@@ -86,11 +85,10 @@ const int ACTION_FOLLOW = 8; // deprecated
 
 
 /// REWARDS
-
 const float REWARD_FACTOR = 6;
-const float REWARD_REACH =  5 * REWARD_FACTOR;
-const float REWARD_ACTION_UNAVAILABLE = -3 * REWARD_FACTOR;
-const float REWARD_ACTION_LR = -1.8 * REWARD_FACTOR;
+const float REWARD_REACH =  3 * REWARD_FACTOR;
+const float REWARD_ACTION_UNAVAILABLE = -2.2 * REWARD_FACTOR;
+const float REWARD_ACTION_LR = -1.5 * REWARD_FACTOR;
 const float REWARD_TRACK_ONE_DIV = -0.2 * REWARD_FACTOR;
 const float REWARD_TRACK_TWO_DIV = -0.4 * REWARD_FACTOR;
 const float REWARD_TRACK_THREE_DIV = -0.7 * REWARD_FACTOR;
