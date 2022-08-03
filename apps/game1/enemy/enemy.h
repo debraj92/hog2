@@ -36,7 +36,7 @@ public:
     int lastKnownPlayerX = -1;
     int lastKnownPlayerY = -1;
 
-    int max_moves = FOV_WIDTH;
+    int max_moves = ENEMY_MAX_MOVES;
 
     struct playerInfo {
         int player_x;

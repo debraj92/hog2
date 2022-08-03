@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 150000;   /// Must be greater than 8
+const int MAX_EPISODES = 80000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 100;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -40,7 +40,9 @@ const int NE=8;
 
 const int VISION_RADIUS = 3;
 const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
+
 const int ENEMY_VISION_RADIUS = 2;
+const int ENEMY_MAX_MOVES = 5;
 
 const int GOAL_RADIUS = 1;
 

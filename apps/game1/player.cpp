@@ -142,7 +142,8 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     if (ob.direction > 0) {
         ob.locateEnemies(grid, enemies, timeStep);
         ob.updateObstacleDistances(grid);
-        if (wasPreviousStateHotPursuit and (actionError != -1)) {
+        // Hot Pursuit states need previous action to predict enemy movement
+        if (wasPreviousStateHotPursuit and ob.isPlayerInHotPursuit and (actionError != -1)) {
             if (previousStateDirection != ob.direction) {
                 // unit has changed direction
                 ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
@@ -194,9 +195,7 @@ int player::selectAction(const observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    // Cannot avoid transition into pursuit by any strategy. Therefore, nothing to learn.
-    auto transitionIntoHotPursuit = (not current.isPlayerInHotPursuit) and next.isPlayerInHotPursuit;
-    if ((not stopLearning) and (not next.isGoalInSight) and (not transitionIntoHotPursuit)) {
+    if ((not stopLearning) and (not next.isGoalInSight)) {
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
     }
 }

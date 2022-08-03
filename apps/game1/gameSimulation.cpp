@@ -187,7 +187,7 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
                 grid[enemy_iterator->current_x][enemy_iterator->current_y] = 0;
             }
         }
-        if (enemy_iterator->getLifeLeft() <= 0) {
+        if (enemy_iterator->getLifeLeft() <= 0 or enemy_iterator->max_moves <= 0) {
             // clean up dead enemies
             grid[enemy_iterator->current_x][enemy_iterator->current_y] = 0;
             enemies.erase(enemy_iterator);
