@@ -20,14 +20,39 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
     player1->timeStep = 1;
+    int action = ACTION_STRAIGHT;
+    int actionError = 0;
+    int previousAction = action;
+    int previousActionError = actionError;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, 0, false, 0);
+    player1->observe(currentObservation, grid, enemies, action, actionError, false, 0);
     while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
-        int actionError = 0;
         // Next Action
-        int action = movePlayer(grid, enemies, currentObservation, &actionError);
+        actionError = 0;
+        action = movePlayer(grid, enemies, currentObservation, &actionError);
+        if (actionError == NEXT_Q_TOO_LOW_ERROR) {
+            // unit in really tough situation according to Q values of next states, re-try with re-route
+            player1->addTemporaryObstaclesToAidReroute(currentObservation.direction);
+            bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            player1->removeTemporaryObstacles();
+            if (not isPathFound) {
+                logger->logInfo("No path found, re-routing will be unsuccessful")->endLineInfo();
+                player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            }
+            logger->logDebug("Attempting to re-route")->endLineDebug();
+            // observe again after re-routing
+            int direction = currentObservation.direction;
+            int isPlayerInHotPursuit = currentObservation.isPlayerInHotPursuit;
+            currentObservation = observation();
+            // ignore the last action. Observe with previous to last action.
+            player1->observe(currentObservation, grid, enemies, previousAction, previousActionError, isPlayerInHotPursuit, direction);
+            action = movePlayer(grid, enemies, currentObservation, &actionError);
+        }
+        previousAction = action;
+        previousActionError = actionError;
+
         fight(enemies, grid);
         // Enemy operations
         if (player1->life_left > 0 and not isDestinationReached()) {
@@ -40,10 +65,14 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         observation nextObservation;
         player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         if (nextObservation.trajectory_off_track) {
-            // poisoned if off track
-            player1->life_left = 0;
-            logger->logDebug("Player poisoned at (")->logDebug(player1->current_x)->logDebug(",")->logDebug(player1->current_y)
-                    ->logDebug(")")->endLineDebug();
+            // if unit is off-track, re-route and rescue unit.
+            bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            if (not isPathFound) {
+                logger->logInfo("No path found, ignoring navigation")->endLineInfo();
+                return;
+            }
+            nextObservation = observation();
+            player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         }
         // Next state reward
         auto reward = calculateReward(nextObservation, action, actionError);
@@ -121,6 +150,12 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
         nextAction = ACTION_STRAIGHT;
     } else {
         nextAction = player1->selectAction(currentObservation);
+        if ((*error != NEXT_Q_TOO_LOW_ERROR) and player1->isInference() and (not player1->isNextStateSafeEnough())) {
+            // no point in proceeding. Need to re-route
+            *error = NEXT_Q_TOO_LOW_ERROR;
+            // this action will be ignored
+            return -1;
+        }
     }
 
     switch(nextAction) {

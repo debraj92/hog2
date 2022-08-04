@@ -363,6 +363,57 @@ int player::rotatePreviousAction(int oldDirection, int newDirection, int previou
     return action;
 }
 
+bool player::isNextStateSafeEnough() {
+    return RLNN_Agent::getBestActionQ() > Q_REROUTE_THRESHOLD;
+}
+
+bool player::isInference() {
+    return not RLNN_Agent::isTrainingMode;
+}
+
+void player::addTemporaryObstaclesToAidReroute(int direction) {
+    coordinatesUtil coordinates(grid);
+    int x = current_x;
+    int y = current_y;
+    if (coordinates.setStraightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (coordinates.setDodgeLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (coordinates.setDodgeRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+}
+
+void player::removeTemporaryObstacles() {
+    for(int r=current_x - 1; r<=current_x + 1; r++) {
+        if(r < 0 or r >= GRID_SPAN) continue;
+        for(int c=current_y - 1; c<=current_y + 1; c++) {
+            if(c < 0 or c >= GRID_SPAN) continue;
+            if(grid[r][c] == NEXT_Q_TOO_LOW_ERROR) grid[r][c] = 0;
+        }
+    }
+}
+
 
 
 

@@ -123,6 +123,14 @@ public:
 
     void enableBaseLinePlayer();
 
+    bool isNextStateSafeEnough();
+
+    bool isInference();
+
+    void addTemporaryObstaclesToAidReroute(int direction);
+
+    void removeTemporaryObstacles();
+
     /// Testing
 #ifdef TESTING
     ReplayMemory* getAccessToReplayMemory() {

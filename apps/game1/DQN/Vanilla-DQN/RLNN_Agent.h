@@ -40,6 +40,8 @@ class RLNN_Agent : public DQN_interface {
 
     torch::DeviceType device;
 
+    double bestActionQValue;
+
     bool isExplore(int episodeCount);
 
     void savePolicyNet();
@@ -88,6 +90,8 @@ public:
     void printAction(int action);
 
     void plotLosses();
+
+    double getBestActionQ();
 
 #ifdef TESTING
 
