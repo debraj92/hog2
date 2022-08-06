@@ -127,9 +127,11 @@ public:
 
     bool isInference();
 
-    void addTemporaryObstaclesToAidReroute(int direction);
+    void addTemporaryObstaclesToAidReroute(int direction, const int actionMask[ACTION_SPACE]);
 
     void removeTemporaryObstacles();
+
+    void addTemporaryObstaclesToPreventRepeatOfPreviousAction(int lastAction, int previousDirection);
 
     /// Testing
 #ifdef TESTING

@@ -120,8 +120,8 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, int actionError,
-                     bool wasPreviousStateHotPursuit, int previousStateDirection) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, const int lastAction, const int actionError,
+                     const bool wasPreviousStateHotPursuit, const int previousStateDirection) {
     logger->logDebug("player::observe")->endLineDebug();
 
     ob.playerX = this->current_x;
@@ -130,9 +130,11 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.destinationY = this->destination_y;
 
     if (isSimpleAstarPlayer and (current_x != destination_x or current_y != destination_y)) {
+        if (actionError == 0) addTemporaryObstaclesToPreventRepeatOfPreviousAction(lastAction, previousStateDirection);
         if (not findPathToDestination(grid, enemies, current_x, current_y, destination_x, destination_y)) {
             logger->logInfo("ERROR: Player could not find path to destination")->endLineInfo();
         }
+        if (actionError == 0) removeTemporaryObstacles();
     }
 
     ob.locateTrajectoryAndDirection(fp);
@@ -371,35 +373,35 @@ bool player::isInference() {
     return not RLNN_Agent::isTrainingMode;
 }
 
-void player::addTemporaryObstaclesToAidReroute(int direction) {
+void player::addTemporaryObstaclesToAidReroute(int direction, const int actionMask[ACTION_SPACE]) {
     coordinatesUtil coordinates(grid);
     int x = current_x;
     int y = current_y;
-    if (coordinates.setStraightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+    if (actionMask[ACTION_STRAIGHT] and coordinates.setStraightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
         grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
     }
 
     x = current_x;
     y = current_y;
-    if (coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+    if (actionMask[ACTION_DODGE_DIAGONAL_LEFT] and coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
         grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
     }
 
     x = current_x;
     y = current_y;
-    if (coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+    if (actionMask[ACTION_DODGE_DIAGONAL_RIGHT] and coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
         grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
     }
 
     x = current_x;
     y = current_y;
-    if (coordinates.setDodgeLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+    if (actionMask[ACTION_DODGE_LEFT] and coordinates.setDodgeLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
         grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
     }
 
     x = current_x;
     y = current_y;
-    if (coordinates.setDodgeRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+    if (actionMask[ACTION_DODGE_RIGHT] and coordinates.setDodgeRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
         grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
     }
 }
@@ -412,6 +414,40 @@ void player::removeTemporaryObstacles() {
             if(grid[r][c] == NEXT_Q_TOO_LOW_ERROR) grid[r][c] = 0;
         }
     }
+}
+
+void player::addTemporaryObstaclesToPreventRepeatOfPreviousAction(int lastAction, int previousDirection) {
+    coordinatesUtil coordinates(grid);
+    int x = current_x;
+    int y = current_y;
+    switch(lastAction) {
+        case ACTION_DODGE_LEFT:
+            if (coordinates.setDodgeLeftActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_DODGE_DIAGONAL_LEFT:
+            if (coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_STRAIGHT:
+            if (coordinates.setStraightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_DODGE_RIGHT:
+            if (coordinates.setDodgeRightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_DODGE_DIAGONAL_RIGHT:
+            if (coordinates.setDodgeDiagonalRightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+    }
+
 }
 
 

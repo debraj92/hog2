@@ -121,7 +121,7 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const double Q_REROUTE_THRESHOLD = -18; /// DEPENDS ON REWARD VALUES. Need tuning.
+const double Q_REROUTE_THRESHOLD = -17;//-18; /// DEPENDS ON REWARD VALUES. Need tuning.
 
 const int NEXT_Q_TOO_LOW_ERROR = -2;
 

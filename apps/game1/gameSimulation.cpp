@@ -32,14 +32,22 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         // Next Action
         actionError = 0;
         action = movePlayer(grid, enemies, currentObservation, &actionError);
+        bool isPathFound;
         if (actionError == NEXT_Q_TOO_LOW_ERROR) {
             // unit in really tough situation according to Q values of next states, re-try with re-route
-            player1->addTemporaryObstaclesToAidReroute(currentObservation.direction);
-            bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            // block all available actions and re-route
+            player1->addTemporaryObstaclesToAidReroute(currentObservation.direction, (const int[]){1, 1, 1, 1, 1});
+            isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
             player1->removeTemporaryObstacles();
             if (not isPathFound) {
-                logger->logInfo("No path found, re-routing will be unsuccessful")->endLineInfo();
-                player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                // block only straight action and re-route
+                player1->addTemporaryObstaclesToAidReroute(currentObservation.direction, (const int[]){0, 0, 1, 0, 0});
+                isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                player1->removeTemporaryObstacles();
+                if (not isPathFound) {
+                    logger->logInfo("No path found, re-routing will be unsuccessful")->endLineInfo();
+                    player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                }
             }
             logger->logDebug("Attempting to re-route")->endLineDebug();
             // observe again after re-routing
@@ -66,7 +74,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         if (nextObservation.trajectory_off_track) {
             // if unit is off-track, re-route and rescue unit.
-            bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
             if (not isPathFound) {
                 logger->logInfo("No path found, ignoring navigation")->endLineInfo();
                 return;
