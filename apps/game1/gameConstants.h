@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 300000;   /// Must be greater than 8
+const int MAX_EPISODES = 200000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 100;
 
 const int GRID_SPAN=25; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -125,10 +125,9 @@ const double Q_REROUTE_THRESHOLD = -18; /// DEPENDS ON REWARD VALUES. Need tunin
 
 const int NEXT_Q_TOO_LOW_ERROR = -2;
 
-const int INPUT_SIZE = 445;//333;
-const int HIDDEN_LAYER_1_SIZE = 300;//221;
-const int HIDDEN_LAYER_2_SIZE = 225;//166;
-//const int HIDDEN_LAYER_3_SIZE = 111;
+const int INPUT_SIZE = 670;//445;
+const int HIDDEN_LAYER_1_SIZE = 446;//300;
+const int HIDDEN_LAYER_2_SIZE = 335;//225;
 
 const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
 
