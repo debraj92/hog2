@@ -150,7 +150,7 @@ void ReplayMemory::storeExperience(observation &current, observation &next, int 
     /**
      * Check if a random number generated from an exponential distribution is within a moving sliding window
      */
-    double const exp_dist_mean   = 10;
+    double const exp_dist_mean   = 5;
     double const exp_dist_lambda = 1 / exp_dist_mean;
 
     std::random_device rd;
