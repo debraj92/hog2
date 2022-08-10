@@ -3,9 +3,14 @@
 //
 
 #include "gameSimulation.h"
+#include <chrono>
 
 
 using namespace std;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     logger->logDebug("gameSimulation::play")->endLineDebug();
@@ -26,7 +31,9 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     int previousActionError = actionError;
     observation currentObservation;
     player1->observe(currentObservation, grid, enemies, action, actionError, false, 0);
+    double cumulativeExecutionTime = 0;
     while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
+        auto t1 = high_resolution_clock::now();
         logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
         // Next Action
@@ -72,7 +79,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
         // Observe next State
         observation nextObservation;
         player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
-        if (nextObservation.trajectory_off_track) {
+        if (not player1->isSimpleAstarPlayer and nextObservation.trajectory_off_track) {
             // if unit is off-track, re-route and rescue unit.
             isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
             if (not isPathFound) {
@@ -91,8 +98,12 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
             logger->logDebug("Marching towards destination")->endLineDebug();
             headStraightToDestination(grid, enemies);
         }
+        auto t2 = high_resolution_clock::now();
+        duration<double, std::milli> ms_double = t2 - t1;
+        cumulativeExecutionTime += ms_double.count();
     }
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
+    logger->logInfo("Average Execution Time ")->logInfo(cumulativeExecutionTime / player1->timeStep)->endLineInfo();
 }
 
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {

@@ -137,27 +137,29 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
         if (actionError == 0) removeTemporaryObstacles();
     }
 
-    ob.locateTrajectoryAndDirection(fp);
     ob.findDestination(isTrainingMode and not stopLearning);
+    ob.locateTrajectoryAndDirection(fp);
     ob.locateRelativeTrajectory();
 
-    if (ob.direction > 0) {
-        ob.locateEnemies(grid, enemies, timeStep);
-        ob.updateObstacleDistances(grid);
-        // Hot Pursuit states need previous action to predict enemy movement
-        if (wasPreviousStateHotPursuit and ob.isPlayerInHotPursuit and (actionError != -1)) {
-            if (previousStateDirection != ob.direction) {
-                // unit has changed direction
-                ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
+    if (not isSimpleAstarPlayer) {
+        if (ob.direction > 0) {
+            ob.locateEnemies(grid, enemies, timeStep);
+            ob.updateObstacleDistances(grid);
+            // Hot Pursuit states need previous action to predict enemy movement
+            if (wasPreviousStateHotPursuit and ob.isPlayerInHotPursuit and (actionError != -1)) {
+                if (previousStateDirection != ob.direction) {
+                    // unit has changed direction
+                    ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
+                } else {
+                    ob.actionInPreviousState = lastAction;
+                }
             } else {
-                ob.actionInPreviousState = lastAction;
+                ob.actionInPreviousState = -1;
             }
-        } else {
-            ob.actionInPreviousState = -1;
         }
+        ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
+        ob.recordFOVForCNN(cnnController, fp);
     }
-    ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
-    ob.recordFOVForCNN(cnnController, fp);
 
 }
 
