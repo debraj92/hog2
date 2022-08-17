@@ -3,7 +3,7 @@
 //
 
 #include "JsonParser.h"
-#include <dist/json/json.h>
+#include "dist/json/json.h"
 #include <iostream>
 #include <iostream>
 #include <fstream>
@@ -42,7 +42,6 @@ void JsonParser::serializeEnemies(const int TOTAL_ENEMIES, int (*enemyLocations)
 
         enemy_attributes.append(Json::Value(enemyLocations[i][0]));
         enemy_attributes.append(Json::Value(enemyLocations[i][1]));
-        enemy_attributes.append(Json::Value(enemyLocations[i][2]));
 
         enemy_location["enemy"] = enemy_attributes;
         allEnemies.append(enemy_location);
@@ -91,8 +90,6 @@ void JsonParser::readFromFileEnemies(std::vector<std::vector<int>>& grid, std::v
                 .get(Json::ArrayIndex(0), Json::Value("X")).asInt();
         enemyLocations[i][1] = enemies_.get(i, Json::Value("X"))["enemy"]
                 .get(Json::ArrayIndex(1), Json::Value("X")).asInt();
-        enemyLocations[i][2] = enemies_.get(i, Json::Value("X"))["enemy"]
-                .get(Json::ArrayIndex(2), Json::Value("X")).asInt();
     }
     createEnemiesAtLocations(grid, enemies, TOTAL_ENEMIES, enemyLocations);
 }
@@ -110,27 +107,13 @@ void JsonParser::createAllFixedObstacles(std::vector<std::vector<int>>& grid, co
 }
 
 void JsonParser::createEnemiesAtLocations(std::vector<std::vector<int>>& grid, vector<enemy> &enemies, const int TOTAL_ENEMIES, int (*enemyLocations)[3]) {
-    /// moving enemies have even id and fixed enemies have odd id
-    int moving_enemy_id = 2;
-    int fixed_enemy_id = 1;
-    for(int enemy_id=0; enemy_id < TOTAL_ENEMIES; enemy_id++) {
-        if (enemyLocations[enemy_id][2]) {
-            // fixed
-            enemies.emplace_back(grid,
-                                 enemyLocations[enemy_id][0],
-                                 enemyLocations[enemy_id][1],
-                                 fixed_enemy_id,
-                                 false);
-            fixed_enemy_id += 2;
-            fixed_enemy_id = fixed_enemy_id == PLAYER_ID ? fixed_enemy_id + 2 : fixed_enemy_id;
-        } else {
-            // moving
-            enemies.emplace_back(grid,
-                                 enemyLocations[enemy_id][0],
-                                 enemyLocations[enemy_id][1],
-                                 moving_enemy_id,
-                                 false);
-            moving_enemy_id += 2;
-        }
+
+    int enemy_id = 1;
+    for(int i=0; i < TOTAL_ENEMIES; i++) {
+        enemies.emplace_back(grid,
+                             enemyLocations[i][0],
+                             enemyLocations[i][1],
+                              enemy_id);
+        enemy_id = enemy_id + 1 == PLAYER_ID ? enemy_id + 2 : enemy_id + 1;
     }
 }

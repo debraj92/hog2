@@ -118,7 +118,8 @@ public:
     void locateTrajectoryAndDirection(const shared_ptr<findPath>& fp);
     void locateRelativeTrajectory();
     void updateObstacleDistances(std::vector<std::vector<int>> &grid);
-    void locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy>& enemies, int time);
+    void locateEnemies(std::vector <std::vector<int>> &grid, CNN_controller& cnn,
+                       const unordered_map<int, enemy>& hashSetEnemies, int time);
 
     void printData();
 

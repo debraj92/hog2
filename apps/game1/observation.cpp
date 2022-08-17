@@ -14,6 +14,7 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xio.hpp>
 
+
 using namespace std;
 using namespace xt;
 
@@ -262,11 +263,18 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
     countNodeNumbersInDirection = 0;
 }
 
-void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy> &enemies, int time) {
+
+void observation::locateEnemies(std::vector <std::vector<int>> &grid, CNN_controller& cnn,
+                                const unordered_map<int, enemy>& hashSetEnemies, int time) {
+
     objectLocator ol;
     vector<enemy_attributes> enemy_properties;
     int totalEnemiesTracked = 0;
-    for(const enemy& e: enemies) {
+    for(int enemyId: cnn.enemyIds) {
+        if(hashSetEnemies.find(enemyId) == hashSetEnemies.end()) {
+            logger->logInfo("ERROR: Cannot find enemy")->endLineInfo();
+        }
+        enemy e = hashSetEnemies.find(enemyId)->second;
         if (e.life_left > 0) {
             ol.locateObject(playerX, playerY, direction, e.current_x, e.current_y);
             double distance = ol.getObjectDistance();
@@ -280,7 +288,7 @@ void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vecto
                                             e.current_x,
                                             e.current_y,
                                             e.isPlayerTracked(time)
-                                            });
+                                           });
                 if (not isPlayerInHotPursuit and distance <= ENEMY_VISION_RADIUS) {
                     isPlayerInHotPursuit = e.max_moves > 0;
                 }
@@ -634,6 +642,7 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
 int observation::getShortestDistanceBetweenPoints(int x1, int y1, int x2, int y2) {
     return max(abs(x1 - x2), abs(y1 - y2));
 }
+
 
 
 

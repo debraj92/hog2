@@ -56,7 +56,7 @@ class player : public RLNN_Agent {
 
     void runTrainingAsync();
 
-    void populateEnemyObstacles(vector<std::vector<int>> &grid, vector<enemy> &enemies);
+    void populateEnemyObstacles(vector<std::vector<int>> &grid, bool dontGoClose);
 
     int rotatePreviousAction(int oldDirection, int newDirection, int previousAction);
 
@@ -83,11 +83,17 @@ public:
     float count_aggregation = 0;
     vector<double> rewards;
 
+    vector<std::vector<int>> visited;
+
     bool isSimpleAstarPlayer = false;
+    bool isSimplePlayerStuckDontReroute = false;
     int timeStep;
+
+    unordered_map<int, enemy> hashMapEnemies;
 
     player(bool isTrainingMode) : cnnController(grid) {
         createEmptyGrid(grid);
+        createEmptyGrid(visited);
         RLNN_Agent::setTrainingMode(isTrainingMode);
         if(not isTrainingMode) {
             RLNN_Agent::loadModel(DQN_MODEL_PATH);
@@ -105,15 +111,17 @@ public:
 
     void playGame(std::vector<std::vector<int>> &gridSource, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 
-    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, int actionError, bool wasPreviousStateHotPursuit, int previousStateDirection);
+    void observe(observation &ob, std::vector<std::vector<int>> &grid, int lastAction, int actionError, bool wasPreviousStateHotPursuit, int previousStateDirection);
 
-    bool findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
+    bool findPathToDestination(int src_x, int src_y, int dst_x, int dst_y, bool dontGoCloseToEnemies=false);
+
+    bool findPathToKnownPointOnTrack(int src_x, int src_y);
 
     int selectAction(const observation& currentState);
 
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done);
 
-    bool recordRestoreLocation(std::vector<enemy> &enemies);
+    bool recordRestoreLocation();
 
     void plotRewards(vector<double> &rewards);
 
@@ -131,7 +139,11 @@ public:
 
     void removeTemporaryObstacles();
 
-    void addTemporaryObstaclesToPreventRepeatOfPreviousAction(int lastAction, int previousDirection);
+    void prepareEnemiesHashMap(std::vector<enemy>& enemies);
+
+    int markVisited();
+
+    void clearVisited();
 
     /// Testing
 #ifdef TESTING

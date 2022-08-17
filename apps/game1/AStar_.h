@@ -47,13 +47,11 @@ class AStar_ {
 
     int reverseNodeLinks(node_& current);
 
-    void addEdge(int src, int dest, vector<pair<int, int>> &nodes);
+    void addEdge(int nextX, int nextY, vector<pair<int, int>> &nodes);
 
     double computeDistance(int x, int y);
 
     void reset();
-
-    void orderNodeLinks(node_ root);
 
     float computeGCost(node_ first, node_ second);
 
@@ -84,7 +82,7 @@ public:
 
     float findShortestTime(pair<int, int> src, pair<int, int> dst);
 
-    bool findPathToDestination(int destinationDirection=0);
+    bool findPathToDestination();
 
     node_ getNextNode(node_& current);
 
@@ -111,6 +109,14 @@ public:
     int getNodeOrder(node_ n);
 
     int getTotalDistanceToDestination();
+
+    void blockedDestinationCoordinateAllowed();
+
+    void unblockDestinationCoordinate();
+
+    void orderNodeLinks(node_ root);
+
+    friend class findPath;
 };
 
 

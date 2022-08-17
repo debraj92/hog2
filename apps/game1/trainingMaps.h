@@ -37,7 +37,7 @@ class trainingMaps {
 
     int placeEnemies(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies, int startId, long randomNumber);
 
-    bool areBoundariesOfObstacleClear(std::vector<std::vector<int>>& grid, int x, int y, bool isHorizontal);
+    bool areBoundariesClearOfEnemies(std::vector<std::vector<int>>& grid, int x, int y, int maxEnemiesInBoundaryAllowed);
 
 public:
 

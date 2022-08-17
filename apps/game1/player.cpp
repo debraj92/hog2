@@ -13,6 +13,8 @@
 #include <random>
 #include <iostream>
 
+using namespace std;
+
 void player::takeDamage(int points) {
     if (life_left > 0) life_left -= points;
 }
@@ -23,7 +25,6 @@ void player::learnGame() {
 
     gameSimulation game(grid);
     game.player1 = this;
-    vector<enemy> tempEnemies;
     int src_x, src_y, dest_x, dest_y;
     bool resumed;
     float destinationCount = 0;
@@ -47,11 +48,11 @@ void player::learnGame() {
 
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
-            tempEnemies = enemies;
+            prepareEnemiesHashMap(enemies);
         }
         game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
-        game.learnToPlay(grid, tempEnemies);
+        game.learnToPlay(grid);
         if (stopLearning) {
             inferenceCount++;
         }
@@ -105,12 +106,14 @@ void player::learnGame() {
 
 void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
     copyGrid(gridSource);
+    clearVisited();
+    prepareEnemiesHashMap(enemies);
     gameSimulation game(grid);
     game.player1 = this;
     logger->logDebug("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
             ->endLineDebug();
     this->initialize(src_x, src_y, dest_x, dest_y);
-    game.play(grid, enemies);
+    game.play(grid);
     result.final_x = game.player1->current_x;
     result.final_y = game.player1->current_y;
     result.destination_x = game.player1->destination_x;
@@ -120,21 +123,22 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, const int lastAction, const int actionError,
-                     const bool wasPreviousStateHotPursuit, const int previousStateDirection) {
-    logger->logDebug("player::observe")->endLineDebug();
 
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, const int lastAction, const int actionError,
+                     const bool wasPreviousStateHotPursuit, const int previousStateDirection) {
+
+    logger->logDebug("player::observe")->endLineDebug();
     ob.playerX = this->current_x;
     ob.playerY = this->current_y;
     ob.destinationX = this->destination_x;
     ob.destinationY = this->destination_y;
 
-    if (isSimpleAstarPlayer and (current_x != destination_x or current_y != destination_y)) {
-        if (actionError == 0) addTemporaryObstaclesToPreventRepeatOfPreviousAction(lastAction, previousStateDirection);
-        if (not findPathToDestination(grid, enemies, current_x, current_y, destination_x, destination_y)) {
-            logger->logInfo("ERROR: Player could not find path to destination")->endLineInfo();
+    if (isSimpleAstarPlayer and (not isSimplePlayerStuckDontReroute) and (current_x != destination_x or current_y != destination_y)) {
+        if (not findPathToDestination(current_x, current_y, destination_x, destination_y, true)) {
+            if (not findPathToDestination(current_x, current_y, destination_x, destination_y, false)) {
+                logger->logInfo("ERROR: Player could not find path to destination")->endLineInfo();
+            }
         }
-        if (actionError == 0) removeTemporaryObstacles();
     }
 
     ob.findDestination(isTrainingMode and not stopLearning);
@@ -142,9 +146,14 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.locateRelativeTrajectory();
 
     if (not isSimpleAstarPlayer) {
+
+        ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
+        ob.recordFOVForCNN(cnnController, fp);
+
         if (ob.direction > 0) {
-            ob.locateEnemies(grid, enemies, timeStep);
+            ob.locateEnemies(grid, cnnController, hashMapEnemies, timeStep);
             ob.updateObstacleDistances(grid);
+
             // Hot Pursuit states need previous action to predict enemy movement
             if (wasPreviousStateHotPursuit and ob.isPlayerInHotPursuit and (actionError != -1)) {
                 if (previousStateDirection != ob.direction) {
@@ -157,19 +166,46 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
                 ob.actionInPreviousState = -1;
             }
         }
-        ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
-        ob.recordFOVForCNN(cnnController, fp);
     }
-
 }
 
-bool player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
-    logger->logDebug("Find path to destination")->endLineDebug();
+bool player::findPathToDestination(int src_x, int src_y, int dst_x, int dst_y, bool dontGoCloseToEnemies) {
+    logger->logDebug("findPathToDestination")->endLineDebug();
+    if (isSimpleAstarPlayer) {
+        std::vector<std::vector<int>> gridTemporary;
+        std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
+        populateEnemyObstacles(gridTemporary, dontGoCloseToEnemies);
+        fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
+        return fp->findPathToDestinationDeferred();
+    }
+    fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
+    return fp->findPathToDestination();
+}
+
+bool player::findPathToKnownPointOnTrack(int src_x, int src_y) {
+    logger->logDebug("findPathToKnownPointOnTrack")->endLineDebug();
+
     std::vector<std::vector<int>> gridTemporary;
     std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
-    populateEnemyObstacles(gridTemporary, enemies);
-    fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
-    return fp->findPathToDestination();
+    //TODO: Uncomment if required
+    //populateEnemyObstacles(gridTemporary, false);
+
+    //find next free location in the existing path
+    int x = fp->knownOnTrackX;
+    int y = fp->knownOnTrackY;
+    if(x != destination_x or y != destination_y) {
+        fp->getNextPositionAfterGivenLocation(x, y, x, y);
+        while(grid[x][y] != 0) {
+            fp->getNextPositionAfterGivenLocation(x, y, x, y);
+        }
+    }
+    findPath fpTemp(gridTemporary, src_x, src_y, x, y);
+    if (not fpTemp.findPathToDestination()) {
+        logger->logInfo("ERROR: Path to point on track not found")->endLineInfo();
+        return false;
+    }
+    fp->stitchNewPathIntoExistingAtNode(fpTemp, x, y, src_x, src_y);
+    return true;
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
@@ -206,7 +242,7 @@ void player::memorizeExperienceForReplay(observation &current, observation &next
     }
 }
 
-bool player::recordRestoreLocation(std::vector<enemy> &enemies) {
+bool player::recordRestoreLocation() {
     bool isRestoreLocationSet = false;
     restoreCellX = fp->visited_x_onpath;
     restoreCellY = fp->visited_y_onpath;
@@ -220,7 +256,8 @@ bool player::recordRestoreLocation(std::vector<enemy> &enemies) {
             return false;
         }
         isRestoreLocationSet = true;
-        for (enemy e: enemies) {
+        for (const auto& enemyIterator : hashMapEnemies) {
+            auto e = enemyIterator.second;
             if (e.current_x == restoreCellX and e.current_y == restoreCellY) {
                 isRestoreLocationSet = false;
                 break;
@@ -323,14 +360,25 @@ void player::enableBaseLinePlayer() {
     isSimpleAstarPlayer = true;
 }
 
-void player::populateEnemyObstacles(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+void player::populateEnemyObstacles(vector<std::vector<int>> &gridTemp, bool dontGoClose) {
     logger->logDebug("populateEnemyObstacles")->endLineDebug();
-    for(const enemy& e: enemies) {
+    for (const auto& enemyIterator : hashMapEnemies) {
+        auto e = enemyIterator.second;
         if (max(abs(current_x - e.current_x), abs(current_y - e.current_y)) <= VISION_RADIUS) {
-            grid[e.current_x][e.current_y] = -e.id;
+            if (dontGoClose) {
+                // surround enemy with obstacles
+                for(int i=e.current_x - 1; i<=e.current_x + 1; i++) {
+                    for(int j=e.current_y - 1; j<=e.current_y + 1; j++) {
+                        if(i>=0 and i<GRID_SPAN and j >=0 and j<GRID_SPAN and gridTemp[i][j] != PLAYER_ID) {
+                            gridTemp[i][j] = -e.id;
+                        }
+                    }
+                }
+            } else {
+                gridTemp[e.current_x][e.current_y] = -e.id;
+            }
         }
     }
-
 }
 
 int player::rotatePreviousAction(int oldDirection, int newDirection, int previousAction) {
@@ -418,38 +466,24 @@ void player::removeTemporaryObstacles() {
     }
 }
 
-void player::addTemporaryObstaclesToPreventRepeatOfPreviousAction(int lastAction, int previousDirection) {
-    coordinatesUtil coordinates(grid);
-    int x = current_x;
-    int y = current_y;
-    switch(lastAction) {
-        case ACTION_DODGE_LEFT:
-            if (coordinates.setDodgeLeftActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
-                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
-            }
-            break;
-        case ACTION_DODGE_DIAGONAL_LEFT:
-            if (coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
-                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
-            }
-            break;
-        case ACTION_STRAIGHT:
-            if (coordinates.setStraightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
-                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
-            }
-            break;
-        case ACTION_DODGE_RIGHT:
-            if (coordinates.setDodgeRightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
-                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
-            }
-            break;
-        case ACTION_DODGE_DIAGONAL_RIGHT:
-            if (coordinates.setDodgeDiagonalRightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
-                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
-            }
-            break;
+void player::prepareEnemiesHashMap(vector<enemy> &enemies) {
+    hashMapEnemies.clear();
+    for(const enemy e: enemies) {
+        hashMapEnemies.insert(std::make_pair(e.id, e));
     }
+}
 
+int player::markVisited() {
+    visited[current_x][current_y]++;
+    return visited[current_x][current_y];
+}
+
+void player::clearVisited() {
+    for (int i=0; i<GRID_SPAN; i++) {
+        for (int j=0; j<GRID_SPAN; j++) {
+            visited[i][j] = 0;
+        }
+    }
 }
 
 

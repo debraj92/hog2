@@ -45,6 +45,7 @@ public:
     }
 
     node_(int x, int y) : x(x), y(y), heap_idx(-1) {}
+    node_(){}
 
     void computeF(float g=0, float h=0, float r=0);
 
