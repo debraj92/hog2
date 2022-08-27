@@ -82,6 +82,34 @@ public:
     float isLastMove4 = 0;
     float isTracking4 = 0;
 
+    float enemy_distance_5 = MAX_DISTANCE;
+    float enemy_angle_5 = 0;
+    float enemy_risk_5 = 0;
+    int enemy_id_5 = -1;
+    float isLastMove5 = 0;
+    float isTracking5 = 0;
+
+    float enemy_distance_6 = MAX_DISTANCE;
+    float enemy_angle_6 = 0;
+    float enemy_risk_6 = 0;
+    int enemy_id_6 = -1;
+    float isLastMove6 = 0;
+    float isTracking6 = 0;
+
+    float enemy_distance_7 = MAX_DISTANCE;
+    float enemy_angle_7 = 0;
+    float enemy_risk_7 = 0;
+    int enemy_id_7 = -1;
+    float isLastMove7 = 0;
+    float isTracking7 = 0;
+
+    float enemy_distance_8 = MAX_DISTANCE;
+    float enemy_angle_8 = 0;
+    float enemy_risk_8 = 0;
+    int enemy_id_8 = -1;
+    float isLastMove8 = 0;
+    float isTracking8 = 0;
+
     float action_straight_atRisk = 0;
     float action_frontLeft_atRisk = 0;
     float action_frontRight_atRisk = 0;

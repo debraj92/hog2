@@ -314,7 +314,71 @@ void observation::locateEnemies(std::vector <std::vector<int>> &grid, CNN_contro
 }
 
 void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties) {
-    // Ignoring enemy count above 4
+    // Ignoring enemy count above 8
+    if(enemy_properties.size() >= 8) {
+        enemy_distance_8 = enemy_properties[7].distance;
+        enemy_angle_8 = enemy_properties[7].angle;
+        enemy_risk_8 = enemy_properties[7].risk_measure;
+        enemy_id_8 = enemy_properties[7].id;
+        isLastMove8 = enemy_properties[7].moves_left == 1 ? 1 : 0;
+        isTracking8 = enemy_properties[7].isPlayerTracked ? 1 : 0;
+    } else {
+        enemy_distance_8 = MAX_DISTANCE;
+        enemy_angle_8 = 0;
+        enemy_risk_8 = 0;
+        enemy_id_8 = -1;
+        isLastMove8 = -1;
+        isTracking8 = -1;
+    }
+
+    if(enemy_properties.size() >= 7) {
+        enemy_distance_7 = enemy_properties[6].distance;
+        enemy_angle_7 = enemy_properties[6].angle;
+        enemy_risk_7 = enemy_properties[6].risk_measure;
+        enemy_id_7 = enemy_properties[6].id;
+        isLastMove7 = enemy_properties[6].moves_left == 1 ? 1 : 0;
+        isTracking7 = enemy_properties[6].isPlayerTracked ? 1 : 0;
+    } else {
+        enemy_distance_7 = MAX_DISTANCE;
+        enemy_angle_7 = 0;
+        enemy_risk_7 = 0;
+        enemy_id_7 = -1;
+        isLastMove7 = -1;
+        isTracking7 = -1;
+    }
+
+    if(enemy_properties.size() >= 6) {
+        enemy_distance_6 = enemy_properties[5].distance;
+        enemy_angle_6 = enemy_properties[5].angle;
+        enemy_risk_6 = enemy_properties[5].risk_measure;
+        enemy_id_6 = enemy_properties[5].id;
+        isLastMove6 = enemy_properties[5].moves_left == 1 ? 1 : 0;
+        isTracking6 = enemy_properties[5].isPlayerTracked ? 1 : 0;
+    } else {
+        enemy_distance_6 = MAX_DISTANCE;
+        enemy_angle_6 = 0;
+        enemy_risk_6 = 0;
+        enemy_id_6 = -1;
+        isLastMove6 = -1;
+        isTracking6 = -1;
+    }
+
+    if(enemy_properties.size() >= 5) {
+        enemy_distance_5 = enemy_properties[4].distance;
+        enemy_angle_5 = enemy_properties[4].angle;
+        enemy_risk_5 = enemy_properties[4].risk_measure;
+        enemy_id_5 = enemy_properties[4].id;
+        isLastMove5 = enemy_properties[4].moves_left == 1 ? 1 : 0;
+        isTracking5 = enemy_properties[4].isPlayerTracked ? 1 : 0;
+    } else {
+        enemy_distance_5 = MAX_DISTANCE;
+        enemy_angle_5 = 0;
+        enemy_risk_5 = 0;
+        enemy_id_5 = -1;
+        isLastMove5 = -1;
+        isTracking5 = -1;
+    }
+
     if(enemy_properties.size() >= 4) {
         enemy_distance_4 = enemy_properties[3].distance;
         enemy_angle_4 = enemy_properties[3].angle;
@@ -429,6 +493,34 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
     nextPosOffset += 2;
     observation_vector[nextPosOffset++] = isLastMove4;
     observation_vector[nextPosOffset++] = isTracking4;
+
+    observation_vector[nextPosOffset++] = enemy_distance_5;
+    offset = enemy_angle_5 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_5) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = isLastMove5;
+    observation_vector[nextPosOffset++] = isTracking5;
+
+    observation_vector[nextPosOffset++] = enemy_distance_6;
+    offset = enemy_angle_6 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_6) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = isLastMove6;
+    observation_vector[nextPosOffset++] = isTracking6;
+
+    observation_vector[nextPosOffset++] = enemy_distance_7;
+    offset = enemy_angle_7 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_7) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = isLastMove7;
+    observation_vector[nextPosOffset++] = isTracking7;
+
+    observation_vector[nextPosOffset++] = enemy_distance_8;
+    offset = enemy_angle_8 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_8) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = isLastMove8;
+    observation_vector[nextPosOffset++] = isTracking8;
 
     observation_vector[nextPosOffset++] = static_cast< float >(isPlayerInHotPursuit? 1:0);
     if(actionInPreviousState > -1) {

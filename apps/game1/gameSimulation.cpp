@@ -239,14 +239,14 @@ void gameSimulation::moveEnemies(vector<std::vector<int>> &grid, observation &ob
         }
     }
 
+    for (auto& enemyId : enemiesToMoveId) {
+        if(player1->hashMapEnemies.find(enemyId)->second.doNextMove(time, grid, {ob.playerX, ob.playerY, 0})) {
+            if(not player1->isTrainingMode) enemiesAwayFromBase.insert(enemyId);
+        }
+    }
+
     // Move to base is applicable only during inference
     if(not player1->isTrainingMode) {
-        for (auto& enemyId : enemiesToMoveId) {
-            if(player1->hashMapEnemies.find(enemyId)->second.doNextMove(time, grid, {ob.playerX, ob.playerY, 0})) {
-                enemiesAwayFromBase.insert(enemyId);
-            }
-        }
-
         for (auto enemiesAwayFromBaseIterator = enemiesAwayFromBase.begin(); enemiesAwayFromBaseIterator != enemiesAwayFromBase.end();) {
             auto enemyId = *enemiesAwayFromBaseIterator;
             if(enemiesToMoveId.find(enemyId) == enemiesToMoveId.end()) {
@@ -267,7 +267,7 @@ void gameSimulation::fight(vector<std::vector<int>> &grid) {
     std::unordered_map<node_, int, node_::node_Hash> enemyLocations;
     // damage player
     for (auto& enemyIterator : player1->hashMapEnemies) {
-        enemy e = enemyIterator.second;
+        enemy& e = enemyIterator.second;
         // ignore dead enemies
         if (e.getLifeLeft() > 0) {
             if (e.current_x == player1->current_x && e.current_y == player1->current_y) {
@@ -323,7 +323,7 @@ float gameSimulation::calculateReward(const observation &nextObservation, int ac
         return REWARD_ACTION_LR;
     }
     if (nextObservation.isPlayerInHotPursuit) {
-        return REWARD_TRACK_THREE_DIV;
+        return REWARD_TRACK_FOUR_DIV;
     }
     if(nextObservation.trajectory == on_track) {
         return REWARD_REACH;

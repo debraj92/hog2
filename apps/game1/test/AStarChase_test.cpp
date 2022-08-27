@@ -65,7 +65,7 @@ TEST(AStarChase, t1) {
     int dst_x = GRID_SPAN - 1;
     int dst_y = 0;
     p.life_left = 10;
-    enemy e1 = enemy(grid, 4, 7, 1, false);
+    enemy e1 = enemy(grid, 4, 7, 1);
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
 
@@ -122,7 +122,7 @@ TEST(AStarChase, t2) {
     int dst_x = GRID_SPAN - 1;
     int dst_y = 0;
     p.life_left = 10;
-    enemy e1 = enemy(grid, 4, 2, 1, false);
+    enemy e1 = enemy(grid, 4, 2, 1);
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
 
@@ -179,7 +179,7 @@ TEST(AStarChase, t4) {
     int dst_x = 0;
     int dst_y = 4;
     p.life_left = 10;
-    enemy e1 = enemy(grid, 6, 8, 1, false);
+    enemy e1 = enemy(grid, 6, 8, 1);
     e1.enemyVisionRadius = VISION_RADIUS + 2;
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
@@ -238,7 +238,7 @@ TEST(AStarChase, t3) {
     int dst_x = GRID_SPAN - 1;
     int dst_y = 5;
     p.life_left = 10;
-    enemy e1 = enemy(grid, 4, 7, 1, false);
+    enemy e1 = enemy(grid, 4, 7, 1);
     grid[p.current_x][p.current_y] = 9;
     grid[e1.current_x][e1.current_y] = e1.id;
 

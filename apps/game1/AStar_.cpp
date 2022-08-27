@@ -206,6 +206,7 @@ void AStar_::reset() {
 void AStar_::changeSourceAndDestination(int startX, int startY, int endX, int endY) {
     source = make_pair(startX, startY);
     destination = make_pair(endX, endY);
+    initialized = true;
 }
 
 void AStar_::changeMap(vector<vector<int>> &grid) {
@@ -260,7 +261,7 @@ int AStar_::getTotalDistanceToDestination() {
 
 float AStar_::computeGCost(node_ first, node_ second) {
     int g_distance = abs(first.x - second.x) + abs(first.y - second.y);
-    return g_distance == 1 ? 1 : 1.4;
+    return g_distance == 1 ? 1 : 1.5;
 }
 
 void AStar_::blockedDestinationCoordinateAllowed() {
@@ -272,6 +273,10 @@ void AStar_::blockedDestinationCoordinateAllowed() {
 
 void AStar_::unblockDestinationCoordinate() {
     if(grid[destination.first][destination.second] == -9) {
-        grid[destination.first][destination.second] = 0;
+        grid[destination.first][destination.second] = -1;
     }
+}
+
+bool AStar_::isInitialized() {
+    return initialized;
 }

@@ -544,10 +544,10 @@ void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int
 void trainingMaps::setSourceAndDestinationFixed(int &startX, int &startY, int &endX,
                                                    int &endY) {
 
-    startX = 0;
-    startY = 16;
-    endX = 26;
-    endY = 21;
+    startX = 26;
+    startY = 21;
+    endX = 0;
+    endY = 17;
 }
 
 void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
@@ -559,6 +559,10 @@ void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vecto
     }
 }
 
+/**
+ * NOTE: Obstacle design must not be changed. Obstacles should not have internal points. If so, logic for
+ * abstract A* will break.
+ */
 void trainingMaps::serializeRandomMap(string mapId, long randomNumber) {
     vector<vector<int>> grid;
     for (int i=0; i<GRID_SPAN; i++) {
@@ -746,7 +750,7 @@ void trainingMaps::createMapUnitTesting1(vector<std::vector<int>> &grid, vector<
 
     };
     for(int enemy_id=0; enemy_id < TOTAL_FIXED_ENEMIES; enemy_id++) {
-        auto fe = enemy(grid, enemyLocations[enemy_id][0], enemyLocations[enemy_id][1], enemy_id + 1, true);
+        auto fe = enemy(grid, enemyLocations[enemy_id][0], enemyLocations[enemy_id][1], enemy_id + 1);
         enemies.push_back(fe);
     }
 }
@@ -760,6 +764,31 @@ void trainingMaps::createMapUnitTesting2(vector<std::vector<int>> &grid, vector<
             {0, 1, 0, 1},
             {4, 4, 2, 3},
             {1, 1, 4, 4}
+
+    };
+
+    FixedObstacles fixedObstacles;
+    for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
+        int x_s = blockObstacles[obstacle][0];
+        int x_e = blockObstacles[obstacle][1];
+        int y_s = blockObstacles[obstacle][2];
+        int y_e = blockObstacles[obstacle][3];
+        fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
+    }
+}
+
+void trainingMaps::createMapUnitTesting3(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+    /// 10X10
+
+    const int TOTAL_FIXED_OBSTACLES = 6;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {3, 4, 2, 4},
+            {3, 4, 7, 8},
+            {6, 6, 1, 3},
+            {6, 6, 6, 8},
+            {5, 5, 4, 7},
+            {5, 5, 0, 2}
 
     };
 

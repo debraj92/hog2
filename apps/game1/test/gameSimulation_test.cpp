@@ -35,42 +35,36 @@ TEST_F(Simulation_test, test1) {
      *
      * MAX_EPISODES = 1;
      * SESSION_TIMEOUT = 10;
-     * GRID_SPAN = 7
+     * GRID_SPAN = 10
      * SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 1000;
+     * VR = 3
      */
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::DEBUG;
 
     player pl1(true);
-    vector<std::vector<int>> grid;
-    pl1.createEmptyGrid(grid);
-    gameSimulation game(grid);
+    gameSimulation game(pl1.grid);
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(grid, 2, 2, 1, true);
+    enemy f1(pl1.grid, 2, 2, 1);
     enemies.push_back(f1);
 
     pl1.initialize(0, 0, 6, 6);
+    pl1.prepareEnemiesHashMap(enemies);
     pl1.epoch = 1;
-    game.learnToPlay(grid, enemies);
+    game.learnToPlay(pl1.grid);
 
     auto replayBuf_ptr = pl1.getAccessToReplayMemory();
-    assert (replayBuf_ptr->rewards[0] == REWARD_TRACK_ONE_DIV);
+    assert (replayBuf_ptr->rewards[0] == REWARD_TRACK_FOUR_DIV);
     assert (not replayBuf_ptr->dones[0]);
-    assert (replayBuf_ptr->buffer_actions[0] == ACTION_DODGE_DIAGONAL_RIGHT);
+    assert (replayBuf_ptr->buffer_actions[0] == ACTION_DODGE_DIAGONAL_LEFT);
 
-    assert (replayBuf_ptr->rewards[1] == REWARD_ACTION_LR);
-    assert (not replayBuf_ptr->dones[1]);
-    assert (replayBuf_ptr->buffer_actions[1] == ACTION_DODGE_LEFT);
+    assert (replayBuf_ptr->rewards[1] == REWARD_DEATH);
+    assert (replayBuf_ptr->dones[1]);
+    assert (replayBuf_ptr->buffer_actions[1] == ACTION_DODGE_DIAGONAL_RIGHT);
 
-    assert (replayBuf_ptr->rewards[2] == REWARD_ACTION_LR);
-    assert (not replayBuf_ptr->dones[2]);
-    assert (replayBuf_ptr->buffer_actions[2] == ACTION_DODGE_RIGHT);
-
-    assert (replayBuf_ptr->idx == 6);
-    cout<<pl1.restoreCellX<<", "<<pl1.restoreCellY<<endl;
-    assert(pl1.restoreCellX == 3 and pl1.restoreCellY == 3);
-
+    assert (replayBuf_ptr->idx == 2);
+    assert(pl1.restoreCellX == 2 and pl1.restoreCellY == 2);
 
 }
 
@@ -81,14 +75,13 @@ TEST_F(Simulation_test, test2) {
      *
      * MAX_EPISODES = 1;
      * SESSION_TIMEOUT = 5;
-     * GRID_SPAN = 7
+     * GRID_SPAN = 10
      * SWITCH_TO_EXPLOITATION_ONLY_PERCENT = 1000;
+     * VR = 3
      */
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::DEBUG;
 
     player pl1(true);
-    vector<std::vector<int>> grid;
-    pl1.createEmptyGrid(grid);
 
     const int TOTAL_FIXED_OBSTACLES = 1;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
@@ -96,49 +89,38 @@ TEST_F(Simulation_test, test2) {
             {2, 4, 2, 3}
 
     };
-    createAllFixedObstacles(grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
+    createAllFixedObstacles(pl1.grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
 
 
-    gameSimulation game(grid);
+    gameSimulation game(pl1.grid);
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(grid, 3, 1, 1, true);
-    enemy f2(grid, 5, 4, 2, true);
+    enemy f1(pl1.grid, 3, 1, 1);
+    enemy f2(pl1.grid, 5, 4, 2);
     enemies.push_back(f1);
     enemies.push_back(f2);
 
     pl1.initialize(0, 0, 6, 6);
+    pl1.prepareEnemiesHashMap(enemies);
     pl1.epoch = 1;
     pl1.seedAction = 10;
     pl1.seedExplore = 20;
-    game.learnToPlay(grid, enemies);
+    game.learnToPlay(pl1.grid);
 
     auto replayBuf_ptr = pl1.getAccessToReplayMemory();
 
-    assert (replayBuf_ptr->rewards[0] == REWARD_ACTION_UNAVAILABLE);
+    assert (replayBuf_ptr->rewards[0] == REWARD_TRACK_FOUR_DIV);
     assert (not replayBuf_ptr->dones[0]);
-    assert (replayBuf_ptr->buffer_actions[0] == ACTION_DODGE_LEFT);
+    assert (replayBuf_ptr->buffer_actions[0] == ACTION_DODGE_DIAGONAL_RIGHT);
 
-    assert (replayBuf_ptr->rewards[1] == REWARD_ACTION_LR);
-    assert (not replayBuf_ptr->dones[1]);
+    assert (replayBuf_ptr->rewards[1] == REWARD_DEATH);
+    assert (replayBuf_ptr->dones[1]);
     assert (replayBuf_ptr->buffer_actions[1] == ACTION_DODGE_RIGHT);
 
-    assert (replayBuf_ptr->rewards[2] == REWARD_ACTION_LR);
-    assert (not replayBuf_ptr->dones[2]);
-    assert (replayBuf_ptr->buffer_actions[2] == ACTION_DODGE_LEFT);
+    assert (replayBuf_ptr->idx == 2);
 
-    assert (replayBuf_ptr->rewards[3] == REWARD_TRACK_ONE_DIV);
-    assert (not replayBuf_ptr->dones[3]);
-    assert (replayBuf_ptr->buffer_actions[3] == ACTION_STRAIGHT);
-
-    assert (replayBuf_ptr->rewards[4] == REWARD_REACH);
-    assert (replayBuf_ptr->dones[4]);
-    assert (replayBuf_ptr->buffer_actions[4] == ACTION_DODGE_DIAGONAL_RIGHT);
-
-    assert (replayBuf_ptr->idx == 5);
-
-    assert(not pl1.playerDiedInPreviousEpisode);
+    assert(pl1.playerDiedInPreviousEpisode);
 
 
 }
@@ -149,8 +131,6 @@ TEST_F(Simulation_test, test3) {
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::DEBUG;
 
     player pl1(true);
-    vector<std::vector<int>> grid;
-    pl1.createEmptyGrid(grid);
 
     const int TOTAL_FIXED_OBSTACLES = 1;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
@@ -158,16 +138,16 @@ TEST_F(Simulation_test, test3) {
             {2, 4, 2, 3}
 
     };
-    createAllFixedObstacles(grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
+    createAllFixedObstacles(pl1.grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
 
-    gameSimulation game(grid);
+    gameSimulation game(pl1.grid);
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(grid, 1, 2, 1, false);
-    enemy f2(grid, 5, 4, 2, true);
-    enemy f3(grid, 3, 1, 3, false);
-    enemy f4(grid, 1, 2, 4, true);
+    enemy f1(pl1.grid, 1, 2, 1);
+    enemy f2(pl1.grid, 5, 4, 2);
+    enemy f3(pl1.grid, 3, 1, 3);
+    enemy f4(pl1.grid, 1, 2, 4);
 
     enemies.push_back(f1);
     enemies.push_back(f2);
@@ -175,15 +155,16 @@ TEST_F(Simulation_test, test3) {
     enemies.push_back(f4);
 
     pl1.initialize(0, 0, 6, 6);
-    game.populateEnemies(grid, enemies);
-    game.fight(enemies, grid);
+    pl1.prepareEnemiesHashMap(enemies);
+    game.populateEnemies(pl1.grid, true);
+    game.fight(pl1.grid);
 
     assert(pl1.life_left > 0);
 
-    assert(enemies.size() == 2);
-    assert(enemies[0].id == 2);
-    assert(enemies[1].id == 3);
-    assert(grid[1][2] == 0);
+    assert(pl1.hashMapEnemies.size() == 2);
+    assert (pl1.hashMapEnemies.find(2) != pl1.hashMapEnemies.end());
+    assert (pl1.hashMapEnemies.find(3) != pl1.hashMapEnemies.end());
+    assert(pl1.grid[1][2] == 0);
 
 }
 
@@ -194,8 +175,6 @@ TEST_F(Simulation_test, test4) {
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::DEBUG;
 
     player pl1(true);
-    vector<std::vector<int>> grid;
-    pl1.createEmptyGrid(grid);
 
     const int TOTAL_FIXED_OBSTACLES = 1;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
@@ -203,17 +182,17 @@ TEST_F(Simulation_test, test4) {
             {2, 4, 2, 3}
 
     };
-    createAllFixedObstacles(grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
+    createAllFixedObstacles(pl1.grid, TOTAL_FIXED_OBSTACLES, blockObstacles);
 
 
-    gameSimulation game(grid);
+    gameSimulation game(pl1.grid);
     game.player1 = &pl1;
 
     vector<enemy> enemies;
-    enemy f1(grid, 1, 2, 1, false);
-    enemy f2(grid, 5, 4, 2, true);
-    enemy f3(grid, 3, 1, 3, false);
-    enemy f4(grid, 1, 2, 4, true);
+    enemy f1(pl1.grid, 1, 2, 1);
+    enemy f2(pl1.grid, 5, 4, 2);
+    enemy f3(pl1.grid, 3, 1, 3);
+    enemy f4(pl1.grid, 1, 2, 4);
 
     enemies.push_back(f1);
     enemies.push_back(f2);
@@ -221,14 +200,15 @@ TEST_F(Simulation_test, test4) {
     enemies.push_back(f4);
 
     pl1.initialize(3, 1, 6, 6);
-    game.populateEnemies(grid, enemies);
-    game.fight(enemies, grid);
+    pl1.prepareEnemiesHashMap(enemies);
+    game.populateEnemies(pl1.grid, true);
+    game.fight(pl1.grid);
 
     assert(pl1.life_left == 0);
 
-    assert(enemies.size() == 1);
-    assert(enemies[0].id == 2);
-    assert(grid[1][2] == 0);
-    assert(grid[3][1] == 0);
+    assert(pl1.hashMapEnemies.size() == 1);
+    assert(pl1.hashMapEnemies.find(2) != pl1.hashMapEnemies.end());
+    assert(pl1.grid[1][2] == 0);
+    assert(pl1.grid[3][1] == 0);
 
 }

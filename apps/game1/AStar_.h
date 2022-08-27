@@ -39,6 +39,8 @@ class AStar_ {
 
     int destinationDirection_;
 
+    bool initialized = false;
+
     void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
 
     bool isDestinationFound(node_ node);
@@ -69,6 +71,7 @@ public:
         std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
         source = make_pair(startX, startY);
         destination = make_pair(endX, endY);
+        initialized = true;
     }
 
     AStar_(vector<vector<int>> &grid) : GRID_SPAN_(grid.size()) {
@@ -115,6 +118,8 @@ public:
     void unblockDestinationCoordinate();
 
     void orderNodeLinks(node_ root);
+
+    bool isInitialized();
 
     friend class findPath;
 };

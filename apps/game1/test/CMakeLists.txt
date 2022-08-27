@@ -25,9 +25,9 @@ add_subdirectory(googletest)
 
 enable_testing()
 
-set(torch_DIR "/Users/debrajray/MyComputer/libtorch-latest-1.12/libtorch/share/cmake/Torch")
+set(Torch_DIR "/Users/debrajray/MyComputer/libtorch-latest-1.12/libtorch/share/cmake/Torch")
 
-find_package(torch REQUIRED)
+find_package(Torch REQUIRED)
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
 find_package(xsimd REQUIRED)
@@ -56,7 +56,7 @@ add_executable(${This} AStar_test.cpp GameMaps_test.cpp Observation_test.cpp ../
         ../DQN/Vanilla-DQN/DQNNet.cpp ../DQN/Vanilla-DQN/DQNNet.h ../DQN/Vanilla-DQN/RLNN_Agent.cpp ../DQN/Vanilla-DQN/RLNN_Agent.h
         #../DQN/dueling-DQN-bounded/DQNNet.cpp ../DQN/dueling-DQN-bounded/DQNNet.h ../DQN/dueling-DQN-bounded/RLNN_Agent.cpp ../DQN/dueling-DQN-bounded/RLNN_Agent.h
         ../trainingMaps.cpp ../trainingMaps.h testing.h gameSimulation_test.cpp CNN_test.cpp ../FOV_CNN/CNN_controller.cpp ../FOV_CNN/CNN_controller.h ../FOV_CNN/FOV_Filters.cpp ../FOV_CNN/FOV_Filters.h FOV_Filter_test.cpp AStarChase_test.cpp BaseLine_Agent.cpp Enemy_test.cpp
-        ../JsonParser.cpp ../JsonParser.h)
+        ../JsonParser.cpp ../JsonParser.h AbstractAStar_test.cpp)
 
 target_include_directories(${This} PUBLIC ${GTEST_INCLUDE_DIR} ${xtensor_INCLUDE_DIRS})
 target_link_libraries(${This} PUBLIC "${TORCH_LIBRARIES}" xtensor jsoncpp_lib ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${OPENGL_LIBRARY} OpenMP::OpenMP_CXX

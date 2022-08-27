@@ -58,6 +58,7 @@ TEST(ReplayMemory_test, test_cnn) {
     ob_current.direction = SE;
     ob_current.locateTrajectoryAndDirection(fp);
     ob_current.recordFOVForCNN(cnnController, fp);
+    ob_current.actionInPreviousState = -1;
 
     observation ob_next;
     ob_next.playerX = 3;
@@ -65,6 +66,7 @@ TEST(ReplayMemory_test, test_cnn) {
     ob_next.direction = SE;
     ob_next.locateTrajectoryAndDirection(fp);
     ob_next.recordFOVForCNN(cnnController, fp);
+    ob_next.actionInPreviousState = -1;
 
     r.storeExperience(ob_current, ob_next, ACTION_STRAIGHT, 1, true);
     r.storeExperience(ob_current, ob_next, ACTION_STRAIGHT, 1, true);

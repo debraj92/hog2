@@ -14,27 +14,28 @@ void Enemy_createEmptyGrid(vector<std::vector<int>> &grid) {
 
 TEST(MovingEnemy, t1) {
 
+    Logger logger(RTS::DEBUG);
     vector <std::vector<int>> grid;
     Enemy_createEmptyGrid(grid);
-    enemy e1 = enemy(grid, 2, 2, 1, false);
+    enemy e1 = enemy(grid, 2, 2, 1);
     int t = 1;
     e1.lastKnownPlayerX = 5;
     e1.lastKnownPlayerY = 5;
     e1.doNextMove(t, grid, {4, 4, 0});
     assert(e1.current_x == 3 and e1.current_y == 3);
 
-    enemy e2 = enemy(grid, 2, 2, 1, false);
+    enemy e2 = enemy(grid, 2, 2, 1);
     e2.lastKnownPlayerX = 7;
     e2.lastKnownPlayerY = 1;
     e2.doNextMove(t, grid, {7, 0, 0});
     assert(e2.current_x == 2 and e2.current_y == 2);
 
 
-    enemy e3 = enemy(grid, 2, 2, 1, false);
+    enemy e3 = enemy(grid, 2, 2, 1);
     e3.lastKnownPlayerX = 3;
     e3.lastKnownPlayerY = 1;
     e3.doNextMove(t++, grid, {3, 0, 0});
-    assert(e3.current_x == 2 and e3.current_y == 1);
+    assert(e3.current_x == 3 and e3.current_y == 1);
     e3.doNextMove(t, grid, {3, 0, 0});
     assert(e3.current_x == 3 and e3.current_y == 0);
 }
@@ -42,7 +43,7 @@ TEST(MovingEnemy, t1) {
 TEST(MovingEnemy, t2) {
     vector <std::vector<int>> grid;
     Enemy_createEmptyGrid(grid);
-    enemy e1 = enemy(grid, 2, 2, 1, false);
+    enemy e1 = enemy(grid, 2, 2, 1);
     e1.max_moves = 100;
     int t=1;
     for(int i= 1; i<=50; i++) {
@@ -58,7 +59,7 @@ TEST(MovingEnemy, t2) {
 TEST(MovingEnemy, t3) {
     vector <std::vector<int>> grid;
     Enemy_createEmptyGrid(grid);
-    enemy e1 = enemy(grid, 0, 2, 1, false);
+    enemy e1 = enemy(grid, 0, 2, 1);
     e1.max_moves = 100;
     int t=1;
     for(int i= 1; i<=50; i++) {
@@ -67,7 +68,7 @@ TEST(MovingEnemy, t3) {
         e1.current_x = 0;
         e1.current_y = 2;
         e1.doNextMove(t, grid, {0, 3, 0});
-        assert(e1.current_x == 1 and e1.current_y == 2);
+        assert(e1.current_x == 0 and e1.current_y == 3);
     }
 }
 
@@ -75,7 +76,7 @@ TEST(MovingEnemy, t4) {
     vector <std::vector<int>> grid;
     Enemy_createEmptyGrid(grid);
     grid[1][2] =-1;
-    enemy e1 = enemy(grid, 0, 2, 1, false);
+    enemy e1 = enemy(grid, 0, 2, 1);
     e1.max_moves = 100;
     int t=1;
     for(int i= 1; i<=50; i++) {

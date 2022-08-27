@@ -27,10 +27,12 @@ void findPath::calculateNextPosition() {
 }
 
 int findPath::getNext_x() {
+    current_x = next_x;
     return next_x;
 }
 
 int findPath::getNext_y() {
+    current_y = next_y;
     return next_y;
 }
 
@@ -215,12 +217,14 @@ bool findPath::findPathToDestinationDeferred() {
         return true;
     }
 
-    // step 2: find path to destination abstract center in abstract world
-    aStarAbs->changeSourceAndDestination(absCenter.x, absCenter.y, destAbsCenter.x, destAbsCenter.y);
-    pathFound = aStarAbs->findPathToDestination();
-    if (not pathFound) {
-        logger->logDebug("ERROR: Path to abstract center of destination NOT FOUND")->endLineDebug();
-        return pathFound;
+    if((not aStarAbs->isInitialized()) or (absCenter.x != aStarAbs->source.first or absCenter.y != aStarAbs->source.second)) {
+        // step 2: find path to destination abstract center in abstract world
+        aStarAbs->changeSourceAndDestination(absCenter.x, absCenter.y, destAbsCenter.x, destAbsCenter.y);
+        pathFound = aStarAbs->findPathToDestination();
+        if (not pathFound) {
+            logger->logDebug("ERROR: Path to abstract center of destination NOT FOUND")->endLineDebug();
+            return pathFound;
+        }
     }
 
     // step 3: find next abstract center coordinates in real world
@@ -271,6 +275,7 @@ void findPath::replenishNodesFromRealWorldAStar(int x, int y) {
             if (not aStar.findPathToDestination()) {
                 logger->logDebug("ERROR: Path to destination NOT FOUND")->endLineDebug();
             }
+            nextAbstractCenterSaved = node_(-1, -1);
         }
         visited_x_onpath = -1;
         visited_y_onpath = -1;
@@ -333,6 +338,7 @@ void findPath::stitchNewPathIntoExistingAtNode(findPath &fp_, int xOnTrack, int 
 
     // update node orders
     aStar.orderNodeLinks(node_(newSourceX, newSourceY));
+
 }
 
 void findPath::printTrack(int startX, int startY) {

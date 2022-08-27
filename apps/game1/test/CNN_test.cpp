@@ -38,10 +38,10 @@ void createGrid1(vector<std::vector<int>> &grid) {
 
     createAllFixedObstacles(TOTAL_FIXED_OBSTACLES, blockObstacles, grid);
 
-    enemy f1(grid, 2, 1, 1, true);
-    enemy f2(grid, 2, 3, 2, true);
-    enemy f3(grid, 4, 3, 3, true);
-    enemy f4(grid, 1, 4, 4, true);
+    enemy f1(grid, 2, 1, 1);
+    enemy f2(grid, 2, 3, 2);
+    enemy f3(grid, 4, 3, 3);
+    enemy f4(grid, 1, 4, 4);
     std::vector<enemy> enemies;
     enemies.push_back(f1);
     enemies.push_back(f2);
