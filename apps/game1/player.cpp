@@ -120,8 +120,8 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, int actionError,
-                     bool wasPreviousStateHotPursuit, int previousStateDirection) {
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, const int lastAction, const int actionError,
+                     const bool wasPreviousStateHotPursuit, const int previousStateDirection) {
     logger->logDebug("player::observe")->endLineDebug();
 
     ob.playerX = this->current_x;
@@ -130,31 +130,36 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::
     ob.destinationY = this->destination_y;
 
     if (isSimpleAstarPlayer and (current_x != destination_x or current_y != destination_y)) {
+        if (actionError == 0) addTemporaryObstaclesToPreventRepeatOfPreviousAction(lastAction, previousStateDirection);
         if (not findPathToDestination(grid, enemies, current_x, current_y, destination_x, destination_y)) {
             logger->logInfo("ERROR: Player could not find path to destination")->endLineInfo();
         }
+        if (actionError == 0) removeTemporaryObstacles();
     }
 
-    ob.locateTrajectoryAndDirection(fp);
     ob.findDestination(isTrainingMode and not stopLearning);
+    ob.locateTrajectoryAndDirection(fp);
     ob.locateRelativeTrajectory();
 
-    if (ob.direction > 0) {
-        ob.locateEnemies(grid, enemies, timeStep);
-        ob.updateObstacleDistances(grid);
-        if (wasPreviousStateHotPursuit and (actionError != -1)) {
-            if (previousStateDirection != ob.direction) {
-                // unit has changed direction
-                ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
+    if (not isSimpleAstarPlayer) {
+        if (ob.direction > 0) {
+            ob.locateEnemies(grid, enemies, timeStep);
+            ob.updateObstacleDistances(grid);
+            // Hot Pursuit states need previous action to predict enemy movement
+            if (wasPreviousStateHotPursuit and ob.isPlayerInHotPursuit and (actionError != -1)) {
+                if (previousStateDirection != ob.direction) {
+                    // unit has changed direction
+                    ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
+                } else {
+                    ob.actionInPreviousState = lastAction;
+                }
             } else {
-                ob.actionInPreviousState = lastAction;
+                ob.actionInPreviousState = -1;
             }
-        } else {
-            ob.actionInPreviousState = -1;
         }
+        ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
+        ob.recordFOVForCNN(cnnController, fp);
     }
-    ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
-    ob.recordFOVForCNN(cnnController, fp);
 
 }
 
@@ -194,7 +199,7 @@ int player::selectAction(const observation& currentState) {
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    // Cannot avoid transition into pursuit by any strategy. Therefore, nothing to learn.
+    // Do not avoid transition into pursuit by any strategy. Otherwise player would want to loop
     auto transitionIntoHotPursuit = (not current.isPlayerInHotPursuit) and next.isPlayerInHotPursuit;
     if ((not stopLearning) and (not next.isGoalInSight) and (not transitionIntoHotPursuit)) {
         RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
@@ -360,6 +365,91 @@ int player::rotatePreviousAction(int oldDirection, int newDirection, int previou
     }
 
     return action;
+}
+
+bool player::isNextStateSafeEnough() {
+    return RLNN_Agent::getBestActionQ() > Q_REROUTE_THRESHOLD;
+}
+
+bool player::isInference() {
+    return not RLNN_Agent::isTrainingMode;
+}
+
+void player::addTemporaryObstaclesToAidReroute(int direction, const int actionMask[ACTION_SPACE]) {
+    coordinatesUtil coordinates(grid);
+    int x = current_x;
+    int y = current_y;
+    if (actionMask[ACTION_STRAIGHT] and coordinates.setStraightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_DIAGONAL_LEFT] and coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_DIAGONAL_RIGHT] and coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_LEFT] and coordinates.setDodgeLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_RIGHT] and coordinates.setDodgeRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+}
+
+void player::removeTemporaryObstacles() {
+    for(int r=current_x - 1; r<=current_x + 1; r++) {
+        if(r < 0 or r >= GRID_SPAN) continue;
+        for(int c=current_y - 1; c<=current_y + 1; c++) {
+            if(c < 0 or c >= GRID_SPAN) continue;
+            if(grid[r][c] == NEXT_Q_TOO_LOW_ERROR) grid[r][c] = 0;
+        }
+    }
+}
+
+void player::addTemporaryObstaclesToPreventRepeatOfPreviousAction(int lastAction, int previousDirection) {
+    coordinatesUtil coordinates(grid);
+    int x = current_x;
+    int y = current_y;
+    switch(lastAction) {
+        case ACTION_DODGE_LEFT:
+            if (coordinates.setDodgeLeftActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_DODGE_DIAGONAL_LEFT:
+            if (coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_STRAIGHT:
+            if (coordinates.setStraightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_DODGE_RIGHT:
+            if (coordinates.setDodgeRightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+        case ACTION_DODGE_DIAGONAL_RIGHT:
+            if (coordinates.setDodgeDiagonalRightActionCoordinates(x, y, previousDirection) == 0 and grid[x][y] == 0) {
+                grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+            }
+            break;
+    }
+
 }
 
 

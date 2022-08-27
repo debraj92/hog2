@@ -54,8 +54,10 @@ int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, 
             actions = policyNetSaved->forwardPass(tensor_fov_channels, tensor_states);
         }
         action = torch::argmax(actions).detach().item<int>();
+        bestActionQValue = actions[0][action].detach().item<double>();
         /*
         cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
+        cout<<"Best Q "<<bestActionQValue<<endl;
         cout<<"direction: "<<currentState.direction<<endl;
         cout<<endl;
         cout<<"Abstract State:\n"<<tensor_states<<endl;
@@ -207,4 +209,8 @@ void RLNN_Agent::savePolicyNet() {
         policyNetSaved->loadModel(stream1, DQNNet::SEQUENTIAL);
         policyNetSaved->loadModel(stream2, DQNNet::CNN1);
     }
+}
+
+double RLNN_Agent::getBestActionQ() {
+    return bestActionQValue;
 }
