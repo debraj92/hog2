@@ -12,12 +12,14 @@
 using namespace std;
 
 DQNNet::DQNNet(double learning_rate, const std::string& module_name) :
-        m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 32, /*kernel_size=*/3))),
-        m_pool1(nn::AvgPool2dOptions({2,2}).stride({2, 2}))
+        m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 25, /*kernel_size=*/3)))
+
 {
     logger = std::make_unique<Logger>(LogLevel);
 
     logger->logDebug("Creating DQNNet ")->logDebug(module_name)->endLineDebug();
+
+    auto device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;
 
     m_sequential = nn::Sequential(nn::Linear(INPUT_SIZE, HIDDEN_LAYER_1_SIZE),
                                   nn::ReLU(),
@@ -25,9 +27,10 @@ DQNNet::DQNNet(double learning_rate, const std::string& module_name) :
                                   nn::ReLU(),
                                   nn::Linear(HIDDEN_LAYER_2_SIZE, ACTION_SPACE));
 
+    m_sequential->to(device);
+    m_conv1->to(device);
     register_module(module_name, m_sequential);
     register_module(module_name + "_primary_cnn_1", m_conv1);
-    register_module(module_name + "_primary_pool_1", m_pool1);
 
     optimizer = std::make_unique<optim::Adam>(this->parameters(), torch::optim::AdamOptions(learning_rate));
 }
@@ -37,9 +40,9 @@ Tensor DQNNet::forwardPass(const Tensor& fov_cnn, const Tensor& inputs_abstracti
     logger->logDebug("DQNNet::forwardPass")->endLineDebug();
     optimizer->zero_grad();
     auto cnn_out1 = torch::relu(m_conv1(fov_cnn));
-    auto cnn_out2 = m_pool1(cnn_out1);
-    auto cnn_out = nn::Flatten()(cnn_out2);
+    auto cnn_out = nn::Flatten()(cnn_out1);
     auto cnn_with_abstractions = torch::cat({cnn_out, inputs_abstraction}, 1);
+    //cout<<cnn_with_abstractions<<endl;
     return m_sequential->forward(cnn_with_abstractions);
 }
 
@@ -47,14 +50,12 @@ void DQNNet::saveModel(const string &file) {
     logger->logInfo("DQNNet::saveModel to file")->endLineInfo();
     torch::save(m_sequential, file + "/vanilla-DQN/model/m_sequential.pt");
     torch::save(m_conv1, file + "/vanilla-DQN/model/m_conv1.pt");
-    torch::save(m_pool1, file + "/vanilla-DQN/model/m_pool1.pt");
 }
 
 void DQNNet::loadModel(const string &file) {
     logger->logInfo("DQNNet::loadModel from file")->endLineInfo();
     torch::load(m_sequential, file + "/vanilla-DQN/model/m_sequential.pt");
     torch::load(m_conv1, file + "/vanilla-DQN/model/m_conv1.pt");
-    torch::load(m_pool1, file + "/vanilla-DQN/model/m_pool1.pt");
 }
 
 
@@ -122,9 +123,6 @@ void DQNNet::loadModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_typ
         case CNN1:
             torch::load(m_conv1, stream);
             break;
-        case POOL1:
-            torch::load(m_pool1, stream);
-            break;
     }
 
 }
@@ -136,9 +134,6 @@ void DQNNet::saveModel(stringstream &stream, const DQNNet::MODEL_TYPE &model_typ
             break;
         case CNN1:
             torch::save(m_conv1, stream);
-            break;
-        case POOL1:
-            torch::save(m_pool1, stream);
             break;
     }
 }

@@ -12,6 +12,7 @@
 #include "iostream"
 #include "Logger.h"
 #include "objectLocator.h"
+#include <cmath>
 
 using namespace std;
 using namespace RTS;
@@ -53,6 +54,8 @@ class AStar_ {
     void reset();
 
     void orderNodeLinks(node_ root);
+
+    float computeGCost(node_ first, node_ second);
 
 
 public:

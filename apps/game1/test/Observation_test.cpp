@@ -13,6 +13,7 @@ using namespace std;
 
 /**
  * SET GRID_SPAN to 10
+ * Requires un-smoothened A*
  */
 
 TEST(ObservationDirectionTrajectory, BasicAssertions) {

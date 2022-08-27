@@ -3,9 +3,14 @@
 //
 
 #include "gameSimulation.h"
+#include <chrono>
 
 
 using namespace std;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
     logger->logDebug("gameSimulation::play")->endLineDebug();
@@ -19,41 +24,86 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     }
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
-    int time = 1;
+    player1->timeStep = 1;
+    int action = ACTION_STRAIGHT;
     int actionError = 0;
+    int previousAction = action;
+    int previousActionError = actionError;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT);
-    while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
-        logger->logDebug("Time ")->logDebug(time)->endLineDebug();
+    player1->observe(currentObservation, grid, enemies, action, actionError, false, 0);
+    double cumulativeExecutionTime = 0;
+    while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
+        auto t1 = high_resolution_clock::now();
+        logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
         // Next Action
-        int action = movePlayer(grid, enemies, currentObservation, &actionError);
+        actionError = 0;
+        action = movePlayer(grid, enemies, currentObservation, &actionError);
+        bool isPathFound;
+        if (actionError == NEXT_Q_TOO_LOW_ERROR) {
+            // unit in really tough situation according to Q values of next states, re-try with re-route
+            // block all available actions and re-route
+            player1->addTemporaryObstaclesToAidReroute(currentObservation.direction, (const int[]){1, 1, 1, 1, 1});
+            isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            player1->removeTemporaryObstacles();
+            if (not isPathFound) {
+                // block only straight action and re-route
+                player1->addTemporaryObstaclesToAidReroute(currentObservation.direction, (const int[]){0, 0, 1, 0, 0});
+                isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                player1->removeTemporaryObstacles();
+                if (not isPathFound) {
+                    logger->logInfo("No path found, re-routing will be unsuccessful")->endLineInfo();
+                    player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                }
+            }
+            logger->logDebug("Attempting to re-route")->endLineDebug();
+            // observe again after re-routing
+            int direction = currentObservation.direction;
+            int isPlayerInHotPursuit = currentObservation.isPlayerInHotPursuit;
+            currentObservation = observation();
+            // ignore the last action. Observe with previous to last action.
+            player1->observe(currentObservation, grid, enemies, previousAction, previousActionError, isPlayerInHotPursuit, direction);
+            action = movePlayer(grid, enemies, currentObservation, &actionError);
+        }
+        previousAction = action;
+        previousActionError = actionError;
+
         fight(enemies, grid);
         // Enemy operations
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation, time);
+            moveEnemies(enemies, grid, currentObservation, player1->timeStep);
             fight(enemies, grid);
         }
         logger->printBoardDebug(grid);
+        ++player1->timeStep;
         // Observe next State
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action);
-        if (nextObservation.trajectory_off_track) {
-            // poisoned if off track
-            player1->life_left = 0;
+        player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
+        if (not player1->isSimpleAstarPlayer and nextObservation.trajectory_off_track) {
+            // if unit is off-track, re-route and rescue unit.
+            isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            if (not isPathFound) {
+                logger->logInfo("No path found, ignoring navigation")->endLineInfo();
+                return;
+            }
+            nextObservation = observation();
+            player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         }
         // Next state reward
         auto reward = calculateReward(nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         currentObservation = nextObservation;
-        time++;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
             headStraightToDestination(grid, enemies);
         }
+        auto t2 = high_resolution_clock::now();
+        duration<double, std::milli> ms_double = t2 - t1;
+        cumulativeExecutionTime += ms_double.count();
     }
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
+    logger->logInfo("Average Execution Time ")->logInfo(cumulativeExecutionTime / player1->timeStep)->endLineInfo();
 }
 
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {
@@ -66,33 +116,35 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vecto
     }
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
+    player1->timeStep = 1;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT);
-    int time = 1;
-    while((not isEpisodeComplete()) && time <= SESSION_TIMEOUT) {
-        logger->logDebug("Time ")->logDebug(time)->endLineDebug();
+    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, 0, false, 0);
+    while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
+        logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
         int actionError = 0;
         // Next Action
         int action = movePlayer(grid, enemies, currentObservation, &actionError);
         fight(enemies, grid);
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation, time);
+            moveEnemies(enemies, grid, currentObservation, player1->timeStep);
             fight(enemies, grid);
         }
         logger->printBoardDebug(grid);
+        ++player1->timeStep;
         // Observe after action
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action);
+        player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         if (nextObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
+            logger->logDebug("Player poisoned at (")->logDebug(player1->current_x)->logDebug(",")->logDebug(player1->current_y)
+                    ->logDebug(")")->endLineDebug();
         }
         auto reward = calculateReward(nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
         player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
         currentObservation = nextObservation;
-        time++;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
@@ -117,6 +169,12 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
         nextAction = ACTION_STRAIGHT;
     } else {
         nextAction = player1->selectAction(currentObservation);
+        if ((*error != NEXT_Q_TOO_LOW_ERROR) and player1->isInference() and (not player1->isNextStateSafeEnough())) {
+            // no point in proceeding. Need to re-route
+            *error = NEXT_Q_TOO_LOW_ERROR;
+            // this action will be ignored
+            return -1;
+        }
     }
 
     switch(nextAction) {
@@ -183,7 +241,7 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
                 grid[enemy_iterator->current_x][enemy_iterator->current_y] = 0;
             }
         }
-        if (enemy_iterator->getLifeLeft() <= 0) {
+        if (enemy_iterator->getLifeLeft() <= 0 or enemy_iterator->max_moves <= 0) {
             // clean up dead enemies
             grid[enemy_iterator->current_x][enemy_iterator->current_y] = 0;
             enemies.erase(enemy_iterator);
@@ -194,7 +252,7 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
 }
 
 float gameSimulation::calculateReward(const observation &nextObservation, int action, int action_error) {
-    if(nextObservation.playerLifeLeft <= 0) {
+    if(player1->life_left <= 0) {
         return REWARD_DEATH;
     }
     if(action_error == -1) {
@@ -203,16 +261,19 @@ float gameSimulation::calculateReward(const observation &nextObservation, int ac
     if (action == ACTION_DODGE_LEFT or action == ACTION_DODGE_RIGHT) {
         return REWARD_ACTION_LR;
     }
-
+    if (nextObservation.isPlayerInHotPursuit) {
+        return REWARD_TRACK_THREE_DIV;
+    }
     if(nextObservation.trajectory == on_track) {
-        if (nextObservation.isPlayerInHotPursuit) {
-            return REWARD_TRACK_ONE_DIV;
-        }
         return REWARD_REACH;
     } else if (nextObservation.trajectory >= lower_bound_one_deviation && nextObservation.trajectory <= upper_bound_one_deviation) {
         return REWARD_TRACK_ONE_DIV;
     } else if (nextObservation.trajectory >= lower_bound_two_deviation && nextObservation.trajectory <= upper_bound_two_deviation) {
         return REWARD_TRACK_TWO_DIV;
+    } else if (nextObservation.trajectory >= lower_bound_three_deviation && nextObservation.trajectory <= upper_bound_three_deviation) {
+        return REWARD_TRACK_THREE_DIV;
+    } else if (nextObservation.trajectory >= lower_bound_four_deviation && nextObservation.trajectory <= upper_bound_four_deviation) {
+        return REWARD_TRACK_FOUR_DIV;
     } else {
         // Placeholder - will never hit as player is dead
         return REWARD_OFFTRACK;

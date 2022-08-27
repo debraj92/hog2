@@ -35,11 +35,13 @@ public:
 
     virtual void updateTargetNet() = 0;
 
-    virtual void decayEpsilon() = 0;
+    virtual void decayEpsilon(int currentEpisode) = 0;
 
     virtual void printAction(int action) = 0;
 
     virtual void plotLosses() = 0;
+
+    virtual double getBestActionQ() = 0;
 
 };
 

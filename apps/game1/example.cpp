@@ -34,7 +34,7 @@ void runTesting(player &player1) {
     trainingMaps tm(true);
     float countDestinationReach = 0;
     float death = 0;
-    float max_ep = 5000;
+    float max_ep = 1;
     for (int i=1; i<= max_ep; i++) {
         cout<<"Episode: "<<i<<endl;
         vector<vector<int>> grid;
@@ -46,7 +46,9 @@ void runTesting(player &player1) {
         tm.generateNextMap(grid, enemies);
 
         tm.setSourceAndDestination(grid, sx, sy, dx, dy);
+        //tm.setSourceAndDestinationFixed(sx, sy, dx, dy);
         player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+        cout<<"("<<sx<<","<<sy<<") -> ("<<dx<<","<<dy<<")"<<endl;
         if(t.final_x == t.destination_x and t.final_y == t.destination_y) {
             countDestinationReach++;
         }
@@ -69,29 +71,50 @@ int main() {
     using namespace RTS;
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
-    //player player1(true);
-    //player1.learnGame();
-
-    //player player1(false);
-    //player1.loadExistingModel();
-    //player1.learnGame();
-
-
-    player player1(false);
-    /// Enable baseline for comparison
-    player1.enableBaseLinePlayer();
-    TestResult t{};
-    runTesting(player1);
-
+    player player1(true);
+    player1.learnGame();
 
     /*
+    player player1(false);
+    /// Enable baseline for comparison
+    //player1.enableBaseLinePlayer();
+    TestResult t{};
+    runTesting(player1);
+    */
+
+
     /// GENERATE NEW RANDOM MAP
+    /*
     trainingMaps tm(true);
     long randomNumber = std::chrono::system_clock::now().time_since_epoch().count();
-    tm.serializeRandomMap("map4", randomNumber);
+    tm.serializeRandomMap("map12", randomNumber * 17);
     cout<<endl;
-    tm.serializeRandomMap("map5", randomNumber * 7);
-    cout<<endl;
-    tm.serializeRandomMap("map6", randomNumber * 13);
     */
+
+    /*
+    tm.serializeRandomMap("map1", randomNumber);
+    cout<<endl;
+    tm.serializeRandomMap("map2", randomNumber * 7);
+    cout<<endl;
+    tm.serializeRandomMap("map3", randomNumber * 13);
+    cout<<endl;
+    tm.serializeRandomMap("map4", randomNumber * 5);
+    cout<<endl;
+    tm.serializeRandomMap("map5", randomNumber * 3);
+    cout<<endl;
+    tm.serializeRandomMap("map6", randomNumber * 23);
+    cout<<endl;
+    tm.serializeRandomMap("map7", randomNumber * 19);
+    cout<<endl;
+    tm.serializeRandomMap("map8", randomNumber * 17);
+    cout<<endl;
+    */
+    /// No enemies
+
+    //tm.serializeRandomMap("map9", randomNumber * 11);
+    //cout<<endl;
+    //tm.serializeRandomMap("map10", randomNumber * 29);
+
+
+
 }

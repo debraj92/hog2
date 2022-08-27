@@ -23,11 +23,11 @@ class RLNN_Agent : public DQN_interface {
     // discount factor
     const double gamma = 0.9;
     double epsilon = 1;
-    const double epsilon_min = 0.01;
+    const double epsilon_min = 0.1;
     const double epsilon_decay = 0.998;
     const double alpha = 1;
-    const int epsilon_annealing_percent = 60;
-    int batchSize = 4000;
+    const int epsilon_annealing_percent = EXPLOITATION_START_PERCENT;
+    int batchSize = 4500;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;
@@ -38,9 +38,19 @@ class RLNN_Agent : public DQN_interface {
 
     std::mutex safeActionSelectionAndTraining;
 
+    torch::DeviceType device;
+
+    double bestActionQValue;
+
     bool isExplore(int episodeCount);
 
     void savePolicyNet();
+
+    string getDeviceType()
+    {
+        char * val = getenv("DEVICE_TYPE");
+        return val == NULL ? "CPU" : std::string(val);
+    }
 
 public:
 
@@ -55,6 +65,7 @@ public:
             policyNet->eval();
         }
         startEpsilonDecay = false;
+        device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;
         logger = std::make_unique<Logger>(LogLevel);
     }
 
@@ -74,11 +85,13 @@ public:
 
     void updateTargetNet();
 
-    void decayEpsilon();
+    void decayEpsilon(int currentEpisode);
 
     void printAction(int action);
 
     void plotLosses();
+
+    double getBestActionQ();
 
 #ifdef TESTING
 

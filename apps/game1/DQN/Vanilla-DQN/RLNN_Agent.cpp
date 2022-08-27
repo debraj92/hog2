@@ -30,7 +30,7 @@ int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, 
         action = distri(re);
     } else {
         logger->logDebug("Selecting max action")->endLineDebug();
-        auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
+        auto options = torch::TensorOptions().dtype(torch::kFloat32);
 
         float obstaclesFOV[1][FOV_WIDTH][FOV_WIDTH];
         float enemiesFOV[1][FOV_WIDTH][FOV_WIDTH];
@@ -38,28 +38,31 @@ int RLNN_Agent::selectAction(const observation &currentState, int episodeCount, 
         copy(&currentState.obstaclesFOV[0][0], &currentState.obstaclesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &obstaclesFOV[0][0][0]);
         copy(&currentState.enemiesFOV[0][0], &currentState.enemiesFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &enemiesFOV[0][0][0]);
         copy(&currentState.pathFOV[0][0], &currentState.pathFOV[0][0] + FOV_WIDTH * FOV_WIDTH, &pathFOV[0][0][0]);
-        auto tensor_obstacles = torch::from_blob(obstaclesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
-        auto tensor_enemies = torch::from_blob(enemiesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
-        auto tensor_path = torch::from_blob(pathFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
-        auto tensor_fov_channels= torch::cat({tensor_obstacles, tensor_enemies, tensor_path}, 1);
+        auto tensor_obstacles = torch::from_blob(obstaclesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1);
+        auto tensor_enemies = torch::from_blob(enemiesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1);
+        auto tensor_path = torch::from_blob(pathFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).to(device).unsqueeze(1);
+        auto tensor_fov_channels= torch::cat({tensor_obstacles, tensor_enemies, tensor_path}, 1).to(device);
 
         float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
         currentState.flattenObservationToVector(observation_vector);
-        auto tensor_states = torch::zeros({1, MAX_ABSTRACT_OBSERVATIONS}, options);
-        tensor_states.slice(0, 0, 1) = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options);
+        auto tensor_states = torch::zeros({1, MAX_ABSTRACT_OBSERVATIONS}, options).to(device);
+        tensor_states.slice(0, 0, 1) = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options).to(device);
+        Tensor actions;
         {
             // critical
             std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
-            auto actions = policyNetSaved->forwardPass(tensor_fov_channels, tensor_states);
-            action = torch::argmax(actions).detach().item<int>();
-            /*
-            cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
-            cout<<"direction: "<<currentState.direction<<endl;
-            cout<<endl;
-            cout<<"Abstract State:\n"<<tensor_states<<endl;
-            cout<<"FOV\n"<<tensor_fov_channels<<endl;
-             */
+            actions = policyNetSaved->forwardPass(tensor_fov_channels, tensor_states);
         }
+        action = torch::argmax(actions).detach().item<int>();
+        bestActionQValue = actions[0][action].detach().item<double>();
+        /*
+        cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
+        cout<<"Best Q "<<bestActionQValue<<endl;
+        cout<<"direction: "<<currentState.direction<<endl;
+        cout<<endl;
+        cout<<"Abstract State:\n"<<tensor_states<<endl;
+        cout<<"FOV\n"<<tensor_fov_channels<<endl;
+        */
     }
 
     printAction(action);
@@ -80,13 +83,6 @@ double RLNN_Agent::learnWithDQN() {
     // select n samples picked uniformly at random from the experience replay memory, such that n=batchsize
     memory.sampleBatch(batchSize);
 
-    /// Save policy net for action selection
-    {
-        // critical
-        std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
-        savePolicyNet();
-    }
-
     // states have dimension: batch_size X observation_feature_size
     // output would have dimensions: batch_size X action_space
 
@@ -105,7 +101,12 @@ double RLNN_Agent::learnWithDQN() {
     auto y = discounted_reward + q_target;
 
     // calculate the loss as the mean-squared error of y and qpred
-    return policyNet->computeLossAndBackPropagate(y, q_pred);
+    auto loss = policyNet->computeLossAndBackPropagate(y, q_pred);
+
+    /// Save policy net for action selection
+    savePolicyNet();
+
+    return loss;
 }
 
 
@@ -126,15 +127,15 @@ void RLNN_Agent::updateTargetNet() {
     targetNet->loadModel(stream1, DQNNet::SEQUENTIAL);
     policyNet->saveModel(stream2, DQNNet::CNN1);
     targetNet->loadModel(stream2, DQNNet::CNN1);
-    policyNet->saveModel(stream3, DQNNet::POOL1);
-    targetNet->loadModel(stream3, DQNNet::POOL1);
 }
 
-void RLNN_Agent::decayEpsilon() {
+void RLNN_Agent::decayEpsilon(int currentEpisode) {
     if (not startEpsilonDecay) {
         return;
     }
-    epsilon = max(epsilon_min, epsilon * epsilon_decay);
+    if (currentEpisode % (MAX_EPISODES * (100 - EXPLOITATION_START_PERCENT)) / (100 * 2500) == 0) {
+        epsilon = max(epsilon_min, epsilon * epsilon_decay);
+    }
 }
 
 void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring) {
@@ -200,11 +201,16 @@ void RLNN_Agent::setTrainingMode(bool value) {
 
 void RLNN_Agent::savePolicyNet() {
     std::stringstream stream1, stream2, stream3;
-
     policyNet->saveModel(stream1, DQNNet::SEQUENTIAL);
-    policyNetSaved->loadModel(stream1, DQNNet::SEQUENTIAL);
     policyNet->saveModel(stream2, DQNNet::CNN1);
-    policyNetSaved->loadModel(stream2, DQNNet::CNN1);
-    policyNet->saveModel(stream3, DQNNet::POOL1);
-    policyNetSaved->loadModel(stream3, DQNNet::POOL1);
+    {
+        // critical
+        std::lock_guard<mutex> locker(safeActionSelectionAndTraining);
+        policyNetSaved->loadModel(stream1, DQNNet::SEQUENTIAL);
+        policyNetSaved->loadModel(stream2, DQNNet::CNN1);
+    }
+}
+
+double RLNN_Agent::getBestActionQ() {
+    return bestActionQValue;
 }

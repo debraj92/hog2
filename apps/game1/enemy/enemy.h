@@ -29,15 +29,14 @@ public:
 
     int current_x;
     int current_y;
-    bool isFixed = true;
+    // TODO: Remove
+    bool isFixed = false;
     int life_left;
 
     int lastKnownPlayerX = -1;
     int lastKnownPlayerY = -1;
 
-    int max_moves = FOV_WIDTH;
-
-    int enemyVisionRadius = VISION_RADIUS;
+    int max_moves = ENEMY_MAX_MOVES;
 
     struct playerInfo {
         int player_x;
@@ -46,6 +45,7 @@ public:
     };
 
     enemy(vector<std::vector<int>> &grid, int start_x, int start_y, int id, bool fixed) {
+        logger = std::make_shared<Logger>(LogLevel);
         this->start_x = start_x;
         this->start_y = start_y;
         this->current_x = start_x;
@@ -55,7 +55,6 @@ public:
         this->life_left = 10;
         this->max_moves = fixed? 0 : this->max_moves;
         fp = std::make_shared<findPath>(grid);
-        logger = std::make_shared<Logger>(LogLevel);
     }
 
     void doNextMove(int time, vector<std::vector<int>> &grid, playerInfo pl_info = {});
@@ -63,6 +62,7 @@ public:
     int getLifeLeft();
     void takeDamage(int points);
     bool isPlayerInSight(int player_x, int player_y);
+    bool isPlayerTracked (int time) const;
 
     void predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo &pl_info);
 

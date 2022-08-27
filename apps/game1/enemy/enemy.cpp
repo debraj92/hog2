@@ -14,19 +14,16 @@ int enemy::getLifeLeft() {
 }
 
 void enemy::takeDamage(int points) {
-    life_left -= points;
+    if (life_left > 0) life_left -= points;
 }
 
 bool enemy::isPlayerInSight(int player_x, int player_y) {
-    return max(abs(current_x - player_x), abs(current_y - player_y)) <= static_cast<float>(enemyVisionRadius);
+    return max(abs(current_x - player_x), abs(current_y - player_y)) <= static_cast<float>(ENEMY_VISION_RADIUS);
 }
 
 void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerInfo pl_info) {
     if (timeStep > 0 and time <= timeStep) {
         timeStep = 0;
-    }
-    if(isFixed) {
-        return;
     }
     // moving enemies die after exhausting moves
     if (max_moves == 0) {
@@ -34,7 +31,7 @@ void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerIn
         return;
     }
     if(isPlayerInSight(pl_info.player_x, pl_info.player_y)) {
-        bool wasPlayerInSightInLastTimeStep = (time - timeStep) == 1;
+        bool wasPlayerInSightInLastTimeStep = time > 1 and ((time - timeStep) == 1);
         timeStep = time;
         int playerDistanceFromLastKnownLocation = max(abs(pl_info.player_x - lastKnownPlayerX), abs(pl_info.player_y - lastKnownPlayerY));
         if (wasPlayerInSightInLastTimeStep and lastKnownPlayerX >= 0 and playerDistanceFromLastKnownLocation == 1) {
@@ -59,7 +56,10 @@ void enemy::doNextMove(int time, vector<std::vector<int>> &grid, enemy::playerIn
             logger->logInfo("ERROR: path to player not found, enemy-id:")->logDebug(id)->endLineInfo();
             return;
         }
-        grid[current_x][current_y] = 0;
+        if(grid[current_x][current_y] == id) {
+            // if another unit has not already occupied this place as part of their next move
+            grid[current_x][current_y] = 0;
+        }
         fp->getNextPositionAfterGivenLocation(current_x, current_y, current_x, current_y);
         grid[current_x][current_y] = id;
         max_moves--;
@@ -78,6 +78,55 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     int playerY = pl_info.player_y;
     int error = cu.setStraightActionCoordinates(playerX, playerY, pl_info.player_direction);
     if (error == -1) {
+        // try out other locations reachable by the player
+        // front left
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeDiagonalLeftActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
+        // front right
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeDiagonalRightActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
+        // left
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeLeftActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
+        // right
+        playerX = pl_info.player_x;
+        playerY = pl_info.player_y;
+        error = cu.setDodgeRightActionCoordinates(playerX, playerY, pl_info.player_direction);
+        if (error != -1) {
+            // check if location is reachable by enemy
+            if(max(abs(current_x - playerX), abs(current_y - playerY)) == 1) {
+                pl_info.player_x = playerX;
+                pl_info.player_y = playerY;
+                return;
+            }
+        }
         // straight unavailable
         // target current player location
         return;
@@ -116,4 +165,8 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     }
     pl_info.player_x = playerX;
     pl_info.player_y = playerY;
+}
+
+bool enemy::isPlayerTracked (int time) const {
+    return time > 1 and timeStep > 0 and (time - timeStep) == 1 and lastKnownPlayerX >= 0;
 }
