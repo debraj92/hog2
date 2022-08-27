@@ -11,6 +11,7 @@
 #include "enemy/enemy.h"
 #include "Logger.h"
 #include <testing.h>
+#include <chrono>
 
 using namespace std;
 
@@ -36,6 +37,8 @@ class trainingMaps {
 
     int placeEnemies(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies, int startId, long randomNumber);
 
+    bool areBoundariesOfObstacleClear(std::vector<std::vector<int>>& grid, int x, int y, bool isHorizontal);
+
 public:
 
     trainingMaps(bool isTesting);
@@ -59,6 +62,13 @@ public:
     void createMap8(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void createMap9(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void createMap10(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap11(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap12(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap13(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap14(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap15(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMap16(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+
 
     /// testing maps
     bool isMap1Cached;
@@ -100,6 +110,30 @@ public:
     bool isMap10Cached;
     vector<std::vector<int>> map10_cached_grid;
     std::vector<enemy> map10_cached_enemy;
+
+    bool isMap11Cached;
+    vector<std::vector<int>> map11_cached_grid;
+    std::vector<enemy> map11_cached_enemy;
+
+    bool isMap12Cached;
+    vector<std::vector<int>> map12_cached_grid;
+    std::vector<enemy> map12_cached_enemy;
+
+    bool isMap13Cached;
+    vector<std::vector<int>> map13_cached_grid;
+    std::vector<enemy> map13_cached_enemy;
+
+    bool isMap14Cached;
+    vector<std::vector<int>> map14_cached_grid;
+    std::vector<enemy> map14_cached_enemy;
+
+    bool isMap15Cached;
+    vector<std::vector<int>> map15_cached_grid;
+    std::vector<enemy> map15_cached_enemy;
+
+    bool isMap16Cached;
+    vector<std::vector<int>> map16_cached_grid;
+    std::vector<enemy> map16_cached_enemy;
 
 
 #ifdef TESTING

@@ -40,8 +40,8 @@ bool AStar_::findPathToDestination(int destinationDirection) {
     if (destinationDirection == 0) {
         heuristicFunction = &AStar_::findShortestDistanceEuclidean;
     } else {
-        heuristicFunction = &AStar_::findShortestTime;
-        //heuristicFunction = &AStar_::findShortestDistance;
+        //heuristicFunction = &AStar_::findShortestTime;
+        heuristicFunction = &AStar_::findShortestDistanceEuclidean;
     }
 
 
@@ -73,10 +73,10 @@ bool AStar_::findPathToDestination(int destinationDirection) {
             if(!openList.isPresent(temp)) {
                 // insert (parent: next closest node and child: reachable node)
                 childParent.insert(make_pair(temp, nextNode));
-                temp.computeF(nextNode.g + 1, (this->*heuristicFunction)(node_pair, destination));
+                temp.computeF(nextNode.g + computeGCost(temp, nextNode), (this->*heuristicFunction)(node_pair, destination));
                 openList.insert(temp);
             } else {
-                if (openList.updateIfBetterPath(temp, nextNode.g + 1)) {
+                if (openList.updateIfBetterPath(temp, nextNode.g + computeGCost(temp, nextNode))) {
                     childParent.insert(make_pair(temp, nextNode));
                 }
             }
@@ -262,4 +262,9 @@ int AStar_::getNodeOrder(node_ n) {
 
 int AStar_::getTotalDistanceToDestination() {
     return countOfNodesToDestination;
+}
+
+float AStar_::computeGCost(node_ first, node_ second) {
+    int g_distance = abs(first.x - second.x) + abs(first.y - second.y);
+    return g_distance == 1 ? 1 : 1.4;
 }

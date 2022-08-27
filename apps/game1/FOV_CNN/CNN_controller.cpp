@@ -63,8 +63,7 @@ CNN_controller::populateFOVChannelsForLocation(int grid_x, int grid_y, int fov_x
     } else {
         obstaclesFOV[fov_x][fov_y] = grid[grid_x][grid_y] < 0 ? 1 : 0;
         if (grid[grid_x][grid_y] > 0 and grid[grid_x][grid_y] != PLAYER_ID) {
-            // moving enemies have even id and fixed enemies have odd id
-            enemiesFOV[fov_x][fov_y] = grid[grid_x][grid_y] % 2 == 1 ? 1 : 2;
+            enemiesFOV[fov_x][fov_y] = 1;
         } else {
             enemiesFOV[fov_x][fov_y] = 0;
         }

@@ -41,6 +41,8 @@ public:
 
     virtual void plotLosses() = 0;
 
+    virtual double getBestActionQ() = 0;
+
 };
 
 

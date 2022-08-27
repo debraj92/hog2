@@ -8,6 +8,7 @@
 #include <map>
 #include "gameConstants.h"
 #include "Logger.h"
+#include <cmath>
 
 
 using namespace RTS;

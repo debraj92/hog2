@@ -58,6 +58,8 @@ class player : public RLNN_Agent {
 
     void populateEnemyObstacles(vector<std::vector<int>> &grid, vector<enemy> &enemies);
 
+    int rotatePreviousAction(int oldDirection, int newDirection, int previousAction);
+
 public:
 
     int current_x;
@@ -82,6 +84,7 @@ public:
     vector<double> rewards;
 
     bool isSimpleAstarPlayer = false;
+    int timeStep;
 
     player(bool isTrainingMode) : cnnController(grid) {
         createEmptyGrid(grid);
@@ -102,7 +105,7 @@ public:
 
     void playGame(std::vector<std::vector<int>> &gridSource, std::vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result);
 
-    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, bool wasPreviousStateHotPursuit);
+    void observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int lastAction, int actionError, bool wasPreviousStateHotPursuit, int previousStateDirection);
 
     bool findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y);
 
@@ -119,6 +122,16 @@ public:
     void copyGrid(std::vector<std::vector<int>> &gridSource);
 
     void enableBaseLinePlayer();
+
+    bool isNextStateSafeEnough();
+
+    bool isInference();
+
+    void addTemporaryObstaclesToAidReroute(int direction, const int actionMask[ACTION_SPACE]);
+
+    void removeTemporaryObstacles();
+
+    void addTemporaryObstaclesToPreventRepeatOfPreviousAction(int lastAction, int previousDirection);
 
     /// Testing
 #ifdef TESTING

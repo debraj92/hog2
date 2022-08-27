@@ -56,12 +56,9 @@ TEST(FOV_FILTER, DIRECTION_FILTER_NE) {
 
     printMatrix(matrix);
     FOV_Filters ff;
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    cout<<endl;
+    ff.init();
     cout<<"NE FOV"<<endl;
-    printMatrix(matrix);
+    printMatrix(ff.direction_mapping[NE]);
 }
 
 TEST(FOV_FILTER, DIRECTION_FILTER_SE) {
@@ -74,19 +71,9 @@ TEST(FOV_FILTER, DIRECTION_FILTER_SE) {
 
     printMatrix(matrix);
     FOV_Filters ff;
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    cout<<endl;
+    ff.init();
     cout<<"SE FOV"<<endl;
-    printMatrix(matrix);
+    printMatrix(ff.direction_mapping[SE]);
 }
 
 TEST(FOV_FILTER, DIRECTION_FILTER_SW) {
@@ -99,25 +86,9 @@ TEST(FOV_FILTER, DIRECTION_FILTER_SW) {
 
     printMatrix(matrix);
     FOV_Filters ff;
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    cout<<endl;
+    ff.init();
     cout<<"SW FOV"<<endl;
-    printMatrix(matrix);
+    printMatrix(ff.direction_mapping[SW]);
 }
 
 TEST(FOV_FILTER, DIRECTION_FILTER_NW) {
@@ -130,31 +101,9 @@ TEST(FOV_FILTER, DIRECTION_FILTER_NW) {
 
     printMatrix(matrix);
     FOV_Filters ff;
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-    ff.rotateFilter(matrix, 1);
-
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    ff.rotateFilter(matrix, 2);
-    cout<<endl;
-    cout<<"NW FOV"<<endl;
-    printMatrix(matrix);
+    ff.init();
+    cout<<"SW FOV"<<endl;
+    printMatrix(ff.direction_mapping[NW]);
 }
 
 
@@ -181,16 +130,4 @@ TEST(FOV_FILTER, DIRECTION_FILTER_N_S_E_W) {
 
     cout<<"W FOV"<<endl;
     printMatrix(ff.direction_mapping[W]);
-
-    cout<<"NE FOV"<<endl;
-    printMatrix(ff.direction_mapping[NE]);
-
-    cout<<"SE FOV"<<endl;
-    printMatrix(ff.direction_mapping[SE]);
-
-    cout<<"SW FOV"<<endl;
-    printMatrix(ff.direction_mapping[SW]);
-
-    cout<<"NW FOV"<<endl;
-    printMatrix(ff.direction_mapping[NW]);
 }
