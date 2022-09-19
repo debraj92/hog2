@@ -113,6 +113,9 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
         }
         currentObservation = nextObservation;
 
+        auto reward = calculateReward(nextObservation, action, actionError);
+        logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
+
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
             headStraightToDestination(grid);
@@ -131,12 +134,13 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
 }
 
 
+
 void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid) {
     logger->logDebug("gameSimulation::learnToPlay")->endLineDebug();
     populateEnemies(grid, true);
     bool isPathFound = player1->findPathToDestination(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     if (not isPathFound) {
-        logger->logInfo("No path found, ignoring training");
+        logger->logInfo("ERROR: No path to destination found, ignoring training");
         return;
     }
     grid[player1->current_x][player1->current_y] = 9;
@@ -160,16 +164,16 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid) {
         // Observe after action
         observation nextObservation;
         player1->observe(nextObservation, grid, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
-        if (nextObservation.trajectory_off_track) {
+        auto reward = calculateReward(nextObservation, action, actionError);
+        logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
+        player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
+        currentObservation = nextObservation;
+        if(currentObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
             logger->logDebug("Player poisoned at (")->logDebug(player1->current_x)->logDebug(",")->logDebug(player1->current_y)
                     ->logDebug(")")->endLineDebug();
         }
-        auto reward = calculateReward(nextObservation, action, actionError);
-        logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
-        player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
-        currentObservation = nextObservation;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
@@ -194,12 +198,14 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, const observation &cur
         nextAction = ACTION_STRAIGHT;
     } else {
         nextAction = player1->selectAction(currentObservation);
+
         if ((*error != NEXT_Q_TOO_LOW_ERROR) and player1->isInference() and (not player1->isNextStateSafeEnough())) {
             // no point in proceeding. Need to re-route
             *error = NEXT_Q_TOO_LOW_ERROR;
             // this action will be ignored
             return -1;
         }
+
     }
 
     switch(nextAction) {
@@ -298,10 +304,6 @@ void gameSimulation::fight(vector<std::vector<int>> &grid) {
         if (enemy_iterator->second.getLifeLeft() <= 0 or enemy_iterator->second.max_moves <= 0) {
             // clean up dead enemies
             grid[enemy_iterator->second.current_x][enemy_iterator->second.current_y] = 0;
-
-            if(player1->hashMapEnemies.find(enemy_iterator->first) == player1->hashMapEnemies.end()) {
-                logger->logInfo("hashset missing enemy error")->endLineInfo();
-            }
             int enemyIdDelete = enemy_iterator->first;
             enemy_iterator++;
             player1->hashMapEnemies.erase(enemyIdDelete);
@@ -315,6 +317,9 @@ void gameSimulation::fight(vector<std::vector<int>> &grid) {
 float gameSimulation::calculateReward(const observation &nextObservation, int action, int action_error) {
     if(player1->life_left <= 0) {
         return REWARD_DEATH;
+    }
+    if (nextObservation.trajectory_off_track) {
+        return REWARD_OFFTRACK;
     }
     if(action_error == -1) {
         return REWARD_ACTION_UNAVAILABLE;
@@ -358,10 +363,10 @@ void gameSimulation::removeCharacters(std::vector<std::vector<int>> &grid) {
 
 void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, bool isTrainingMode) {
     for (auto& enemyIterator : player1->hashMapEnemies) {
-        auto e = enemyIterator.second;
+        auto& e = enemyIterator.second;
         if(isTrainingMode) e.unitTraining();
         if (e.getLifeLeft() > 0) {
-            grid[e.start_x][e.start_y] = e.id;
+            grid[e.current_x][e.current_y] = e.id;
         }
     }
     enemiesAwayFromBase.clear();
