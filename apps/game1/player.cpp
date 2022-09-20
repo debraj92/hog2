@@ -226,6 +226,7 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
     destination_x = dest_x;
     destination_y = dest_y;
     life_left = MAX_LIFE;
+    isSimplePlayerStuckDontReroute = false;
     total_rewards = 0;
 
 }

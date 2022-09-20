@@ -256,6 +256,7 @@ bool findPath::findPathToDestinationDeferred() {
 
 void findPath::replenishNodesFromRealWorldAStar(int x, int y) {
     logger->logDebug("replenishNodesFromRealWorldAStar")->endLineDebug();
+    if(aStarAbs->childParent.empty()) return;
     node_ absCenterCurrent = getAbstractCenterOfCoordinate(x, y);
     if (absCenterCurrent == nextAbstractCenterSaved) {
         if(absCenterCurrent != destAbsCenter) {
