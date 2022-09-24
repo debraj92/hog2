@@ -92,11 +92,14 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     double minDistanceToTarget = 1000;
     int error = cu.setStraightActionCoordinates(playerX, playerY, pl_info.player_direction);
     if (error != -1 and (playerX != current_x or playerY != current_y)) {
-        double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
-        if (tempDistance < minDistanceToTarget) {
-            targetX = playerX;
-            targetY = playerY;
-            minDistanceToTarget = tempDistance;
+        if (isTrainingInProgress or calculateDistance(playerX, playerY, start_x, start_y)
+        <= MAX_ENEMY_DISTANCE_FOR_PURSUIT) {
+            double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
+            if (tempDistance < minDistanceToTarget) {
+                targetX = playerX;
+                targetY = playerY;
+                minDistanceToTarget = tempDistance;
+            }
         }
     }
 
@@ -104,11 +107,14 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     playerY = pl_info.player_y;
     error = cu.setDodgeDiagonalLeftActionCoordinates(playerX, playerY, pl_info.player_direction);
     if (error != -1 and (playerX != current_x or playerY != current_y)) {
-        double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
-        if (tempDistance < minDistanceToTarget) {
-            targetX = playerX;
-            targetY = playerY;
-            minDistanceToTarget = tempDistance;
+        if (isTrainingInProgress or calculateDistance(playerX, playerY, start_x, start_y)
+                                    <= MAX_ENEMY_DISTANCE_FOR_PURSUIT) {
+            double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
+            if (tempDistance < minDistanceToTarget) {
+                targetX = playerX;
+                targetY = playerY;
+                minDistanceToTarget = tempDistance;
+            }
         }
     }
 
@@ -116,11 +122,14 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     playerY = pl_info.player_y;
     error = cu.setDodgeDiagonalRightActionCoordinates(playerX, playerY, pl_info.player_direction);
     if (error != -1 and (playerX != current_x or playerY != current_y)) {
-        double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
-        if (tempDistance < minDistanceToTarget) {
-            targetX = playerX;
-            targetY = playerY;
-            minDistanceToTarget = tempDistance;
+        if (isTrainingInProgress or calculateDistance(playerX, playerY, start_x, start_y)
+                                    <= MAX_ENEMY_DISTANCE_FOR_PURSUIT) {
+            double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
+            if (tempDistance < minDistanceToTarget) {
+                targetX = playerX;
+                targetY = playerY;
+                minDistanceToTarget = tempDistance;
+            }
         }
     }
 
@@ -128,11 +137,14 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     playerY = pl_info.player_y;
     error = cu.setDodgeRightActionCoordinates(playerX, playerY, pl_info.player_direction);
     if (error != -1 and (playerX != current_x or playerY != current_y)) {
-        double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
-        if (tempDistance < minDistanceToTarget) {
-            targetX = playerX;
-            targetY = playerY;
-            minDistanceToTarget = tempDistance;
+        if (isTrainingInProgress or calculateDistance(playerX, playerY, start_x, start_y)
+                                    <= MAX_ENEMY_DISTANCE_FOR_PURSUIT) {
+            double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
+            if (tempDistance < minDistanceToTarget) {
+                targetX = playerX;
+                targetY = playerY;
+                minDistanceToTarget = tempDistance;
+            }
         }
     }
 
@@ -140,11 +152,14 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     playerY = pl_info.player_y;
     error = cu.setDodgeLeftActionCoordinates(playerX, playerY, pl_info.player_direction);
     if (error != -1 and (playerX != current_x or playerY != current_y)) {
-        double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
-        if (tempDistance < minDistanceToTarget) {
-            targetX = playerX;
-            targetY = playerY;
-            minDistanceToTarget = tempDistance;
+        if (isTrainingInProgress or calculateDistance(playerX, playerY, start_x, start_y)
+                                    <= MAX_ENEMY_DISTANCE_FOR_PURSUIT) {
+            double tempDistance = calculateDistance(current_x, current_y, playerX, playerY);
+            if (tempDistance < minDistanceToTarget) {
+                targetX = playerX;
+                targetY = playerY;
+                minDistanceToTarget = tempDistance;
+            }
         }
     }
     if (minDistanceToTarget != 1000) {
@@ -155,12 +170,11 @@ void enemy::predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo
     // else target current player location
 }
 
-// TODO: Might need to be disabled during inference when enemy at distance > MAX_ENEMY_DISTANCE_FOR_PURSUIT
 bool enemy::isPlayerTracked (int time) const {
     return time > 1 and timeStep > 0 and (time - timeStep) == 1 and lastKnownPlayerX >= 0;
 }
 
-double enemy::calculateDistance(int x1, int y1, int x2, int y2) {
+double enemy::calculateDistance(int x1, int y1, int x2, int y2) const {
     double x_sqr = pow((x1 - x2),2);
     double y_sqr = pow((y1 - y2),2);
     return sqrt(x_sqr + y_sqr);

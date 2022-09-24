@@ -187,8 +187,7 @@ bool player::findPathToKnownPointOnTrack(int src_x, int src_y) {
 
     std::vector<std::vector<int>> gridTemporary;
     std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
-    //TODO: Uncomment if required
-    //populateEnemyObstacles(gridTemporary, false);
+    populateEnemyObstacles(gridTemporary, false);
 
     //find next free location in the existing path
     int x = fp->knownOnTrackX;

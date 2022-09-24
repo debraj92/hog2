@@ -66,7 +66,7 @@ public:
     void takeDamage(int points);
     bool isPlayerInSight(int player_x, int player_y);
     bool isPlayerTracked (int time) const;
-    double calculateDistance(int x1, int y1, int x2, int y2);
+    double calculateDistance(int x1, int y1, int x2, int y2) const;
 
     void predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo &pl_info);
     void unitTraining();

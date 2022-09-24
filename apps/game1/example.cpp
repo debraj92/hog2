@@ -122,16 +122,17 @@ int main() {
     using namespace RTS;
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
-    player player1(true);
-    player1.learnGame();
+    //player player1(true);
+    //player1.learnGame();
 
-    /*
+
     player player1(false);
     /// Enable baseline for comparison
     //player1.enableBaseLinePlayer();
     TestResult t{};
     runTesting(player1);
-    */
+
+
 
     //generateMaps();
 }

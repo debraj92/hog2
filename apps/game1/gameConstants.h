@@ -12,7 +12,7 @@
 /**
  * Debug Params
  */
-const int MAX_EPISODES = 300000;   /// Must be greater than 8
+const int MAX_EPISODES = 250000;   /// Must be greater than 8
 const int SESSION_TIMEOUT = 100; /// not more than GRID_SPAN * 2 during test
 
 const int GRID_SPAN = 27; /// >= 10 when running unit tests [7 for gameSimulation test]
@@ -43,7 +43,7 @@ const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
 
 const int ENEMY_VISION_RADIUS = 3;
 const int ENEMY_MAX_MOVES = 6;
-const int MAX_ENEMY_DISTANCE_FOR_PURSUIT = 3;
+const int MAX_ENEMY_DISTANCE_FOR_PURSUIT = 5;
 
 const int GOAL_RADIUS = 1;
 
@@ -122,7 +122,7 @@ const int PLAYER_ID = 9;
 
 const int MAX_CHANNELS_CNN = 3; // obstacle, enemies, path
 
-const double Q_REROUTE_THRESHOLD = -27;//-18; /// DEPENDS ON REWARD VALUES. Need tuning.
+const double Q_REROUTE_THRESHOLD = -22;
 
 const int NEXT_Q_TOO_LOW_ERROR = -99999;
 
