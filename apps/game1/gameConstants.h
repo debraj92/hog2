@@ -42,8 +42,8 @@ const int VISION_RADIUS = 4;
 const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
 
 const int ENEMY_VISION_RADIUS = 3;
-const int ENEMY_MAX_MOVES = 6;
-const int MAX_ENEMY_DISTANCE_FOR_PURSUIT = 5;
+const int ENEMY_MAX_MOVES = 7;
+const int MAX_ENEMY_DISTANCE_FOR_PURSUIT = 7;
 
 const int GOAL_RADIUS = 1;
 
