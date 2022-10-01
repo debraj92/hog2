@@ -14,6 +14,8 @@
 #include "Logger.h"
 #include <testing.h>
 #include "FOV_CNN/CNN_controller.h"
+#include "UI/SimpleUIView.h"
+#include "enemy/enemyUIData.h"
 
 #include <thread>
 
@@ -51,6 +53,10 @@ class player : public RLNN_Agent {
     std::condition_variable explorationOpportunity;
     /// Needs protection from concurrent access
     int explorationCount = 0;
+
+    SimpleUIView* uiView;
+
+    bool UIEnabled = false;
 
     void createEmptyGrid(vector<std::vector<int>> &grid);
 
@@ -144,6 +150,12 @@ public:
     int markVisited();
 
     void clearVisited();
+
+    void registerUIComponent(SimpleUIView &ui);
+
+    void publishOnUI(vector<enemyUIData> &enemiesInThisRound);
+
+    void enableUI();
 
     /// Testing
 #ifdef TESTING

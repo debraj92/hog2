@@ -486,6 +486,20 @@ void player::clearVisited() {
     }
 }
 
+void player::registerUIComponent(SimpleUIView &ui) {
+    uiView = &ui;
+}
+
+void player::publishOnUI(vector<enemyUIData> &enemiesInThisRound) {
+    if(not isTrainingMode and UIEnabled) {
+        uiView->populateInfo(current_x, current_y, destination_x, destination_y, life_left, enemiesInThisRound);
+    }
+}
+
+void player::enableUI() {
+    UIEnabled = true;
+}
+
 
 
 

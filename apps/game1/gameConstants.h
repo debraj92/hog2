@@ -42,7 +42,7 @@ const int VISION_RADIUS = 4;
 const int FOV_WIDTH = 2 * VISION_RADIUS + 1;
 
 const int ENEMY_VISION_RADIUS = 3;
-const int ENEMY_MAX_MOVES = 7;
+const int ENEMY_MAX_MOVES = 8;
 const int MAX_ENEMY_DISTANCE_FOR_PURSUIT = 7;
 
 const int GOAL_RADIUS = 1;
@@ -135,6 +135,10 @@ const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
 const int MAX_ENEMIES_TO_TRACK = 6; /// CHANGE WOULD REQUIRE ADDITIONAL CHANGES IN OBSERVATION
 
 const int ABSTRACT_SECTOR_SIZE = GRID_SPAN / 3; /// must be integer
+
+const int LENGTH_UI_FRAME = 32 * GRID_SPAN;
+
+const int MAX_VISITED_FOR_STUCK = 5;
 
 namespace RTS {
     enum LOG_LEVEL {

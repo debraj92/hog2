@@ -14,7 +14,9 @@ int enemy::getLifeLeft() {
 }
 
 void enemy::takeDamage(int points) {
-    if (life_left > 0) life_left -= points;
+    if (life_left > 0) {
+        life_left -= points;
+    }
 }
 
 bool enemy::isPlayerInSight(int player_x, int player_y) {
@@ -60,6 +62,7 @@ bool enemy::doNextMove(const int time, vector<std::vector<int>> &grid, enemy::pl
             // not important for RL strategies
             return false;
         }
+        updateUIParams(temp_current_x, temp_current_y);
 
         if(grid[current_x][current_y] == id) {
             // if another unit has not already occupied this place as part of their next move
@@ -212,4 +215,16 @@ bool enemy::moveToBase(vector<std::vector<int>> &grid) {
 
 void enemy::unitTraining() {
     isTrainingInProgress = true;
+}
+
+void enemy::updateUIParams(int nextX, int nextY) {
+    if(nextY > current_y) {
+        hasChangedOrientation = true;
+        isOrientationLeft = false;
+    } else if (nextY < current_y) {
+        hasChangedOrientation = true;
+        isOrientationLeft = true;
+    } else {
+        hasChangedOrientation = false;
+    }
 }

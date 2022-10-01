@@ -6,7 +6,6 @@
 #include <unordered_set>
 #include <chrono>
 
-
 using namespace std;
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
@@ -34,6 +33,8 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
     player1->observe(currentObservation, grid, action, actionError, false, 0);
     double cumulativeExecutionTime = 0;
     bool firstMove = true;
+    vector<enemyUIData> enemiesInThisRound;
+
     while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
         auto t1 = high_resolution_clock::now();
         logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
@@ -76,13 +77,17 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
         // Enemy operations
         if (player1->life_left > 0 and not isDestinationReached()) {
             moveEnemies(grid, currentObservation, player1->timeStep);
+            enemiesInThisRound.clear();
+            populateEnemiesForUI(enemiesInThisRound);
             fight(grid);
+            markDeadEnemies(enemiesInThisRound);
         }
         logger->printBoardDebug(grid);
+        player1->publishOnUI(enemiesInThisRound);
         ++player1->timeStep;
 
         // Recover from bad stuck state if possible
-        if(player1->markVisited() >= 6) {
+        if(player1->markVisited() >= MAX_VISITED_FOR_STUCK) {
             if (player1->isSimpleAstarPlayer) {
                 player1->isSimplePlayerStuckDontReroute = true;
             } else {
@@ -118,7 +123,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
 
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
-            headStraightToDestination(grid);
+            headStraightToDestination(grid, enemiesInThisRound);
         }
         auto t2 = high_resolution_clock::now();
         duration<double, std::milli> ms_double = t2 - t1;
@@ -148,6 +153,8 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid) {
     player1->timeStep = 1;
     observation currentObservation;
     player1->observe(currentObservation, grid, ACTION_STRAIGHT, 0, false, 0);
+    //dummy
+    vector<enemyUIData> enemiesInThisRound;
     while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
@@ -177,7 +184,7 @@ void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid) {
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
-            headStraightToDestination(grid);
+            headStraightToDestination(grid, enemiesInThisRound);
         }
     }
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
@@ -380,7 +387,7 @@ bool gameSimulation::isEpisodeComplete() {
     return isDestinationReached() or player1->life_left <= 0;
 }
 
-void gameSimulation::headStraightToDestination(vector<vector<int>> &grid) {
+void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, vector<enemyUIData> &enemiesInThisRound) {
     /// No enemies at interface or locations within goal radius
     findPath fp(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     bool pathFound = fp.findPathToDestination();
@@ -399,6 +406,7 @@ void gameSimulation::headStraightToDestination(vector<vector<int>> &grid) {
         player1->current_y = fp.getNext_y();
         grid[player1->current_x][player1->current_y] = 9;
         logger->printBoardDebug(grid);
+        player1->publishOnUI(enemiesInThisRound);
         fp.visited_x_onpath = player1->current_x;
         fp.visited_y_onpath = player1->current_y;
     }
@@ -410,4 +418,27 @@ bool gameSimulation::isMDPDone(observation &nextObservation) {
             or player1->life_left <= 0;
     logger->logDebug("MDPDone ")->logDebug(mdpDone)->endLineDebug();
     return mdpDone;
+}
+
+void gameSimulation::populateEnemiesForUI(vector<enemyUIData> &enemiesUI) {
+    for (const auto& enemyIterator : player1->hashMapEnemies) {
+        auto e = enemyIterator.second;
+        enemiesUI.push_back({
+            enemyIterator.first,
+           e.current_x,
+           e.current_y,
+           e.hasChangedOrientation,
+           e.isOrientationLeft,
+           false
+        });
+    }
+}
+
+void gameSimulation::markDeadEnemies(vector<enemyUIData> &enemiesUI) {
+    for(enemyUIData &eUi : enemiesUI) {
+        if(player1->hashMapEnemies.find(eUi.id) == player1->hashMapEnemies.end()) {
+            // enemy died in last step
+            eUi.isDead = true;
+        }
+    }
 }

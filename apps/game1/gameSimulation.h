@@ -12,6 +12,7 @@
 #include "player.h"
 #include "findPath.h"
 #include "coordinatesUtil.h"
+#include "enemy/enemyUIData.h"
 
 
 using namespace std;
@@ -32,9 +33,13 @@ class gameSimulation : public coordinatesUtil {
 
     bool isEpisodeComplete();
 
-    void headStraightToDestination(vector<vector<int>> &grid);
+    void headStraightToDestination(vector<vector<int>> &grid, vector<enemyUIData> &enemiesInThisRound);
 
     bool isMDPDone(observation &nextObservation);
+
+    void populateEnemiesForUI(vector<enemyUIData> &enemiesUI);
+
+    void markDeadEnemies(vector<enemyUIData> &enemiesUI);
 
 public:
 

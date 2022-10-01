@@ -23,15 +23,14 @@ class enemy {
 
     bool isPathToBaseKnown = false;
 
+    void updateUIParams(int nextX, int nextY);
+
 public:
     int id;
 
     int start_x;
     int start_y;
 
-    int current_x;
-    int current_y;
-    int life_left;
     bool isTrainingInProgress = false;
 
     int lastKnownPlayerX = -1;
@@ -39,6 +38,15 @@ public:
 
     int max_moves = ENEMY_MAX_MOVES;
     int enemyVisionRadius = ENEMY_VISION_RADIUS;
+
+    /**
+     * UI
+     */
+    int current_x;
+    int current_y;
+    int life_left;
+    bool hasChangedOrientation;
+    bool isOrientationLeft = true; // default
 
     struct playerInfo {
         int player_x;

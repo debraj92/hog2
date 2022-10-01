@@ -4,6 +4,9 @@
 #include "player.h"
 #include "trainingMaps.h"
 #include <sys/resource.h>
+#include "GameController.h"
+#include <SFML/Graphics.hpp>
+#include "UI/TileMap.h"
 
 #include <chrono>
 
@@ -115,6 +118,7 @@ void generateMaps() {
     cout<<endl;
 }
 
+
 int main() {
 
     increaseStackSize();
@@ -125,14 +129,18 @@ int main() {
     //player player1(true);
     //player1.learnGame();
 
-
+    /*
     player player1(false);
     /// Enable baseline for comparison
-    //player1.enableBaseLinePlayer();
+    player1.enableBaseLinePlayer();
     TestResult t{};
     runTesting(player1);
-
-
+    */
 
     //generateMaps();
+
+    GameController control;
+    control.startGame();
+
+    return 0;
 }
