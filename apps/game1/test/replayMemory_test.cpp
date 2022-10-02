@@ -6,6 +6,7 @@
 #include "../DQN/ReplayMemory.h"
 #include "../trainingMaps.h"
 #include "../observation.h"
+#include "../fixedobstacles.h"
 
 class ReplayMemory_test : public ::testing::Test {
 
@@ -45,8 +46,10 @@ TEST(ReplayMemory_test, test_cnn) {
     std::shared_ptr<findPath> fp = make_shared<findPath>(grid, 0, 0, GRID_SPAN - 1, GRID_SPAN - 1);
     fp->findPathToDestination();
     ReplayMemory r;
-    trainingMaps train;
-    train.createMap3(grid, enemies);
+    trainingMaps train(false);
+    train.unregisterAllCreateMapFunctions();
+    train.registerCreateMapFunction(&trainingMaps::createMapUnitTesting1);
+    train.generateNextMap(grid, enemies);
     populateEnemies(grid, enemies);
 
     observation ob_current;
@@ -55,6 +58,7 @@ TEST(ReplayMemory_test, test_cnn) {
     ob_current.direction = SE;
     ob_current.locateTrajectoryAndDirection(fp);
     ob_current.recordFOVForCNN(cnnController, fp);
+    ob_current.actionInPreviousState = -1;
 
     observation ob_next;
     ob_next.playerX = 3;
@@ -62,6 +66,7 @@ TEST(ReplayMemory_test, test_cnn) {
     ob_next.direction = SE;
     ob_next.locateTrajectoryAndDirection(fp);
     ob_next.recordFOVForCNN(cnnController, fp);
+    ob_next.actionInPreviousState = -1;
 
     r.storeExperience(ob_current, ob_next, ACTION_STRAIGHT, 1, true);
     r.storeExperience(ob_current, ob_next, ACTION_STRAIGHT, 1, true);

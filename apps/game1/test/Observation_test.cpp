@@ -13,6 +13,8 @@ using namespace std;
 
 /**
  * SET GRID_SPAN to 10
+ * SET VISION RADIUS to 3
+ * Requires un-smoothened A*
  */
 
 TEST(ObservationDirectionTrajectory, BasicAssertions) {
@@ -36,7 +38,7 @@ TEST(ObservationDirectionTrajectory, BasicAssertions) {
     const int TOTAL_FIXED_OBSTACLES = 1;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
             //x_s, x_e, y_s, y_e
-            {1, 4, 1, 4}
+            {0, 4, 1, 4}
 
     };
 
@@ -50,7 +52,6 @@ TEST(ObservationDirectionTrajectory, BasicAssertions) {
         fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
     }
     fp->changeMap(grid);
-    fp->printMap();
     fp->findPathToDestination();
 
     ob.direction = 0;

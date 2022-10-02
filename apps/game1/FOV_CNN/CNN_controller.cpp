@@ -10,6 +10,8 @@ void CNN_controller::populateFOVChannels (
         float (&enemiesFOV)[FOV_WIDTH][FOV_WIDTH],
         float (&pathFOV)[FOV_WIDTH][FOV_WIDTH]) {
 
+    enemyIds.clear();
+
     if(direction == 0) {
         for(int i=0; i<FOV_WIDTH; i++) {
             for (int j = 0; j < FOV_WIDTH; j++) {
@@ -62,7 +64,12 @@ CNN_controller::populateFOVChannelsForLocation(int grid_x, int grid_y, int fov_x
         pathFOV[fov_x][fov_y] = 0;
     } else {
         obstaclesFOV[fov_x][fov_y] = grid[grid_x][grid_y] < 0 ? 1 : 0;
-        enemiesFOV[fov_x][fov_y] = grid[grid_x][grid_y] > 0 and grid[grid_x][grid_y] != PLAYER_ID ? 1 : 0;
+        if (grid[grid_x][grid_y] > 0 and grid[grid_x][grid_y] != PLAYER_ID) {
+            enemiesFOV[fov_x][fov_y] = 1;
+            enemyIds.push_back(grid[grid_x][grid_y]);
+        } else {
+            enemiesFOV[fov_x][fov_y] = 0;
+        }
         if (fp->isOnTrackNoMemorizing(grid_x, grid_y)) {
             pathFOV[fov_x][fov_y] = static_cast<float>(fp->getNodeOrder(grid_x, grid_y));
             if (pathFOV[fov_x][fov_y] >= 1 and pathFOV[fov_x][fov_y] < min) {

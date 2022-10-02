@@ -37,6 +37,8 @@ public:
         fovFilters.init();
     }
 
+    // for use by caller if needed
+    vector<int> enemyIds;
 
     void populateFOVChannels(int currentX, int currentY, int direction, bool isOnTrack, const shared_ptr<findPath>& fp,
                              float (&obstaclesFOV)[FOV_WIDTH][FOV_WIDTH],

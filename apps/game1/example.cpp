@@ -1,13 +1,19 @@
-#include <torch/torch.h>
-
 #include <iostream>
-#include "gameEnv.h"
-#include "AStar_.h"
 #include "gameConstants.h"
 #include "Logger.h"
 #include "player.h"
 #include "trainingMaps.h"
 #include <sys/resource.h>
+#include "GameController.h"
+#include <SFML/Graphics.hpp>
+#include "UI/TileMap.h"
+
+#include <chrono>
+
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 void increaseStackSize() {
     const rlim_t kStackSize = 16 * 1024 * 1024;   // min stack size = 16 MB
@@ -29,86 +35,89 @@ void increaseStackSize() {
     }
 }
 
-void runTest(player &player1, vector<vector<int>> &grid, std::vector<enemy> &enemies) {
+void runTesting(player &player1) {
     TestResult t{};
     int sx=0;
     int sy=0;
-    int dx=GRID_SPAN-1;
-    int dy=GRID_SPAN-1;
+    int dx=0;
+    int dy=0;
+    trainingMaps tm(true);
+    float countDestinationReach = 0;
+    float death = 0;
+    float max_ep = 1000;
+    for (int i=1; i<= max_ep; i++) {
+        cout<<"Episode: "<<i<<endl;
+        vector<vector<int>> grid;
+        for (int i=0; i<GRID_SPAN; i++) {
+            std::vector<int> row(GRID_SPAN, 0);
+            grid.push_back(row);
+        }
+        std::vector<enemy> enemies;
+        tm.generateNextMap(grid, enemies);
 
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+        tm.setSourceAndDestination(grid, sx, sy, dx, dy);
+        //tm.setSourceAndDestinationFixed(sx, sy, dx, dy);
+        cout<<"("<<sx<<","<<sy<<") -> ("<<dx<<","<<dy<<")"<<endl;
+        auto t1 = high_resolution_clock::now();
 
+        player1.playGame(grid, enemies, sx, sy, dx, dy, t);
 
-    sx=GRID_SPAN-1;
-    sy=GRID_SPAN-1;
-    dx=0;
-    dy=(GRID_SPAN-1)/2;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+        auto t2 = high_resolution_clock::now();
+        duration<double, std::milli> ms_double = t2 - t1;
 
+        cout<<"Total execution time of episode "<<ms_double.count()<<endl;
 
-    sx=0;
-    sy=(GRID_SPAN-1)/2;
-    dx=GRID_SPAN-1;
-    dy=0;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+        if(t.final_x == t.destination_x and t.final_y == t.destination_y) {
+            countDestinationReach++;
+        }
+        if(player1.life_left == 0) {
+            death++;
+        }
+    }
 
-
-    sx=0;
-    sy=(GRID_SPAN-1)/2;
-    dx=GRID_SPAN-1;
-    dy=0;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-    sx=(GRID_SPAN)/2 + 1;
-    sy=GRID_SPAN-1;
-    dx=GRID_SPAN-1;
-    dy=(GRID_SPAN-1)/2;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-    sx=GRID_SPAN-4;
-    sy=0;
-    dx=0;
-    dy=GRID_SPAN - 1;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-    sx=GRID_SPAN-1;
-    sy=GRID_SPAN-4;
-    dx=0;
-    dy=GRID_SPAN-3;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-
-    sx=0;
-    sy=5;
-    dx=GRID_SPAN-1;
-    dy=2;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-
-
-    sx=(GRID_SPAN-1)/2;
-    sy=0;
-    dx=GRID_SPAN/2 + 3;
-    dy=GRID_SPAN - 1;
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
-
-    sx=9;
-    sy=9;
-    dx=4;
-    dy=0;
-
-    player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(t.final_x == dx and t.final_y == dy);
+    float reach_percent = countDestinationReach * 100 / max_ep;
+    float death_percent = death * 100 / max_ep;
+    cout<<"% reach "<<reach_percent<<endl;
+    cout<<"% death "<<death_percent<<endl;
 }
+
+void generateMaps() {
+    long randomNumber = std::chrono::system_clock::now().time_since_epoch().count();
+    trainingMaps tm(false);
+    tm.serializeRandomMap("map1", randomNumber);
+    cout<<endl;
+    tm.serializeRandomMap("map2", randomNumber * 7);
+    cout<<endl;
+    tm.serializeRandomMap("map3", randomNumber * 13);
+    cout<<endl;
+    tm.serializeRandomMap("map4", randomNumber * 5);
+    cout<<endl;
+    tm.serializeRandomMap("map5", randomNumber * 3);
+    cout<<endl;
+    tm.serializeRandomMap("map6", randomNumber * 23);
+    cout<<endl;
+    tm.serializeRandomMap("map7", randomNumber * 19);
+    cout<<endl;
+    tm.serializeRandomMap("map8", randomNumber * 17);
+    cout<<endl;
+    tm.serializeRandomMap("map9", randomNumber * 101);
+    cout<<endl;
+    tm.serializeRandomMap("map10", randomNumber * 103);
+    cout<<endl;
+    tm.serializeRandomMap("map11", randomNumber * 107);
+    cout<<endl;
+    tm.serializeRandomMap("map12", randomNumber * 113);
+    cout<<endl;
+    tm.serializeRandomMap("map13", randomNumber * 127);
+    cout<<endl;
+    tm.serializeRandomMap("map14", randomNumber * 131);
+    cout<<endl;
+    tm.serializeRandomMap("map15", randomNumber * 139);
+    cout<<endl;
+    tm.serializeRandomMap("map16", randomNumber * 139);
+    cout<<endl;
+}
+
 
 int main() {
 
@@ -118,24 +127,20 @@ int main() {
     Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
 
     //player player1(true);
-    //player1.loadExistingModel();
     //player1.learnGame();
 
-
-    vector<vector<int>> grid;
-    for (int i=0; i<GRID_SPAN; i++) {
-        std::vector<int> row(GRID_SPAN, 0);
-        grid.push_back(row);
-    }
-    std::vector<enemy> enemies;
-
-    trainingMaps::createMap3(grid, enemies);
-
-
-
+    /*
     player player1(false);
+    /// Enable baseline for comparison
+    //player1.enableBaseLinePlayer();
     TestResult t{};
-    runTest(player1, grid, enemies);
+    runTesting(player1);
+    */
 
+    //generateMaps();
 
+    GameController control;
+    control.startGame();
+
+    return 0;
 }

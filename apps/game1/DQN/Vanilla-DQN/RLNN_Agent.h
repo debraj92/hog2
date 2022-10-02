@@ -21,12 +21,12 @@ class RLNN_Agent : public DQN_interface {
     // Hyperparameters
     const double lr = 1e-3;
     // discount factor
-    const double gamma = 0.9;
+    const double gamma = 0.45;
     double epsilon = 1;
-    const double epsilon_min = 0.01;
+    const double epsilon_min = 0.25;
     const double epsilon_decay = 0.998;
     const double alpha = 1;
-    const int epsilon_annealing_percent = 60;
+    const int epsilon_annealing_percent = EXPLOITATION_START_PERCENT;
     int batchSize = 4000;
 
     unique_ptr<DQNNet> policyNet;
@@ -38,9 +38,19 @@ class RLNN_Agent : public DQN_interface {
 
     std::mutex safeActionSelectionAndTraining;
 
+    torch::DeviceType device;
+
+    double bestActionQValue;
+
     bool isExplore(int episodeCount);
 
     void savePolicyNet();
+
+    string getDeviceType()
+    {
+        char * val = getenv("DEVICE_TYPE");
+        return val == NULL ? "CPU" : std::string(val);
+    }
 
 public:
 
@@ -55,16 +65,16 @@ public:
             policyNet->eval();
         }
         startEpsilonDecay = false;
+        device = getDeviceType() == "CUDA" ? torch::kCUDA : torch::kCPU;
         logger = std::make_unique<Logger>(LogLevel);
     }
 
     void setTrainingMode(bool value);
 
-    int selectAction(observation& currentState, int episodeCount, bool *explore);
+    int selectAction(const observation& currentState, int episodeCount, bool *explore);
 
     double learnWithDQN();
 
-    // TODO: Interface changes in other DQNs
     void memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done, bool isExploring);
 
     /// provide file path
@@ -75,11 +85,13 @@ public:
 
     void updateTargetNet();
 
-    void decayEpsilon();
+    void decayEpsilon(int currentEpisode);
 
     void printAction(int action);
 
     void plotLosses();
+
+    double getBestActionQ();
 
 #ifdef TESTING
 

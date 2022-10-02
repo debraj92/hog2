@@ -9,9 +9,10 @@
 #include <unordered_set>
 #include "node_.h"
 #include <unordered_map>
-#include "enemy/enemy.h"
 #include "iostream"
 #include "Logger.h"
+#include "objectLocator.h"
+#include <cmath>
 
 using namespace std;
 using namespace RTS;
@@ -34,9 +35,13 @@ class AStar_ {
 
     const int GRID_SPAN_;
 
-    void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
+    objectLocator locator;
 
-    float findShortestDistance(pair<int, int> src, pair<int, int> dst);
+    int destinationDirection_;
+
+    bool initialized = false;
+
+    void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
 
     bool isDestinationFound(node_ node);
 
@@ -44,13 +49,13 @@ class AStar_ {
 
     int reverseNodeLinks(node_& current);
 
-    void addEdge(int src, int dest, vector<pair<int, int>> &nodes);
+    void addEdge(int nextX, int nextY, vector<pair<int, int>> &nodes);
 
     double computeDistance(int x, int y);
 
     void reset();
 
-    void orderNodeLinks(node_ root);
+    float computeGCost(node_ first, node_ second);
 
 
 public:
@@ -62,12 +67,23 @@ public:
      */
     AStar_(vector<vector<int>> &grid, int startX, int startY, int endX, int endY) : GRID_SPAN_(grid.size()) {
         logger = std::make_unique<Logger>(LogLevel);
-        logger->logDebug("AStar created, source: ");
         logger->logDebug(startX)->logDebug(", ")->logDebug(startY)->endLineDebug();
         std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
         source = make_pair(startX, startY);
         destination = make_pair(endX, endY);
+        initialized = true;
     }
+
+    AStar_(vector<vector<int>> &grid) : GRID_SPAN_(grid.size()) {
+        logger = std::make_unique<Logger>(LogLevel);
+        std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
+    }
+
+    float findShortestDistance(pair<int, int> src, pair<int, int> dst);
+
+    float findShortestDistanceEuclidean(pair<int, int> src, pair<int, int> dst);
+
+    float findShortestTime(pair<int, int> src, pair<int, int> dst);
 
     bool findPathToDestination();
 
@@ -75,11 +91,7 @@ public:
 
     bool isOnPath(node_& current);
 
-    void populateEnemyObstacles(vector<enemy> &enemies);
-
     void printTrack(node_ root);
-
-    void printBoard();
 
     int getCountOfNodesToDestination();
 
@@ -100,6 +112,16 @@ public:
     int getNodeOrder(node_ n);
 
     int getTotalDistanceToDestination();
+
+    void blockedDestinationCoordinateAllowed();
+
+    void unblockDestinationCoordinate();
+
+    void orderNodeLinks(node_ root);
+
+    bool isInitialized();
+
+    friend class findPath;
 };
 
 

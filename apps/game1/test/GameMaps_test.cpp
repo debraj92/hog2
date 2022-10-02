@@ -34,6 +34,7 @@ void testMap1(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) 
     }
 }
 
+
 // Map1
 TEST(TrainMap1, BasicAssertions) {
     vector<std::vector<int>> grid;
@@ -45,9 +46,9 @@ TEST(TrainMap1, BasicAssertions) {
         grid.push_back(row);
     }
 
-    trainingMaps train;
+    trainingMaps train(false);
     train.unregisterAllCreateMapFunctions();
-    train.registerCreateMapFunction(testMap1);
+    train.registerCreateMapFunction(&trainingMaps::createMapUnitTesting2);
     train.generateNextMap(grid, enemies);
     logger.printBoardDebug(grid);
     int src_x, src_y, dest_x, dest_y;
@@ -65,7 +66,7 @@ TEST(TrainMap1, BasicAssertions) {
 }
 
 TEST(TrainMap2, BasicAssertions) {
-    /// set grid span correctly (10)
+    /// set grid span correctly - should match sizes stored in disc
     vector<std::vector<int>> grid;
     std::vector<enemy> enemies;
     Logger logger(LOG_LEVEL::DEBUG);
@@ -75,7 +76,8 @@ TEST(TrainMap2, BasicAssertions) {
         grid.push_back(row);
     }
 
-    trainingMaps train;
+    trainingMaps train(false);
     train.generateNextMap(grid, enemies);
     logger.printBoardDebug(grid);
 }
+

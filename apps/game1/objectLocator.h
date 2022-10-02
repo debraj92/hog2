@@ -8,6 +8,7 @@
 #include <map>
 #include "gameConstants.h"
 #include "Logger.h"
+#include <cmath>
 
 
 using namespace RTS;
@@ -72,6 +73,8 @@ public:
     float getObjectAngle();
 
     float getObjectRiskFeature();
+
+    float dotDirectionVector(int direction, float vector_x, float vector_y);
 };
 
 

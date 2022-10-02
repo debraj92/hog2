@@ -5,8 +5,7 @@
 #include <gtest/gtest.h>
 #include "../FOV_CNN/CNN_controller.h"
 #include "../fixedobstacles.h"
-#include "../enemy/fixedEnemy.h"
-
+#include "../enemy/enemy.h"
 
 void createAllFixedObstacles(int TOTAL_FIXED_OBSTACLES, int blockObstacles[][4], vector<std::vector<int>> &grid) {
 
@@ -39,10 +38,10 @@ void createGrid1(vector<std::vector<int>> &grid) {
 
     createAllFixedObstacles(TOTAL_FIXED_OBSTACLES, blockObstacles, grid);
 
-    fixedEnemy f1(2, 1, 1);
-    fixedEnemy f2(2, 3, 2);
-    fixedEnemy f3(4, 3, 3);
-    fixedEnemy f4(1, 4, 4);
+    enemy f1(grid, 2, 1, 1);
+    enemy f2(grid, 2, 3, 2);
+    enemy f3(grid, 4, 3, 3);
+    enemy f4(grid, 1, 4, 4);
     std::vector<enemy> enemies;
     enemies.push_back(f1);
     enemies.push_back(f2);

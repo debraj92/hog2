@@ -20,7 +20,7 @@ public:
 
     virtual void setTrainingMode(bool value) = 0;
 
-    virtual int selectAction(observation& currentState, int episodeCount, bool *explore) = 0;
+    virtual int selectAction(const observation& currentState, int episodeCount, bool *explore) = 0;
 
     /// Returns the network loss
     virtual double learnWithDQN() = 0;
@@ -35,11 +35,13 @@ public:
 
     virtual void updateTargetNet() = 0;
 
-    virtual void decayEpsilon() = 0;
+    virtual void decayEpsilon(int currentEpisode) = 0;
 
     virtual void printAction(int action) = 0;
 
     virtual void plotLosses() = 0;
+
+    virtual double getBestActionQ() = 0;
 
 };
 
