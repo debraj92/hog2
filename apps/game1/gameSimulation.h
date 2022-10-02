@@ -41,6 +41,8 @@ class gameSimulation : public coordinatesUtil {
 
     void markDeadEnemies(vector<enemyUIData> &enemiesUI);
 
+    bool isStuckAtBorder();
+
 public:
 
     explicit gameSimulation(vector<vector<int>> &grid) : coordinatesUtil(grid) {

@@ -88,7 +88,7 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
         ++player1->timeStep;
 
         // Recover from bad stuck state if possible
-        if(player1->markVisited() >= MAX_VISITED_FOR_STUCK) {
+        if(player1->markVisited() >= MAX_VISITED_FOR_STUCK or isStuckAtBorder()) {
             if (player1->isSimpleAstarPlayer) {
                 player1->isSimplePlayerStuckDontReroute = true;
             } else {
@@ -442,4 +442,12 @@ void gameSimulation::markDeadEnemies(vector<enemyUIData> &enemiesUI) {
             eUi.isDead = true;
         }
     }
+}
+
+bool gameSimulation::isStuckAtBorder() {
+    return (player1->destination_x == 0 and player1->current_x == 0)
+    or (player1->destination_y == 0 and player1->current_y == 0)
+    or (player1->destination_x == GRID_SPAN - 1 and player1->current_x == GRID_SPAN - 1)
+    or (player1->destination_y == GRID_SPAN - 1 and player1->current_y == GRID_SPAN - 1);
+
 }
