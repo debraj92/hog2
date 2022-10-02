@@ -17,33 +17,33 @@ void SimpleUIView::startGameLoop(bool &isGameStopped) {
 
     int gameMap[] =
             {
-                    0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
-                    0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
+                    14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14,
+                    14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    12, 12, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
-                    12, 12, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
+                    12, 12, 13, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 14, 1, 1, 1, 13, 12, 12, 1, 1, 1, 0, 0, 0,
+                    12, 12, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 14, 14, 1, 1, 1, 13, 12, 12, 1, 1, 1, 0, 0, 0,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
-                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
+                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 14, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 14, 13, 12,
+                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 0, 14, 1, 1, 1, 0, 0, 0, 1, 1, 1, 13, 12, 12,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 12, 0,
-                    0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 12, 0,
+                    16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 13, 12, 13,
+                    16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 13, 12, 13,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    0, 0, 0, 1, 1, 1, 12, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
-                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 12, 12,
-                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 12, 12
+                    16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 16, 0, 0, 1, 1, 1, 16, 16, 16, 1, 1, 1, 13, 12, 13,
+                    16, 12, 16, 1, 1, 1, 12, 12, 12, 1, 1, 1, 16, 16, 0, 1, 1, 1, 16, 16, 16, 1, 1, 1, 12, 12, 12,
+                    16, 16, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 13, 12, 12
             };
 
 
@@ -83,7 +83,7 @@ void SimpleUIView::startGameLoop(bool &isGameStopped) {
                 updateMapWithCurrentState(tiles);
                 isDrawn = true;
                 if (not firstMove) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(650));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 } else {
                     firstMove = false;
                 }
@@ -98,7 +98,7 @@ void SimpleUIView::startGameLoop(bool &isGameStopped) {
     }
 }
 
-void SimpleUIView::populateInfo(int plX, int plY, int destX, int destY, int pl_life, vector<enemyUIData> &enemies) {
+void SimpleUIView::populateInfo(int plX, int plY, int destX, int destY, int srcX, int srcY, int pl_life, vector<enemyUIData> &enemies) {
     // critical
     std::unique_lock<mutex> locker(uiBufferSafeReadWrite);
     if (isClosed) {
@@ -107,6 +107,10 @@ void SimpleUIView::populateInfo(int plX, int plY, int destX, int destY, int pl_l
 
     destinationX = destX;
     destinationY = destY;
+
+    sourceX = srcX;
+    sourceY = srcY;
+
     playerChangedOrientation = (playerY != -1) and (playerY != plY);
     if (playerChangedOrientation) {
         playerOrientationLeft = plY < playerY;
@@ -115,6 +119,7 @@ void SimpleUIView::populateInfo(int plX, int plY, int destX, int destY, int pl_l
     playerY = plY;
     isPlayerDead = pl_life <= 0;
     playerReached = playerX == destinationX and playerY == destinationY;
+    playerEnRoute = playerX != sourceX or playerY != sourceY;
     enemiesInThisRound.clear();
     std::copy(enemies.begin(), enemies.end(), back_inserter(enemiesInThisRound));
 
@@ -144,6 +149,10 @@ void SimpleUIView::updateMapWithCurrentState(vector<int> &tiles) {
         } else {
             tiles[convert2DIndexTo1D(playerX, playerY)] = 4;
         }
+    }
+
+    if(playerEnRoute) {
+        tiles[convert2DIndexTo1D(sourceX, sourceY)] = 17;
     }
 
     for(enemyUIData enemy: enemiesInThisRound) {

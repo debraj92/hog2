@@ -528,7 +528,7 @@ void observation::setGoalInSight(int probeX, int probeY) {
 
 void observation::findDestination(bool isTraining) {
 
-    int goalDistance = isTraining ? GOAL_RADIUS : GOAL_RADIUS + 1;
+    int goalDistance = GOAL_RADIUS;//isTraining ? GOAL_RADIUS : GOAL_RADIUS + 1;
     for(int i = playerX - goalDistance; i<=playerX + goalDistance; i++) {
         for(int j = playerY - goalDistance; j<=playerY + goalDistance; j++) {
             if(i >= 0 and i < GRID_SPAN and j >= 0 and j < GRID_SPAN) {

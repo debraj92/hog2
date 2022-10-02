@@ -34,7 +34,8 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
     double cumulativeExecutionTime = 0;
     bool firstMove = true;
     vector<enemyUIData> enemiesInThisRound;
-
+    populateEnemiesForUI(enemiesInThisRound);
+    player1->publishOnUI(enemiesInThisRound);
     while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
         auto t1 = high_resolution_clock::now();
         logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();

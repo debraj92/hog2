@@ -492,7 +492,7 @@ void player::registerUIComponent(SimpleUIView &ui) {
 
 void player::publishOnUI(vector<enemyUIData> &enemiesInThisRound) {
     if(not isTrainingMode and UIEnabled) {
-        uiView->populateInfo(current_x, current_y, destination_x, destination_y, life_left, enemiesInThisRound);
+        uiView->populateInfo(current_x, current_y, destination_x, destination_y, source_x, source_y, life_left, enemiesInThisRound);
     }
 }
 

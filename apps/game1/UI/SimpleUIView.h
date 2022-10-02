@@ -32,10 +32,15 @@ class SimpleUIView {
     bool playerChangedOrientation;
     bool playerOrientationLeft = false; // Left = true, Right = false => default
     bool playerReached;
+    bool playerEnRoute;
 
     // destination info
     int destinationX;
     int destinationY;
+
+    // source info
+    int sourceX;
+    int sourceY;
 
     // enemy info
     vector<enemyUIData> enemiesInThisRound;
@@ -52,7 +57,7 @@ class SimpleUIView {
 
 public:
     void startGameLoop(bool &isGameStopped);
-    void populateInfo(int plX, int plY, int destX, int destY, int pl_life, vector<enemyUIData> &enemiesInThisRound);
+    void populateInfo(int plX, int plY, int destX, int destY, int srcX, int srcY, int pl_life, vector<enemyUIData> &enemiesInThisRound);
 };
 
 
