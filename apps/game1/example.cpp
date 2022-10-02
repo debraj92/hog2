@@ -4,6 +4,16 @@
 #include "player.h"
 #include "trainingMaps.h"
 #include <sys/resource.h>
+#include "GameController.h"
+#include <SFML/Graphics.hpp>
+#include "UI/TileMap.h"
+
+#include <chrono>
+
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 void increaseStackSize() {
     const rlim_t kStackSize = 16 * 1024 * 1024;   // min stack size = 16 MB
@@ -34,7 +44,7 @@ void runTesting(player &player1) {
     trainingMaps tm(true);
     float countDestinationReach = 0;
     float death = 0;
-    float max_ep = 1;
+    float max_ep = 1000;
     for (int i=1; i<= max_ep; i++) {
         cout<<"Episode: "<<i<<endl;
         vector<vector<int>> grid;
@@ -47,8 +57,16 @@ void runTesting(player &player1) {
 
         tm.setSourceAndDestination(grid, sx, sy, dx, dy);
         //tm.setSourceAndDestinationFixed(sx, sy, dx, dy);
-        player1.playGame(grid, enemies, sx, sy, dx, dy, t);
         cout<<"("<<sx<<","<<sy<<") -> ("<<dx<<","<<dy<<")"<<endl;
+        auto t1 = high_resolution_clock::now();
+
+        player1.playGame(grid, enemies, sx, sy, dx, dy, t);
+
+        auto t2 = high_resolution_clock::now();
+        duration<double, std::milli> ms_double = t2 - t1;
+
+        cout<<"Total execution time of episode "<<ms_double.count()<<endl;
+
         if(t.final_x == t.destination_x and t.final_y == t.destination_y) {
             countDestinationReach++;
         }
@@ -63,35 +81,9 @@ void runTesting(player &player1) {
     cout<<"% death "<<death_percent<<endl;
 }
 
-
-int main() {
-
-    increaseStackSize();
-
-    using namespace RTS;
-    Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
-
-    player player1(true);
-    player1.learnGame();
-
-    /*
-    player player1(false);
-    /// Enable baseline for comparison
-    //player1.enableBaseLinePlayer();
-    TestResult t{};
-    runTesting(player1);
-    */
-
-
-    /// GENERATE NEW RANDOM MAP
-    /*
-    trainingMaps tm(true);
+void generateMaps() {
     long randomNumber = std::chrono::system_clock::now().time_since_epoch().count();
-    tm.serializeRandomMap("map12", randomNumber * 17);
-    cout<<endl;
-    */
-
-    /*
+    trainingMaps tm(false);
     tm.serializeRandomMap("map1", randomNumber);
     cout<<endl;
     tm.serializeRandomMap("map2", randomNumber * 7);
@@ -108,13 +100,47 @@ int main() {
     cout<<endl;
     tm.serializeRandomMap("map8", randomNumber * 17);
     cout<<endl;
+    tm.serializeRandomMap("map9", randomNumber * 101);
+    cout<<endl;
+    tm.serializeRandomMap("map10", randomNumber * 103);
+    cout<<endl;
+    tm.serializeRandomMap("map11", randomNumber * 107);
+    cout<<endl;
+    tm.serializeRandomMap("map12", randomNumber * 113);
+    cout<<endl;
+    tm.serializeRandomMap("map13", randomNumber * 127);
+    cout<<endl;
+    tm.serializeRandomMap("map14", randomNumber * 131);
+    cout<<endl;
+    tm.serializeRandomMap("map15", randomNumber * 139);
+    cout<<endl;
+    tm.serializeRandomMap("map16", randomNumber * 139);
+    cout<<endl;
+}
+
+
+int main() {
+
+    increaseStackSize();
+
+    using namespace RTS;
+    Logger::GLOBAL_LOG_LEVEL = LOG_LEVEL::INFO;
+
+    //player player1(true);
+    //player1.learnGame();
+
+    /*
+    player player1(false);
+    /// Enable baseline for comparison
+    //player1.enableBaseLinePlayer();
+    TestResult t{};
+    runTesting(player1);
     */
-    /// No enemies
 
-    //tm.serializeRandomMap("map9", randomNumber * 11);
-    //cout<<endl;
-    //tm.serializeRandomMap("map10", randomNumber * 29);
+    //generateMaps();
 
+    GameController control;
+    control.startGame();
 
-
+    return 0;
 }

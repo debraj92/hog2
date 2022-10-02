@@ -177,12 +177,6 @@ void trainingMaps::createMap8(std::vector<std::vector<int>>& grid, std::vector<e
     }
 }
 
-
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-
-///////////////// Game Maps for testing //////////////////////////////////////////
 void trainingMaps::createMap9(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies) {
     if(not trainingMaps::isMap9Cached) {
         JsonParser jp("map9");
@@ -313,7 +307,7 @@ void trainingMaps::createMap15(std::vector<std::vector<int>>& grid, std::vector<
         /// store in cache
         std::copy(grid.begin(), grid.end(), back_inserter(trainingMaps::map15_cached_grid));
         std::copy(enemies.begin(), enemies.end(), back_inserter(trainingMaps::map15_cached_enemy));
-        trainingMaps::isMap9Cached = true;
+        trainingMaps::isMap15Cached = true;
         return;
     }
     // restore from cache
@@ -345,27 +339,53 @@ void trainingMaps::createMap16(std::vector<std::vector<int>>& grid, std::vector<
     }
 }
 
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////// Game Maps for testing //////////////////////////////////////////
+
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 trainingMaps::trainingMaps(bool isTesting) {
     logger = std::make_unique<Logger>(LogLevel);
     if (not isTesting) {
+
         gameMaps.emplace_back(&trainingMaps::createMap1);
         gameMaps.emplace_back(&trainingMaps::createMap2);
         gameMaps.emplace_back(&trainingMaps::createMap3);
         gameMaps.emplace_back(&trainingMaps::createMap4);
+        gameMaps.emplace_back(&trainingMaps::createMap5);
+        gameMaps.emplace_back(&trainingMaps::createMap6);
         gameMaps.emplace_back(&trainingMaps::createMap7);
         gameMaps.emplace_back(&trainingMaps::createMap8);
+        gameMaps.emplace_back(&trainingMaps::createMap9);
+        gameMaps.emplace_back(&trainingMaps::createMap10);
 
         isMap1Cached = false;
         isMap2Cached = false;
         isMap3Cached = false;
         isMap4Cached = false;
+        isMap5Cached = false;
+        isMap6Cached = false;
         isMap7Cached = false;
         isMap8Cached = false;
+        isMap9Cached = false;
+        isMap10Cached = false;
 
     } else {
 
+        gameMaps.emplace_back(&trainingMaps::createMap1);
+        gameMaps.emplace_back(&trainingMaps::createMap2);
+        gameMaps.emplace_back(&trainingMaps::createMap3);
+        gameMaps.emplace_back(&trainingMaps::createMap4);
+        gameMaps.emplace_back(&trainingMaps::createMap5);
+        gameMaps.emplace_back(&trainingMaps::createMap6);
+        gameMaps.emplace_back(&trainingMaps::createMap7);
+        gameMaps.emplace_back(&trainingMaps::createMap8);
         gameMaps.emplace_back(&trainingMaps::createMap9);
         gameMaps.emplace_back(&trainingMaps::createMap10);
         gameMaps.emplace_back(&trainingMaps::createMap11);
@@ -375,6 +395,15 @@ trainingMaps::trainingMaps(bool isTesting) {
         gameMaps.emplace_back(&trainingMaps::createMap15);
         gameMaps.emplace_back(&trainingMaps::createMap16);
 
+
+        isMap1Cached = false;
+        isMap2Cached = false;
+        isMap3Cached = false;
+        isMap4Cached = false;
+        isMap5Cached = false;
+        isMap6Cached = false;
+        isMap7Cached = false;
+        isMap8Cached = false;
         isMap9Cached = false;
         isMap10Cached = false;
         isMap11Cached = false;
@@ -383,6 +412,7 @@ trainingMaps::trainingMaps(bool isTesting) {
         isMap14Cached = false;
         isMap15Cached = false;
         isMap16Cached = false;
+
     }
 
 }
@@ -501,10 +531,10 @@ void trainingMaps::setSourceAndDestinationRotating(int &startX, int &startY, int
 void trainingMaps::setSourceAndDestinationFixed(int &startX, int &startY, int &endX,
                                                    int &endY) {
 
-    startX = 6;
-    startY = 24;
-    endX = 18;
-    endY = 0;
+    startX = 0;
+    startY = 22;
+    endX = 26;
+    endY = 5;
 }
 
 void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vector<enemy>& enemies) {
@@ -516,73 +546,85 @@ void trainingMaps::clearMapAndEnemies(vector<std::vector<int>> &grid, std::vecto
     }
 }
 
+/**
+ * NOTE: Obstacle design must not be changed. Obstacles should not have internal points. If so, logic for
+ * abstract A* will break.
+ */
 void trainingMaps::serializeRandomMap(string mapId, long randomNumber) {
-
     vector<vector<int>> grid;
     for (int i=0; i<GRID_SPAN; i++) {
         std::vector<int> row(GRID_SPAN, 0);
         grid.push_back(row);
     }
-
-
     JsonParser jp(std::move(mapId));
 
-    const int TOTAL_FIXED_OBSTACLES = 25;
+    const int TOTAL_FIXED_OBSTACLES  = ceil((GRID_SPAN + 3) / 6) * floor((GRID_SPAN + 3) / 6);
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4];
-    bool horizontal = true;
-    long seedX = 1 + randomNumber;
-    long seedY = 100 + randomNumber;
-    for(int i=1; i<=TOTAL_FIXED_OBSTACLES;) {
-        // choose random x
-        auto x = trainingMaps::selectRandomNumberInRange(2, GRID_SPAN - 3, seedX);
-        // choose random y
-        auto y = trainingMaps::selectRandomNumberInRange(2, GRID_SPAN - 3, seedY);
-        if (horizontal) {
-            if(grid[x][y] == 0 and grid[x][y+1] == 0 and areBoundariesOfObstacleClear(grid, x, y, true)) {
-                blockObstacles[i-1][0] = x;
-                blockObstacles[i-1][1] = x;
-                blockObstacles[i-1][2] = y;
-                blockObstacles[i-1][3] = y+1;
+
+    int i=0;
+    for(int row = 0; row < GRID_SPAN; row+=6) {
+        for(int col = 0; col < GRID_SPAN; col+=6) {
+            // place a block obstacle
+            if(row < GRID_SPAN - 3) {
+                blockObstacles[i-1][0] = row;
+                blockObstacles[i-1][1] = row + 1;
+                blockObstacles[i-1][2] = col;
+                blockObstacles[i-1][3] = col + 2;
                 i++;
-                horizontal = not horizontal;
-                grid[x][y] = -1;
-                grid[x][y+1] = -1;
+                grid[row][col] = -1;
+                grid[row][col+1] = -1;
+                grid[row][col+2] = -1;
+                grid[row+1][col] = -1;
+                grid[row+1][col+1] = -1;
+                grid[row+1][col+2] = -1;
+            } else {
+                blockObstacles[i-1][0] = row;
+                blockObstacles[i-1][1] = row + 2;
+                blockObstacles[i-1][2] = col;
+                blockObstacles[i-1][3] = col + 2;
+                i++;
+                grid[row][col] = -1;
+                grid[row][col+1] = -1;
+                grid[row][col+2] = -1;
+
+                grid[row+1][col] = -1;
+                grid[row+1][col+1] = -1;
+                grid[row+1][col+2] = -1;
+
+                grid[row+2][col] = -1;
+                grid[row+2][col+1] = -1;
+                grid[row+2][col+2] = -1;
             }
-        } else if(grid[x][y] == 0 and grid[x+1][y] == 0 and areBoundariesOfObstacleClear(grid, x, y, false)) {
-            blockObstacles[i-1][0] = x;
-            blockObstacles[i-1][1] = x+1;
-            blockObstacles[i-1][2] = y;
-            blockObstacles[i-1][3] = y;
-            i++;
-            horizontal = not horizontal;
-            grid[x][y] = -1;
-            grid[x+1][y] = -1;
+
         }
-        seedX += 5;
-        seedY += 2;
     }
+
     jp.serializeObstacles(TOTAL_FIXED_OBSTACLES, blockObstacles);
 
-    /// control percentage of enemies by changing calls to placeEnemies
     std::vector<enemy> enemies;
-    // place fixed enemies uniformly
-    auto lastId = placeEnemies(grid, enemies, 1, randomNumber);
-    lastId = placeEnemies(grid, enemies, lastId, randomNumber);
-    // place moving enemies uniformly
-    lastId = placeEnemies(grid, enemies, 2, randomNumber);
-    lastId = placeEnemies(grid, enemies, lastId, randomNumber);
+
+    /// Consider spill
+    /// for all maps
+    auto lastId = placeEnemies(grid, enemies, 1, randomNumber * 7);
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber  * 29);
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber * 59);
+    /// For small maps < 50
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber * 71);
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber * 97);
+    lastId = placeEnemies(grid, enemies, lastId, randomNumber * 173);
+
 
     const int TOTAL_ENEMIES = enemies.size();
     int enemyLocations[TOTAL_ENEMIES][3];
     for(int i=0; i<TOTAL_ENEMIES; i++) {
         enemyLocations[i][0] = enemies[i].current_x;
         enemyLocations[i][1] = enemies[i].current_y;
-        enemyLocations[i][2] = enemies[i].isFixed;
     }
     jp.serializeEnemies(TOTAL_ENEMIES, enemyLocations);
 
     logger->printBoardDebug(grid);
 }
+
 
 int trainingMaps::placeEnemies(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies, int startId, long randomNumber) {
     int current_row_start = 0;
@@ -590,41 +632,55 @@ int trainingMaps::placeEnemies(std::vector<std::vector<int>>& grid, std::vector<
     long seedX;
     long seedY;
     if (startId % 2 == 1) {
-        seedX = 5000 + randomNumber + startId;
-        seedY = 1000 + randomNumber + startId;
+        seedX = 47 + randomNumber + startId;
+        seedY = 47 * 37 + randomNumber + startId;
     } else {
-        seedX = 1 + randomNumber + startId;
-        seedY = 100 + randomNumber + startId;
+        seedX = 83 + randomNumber + startId;
+        seedY = 83 * 59 + randomNumber + startId;
     }
-    int width = 2 * ENEMY_VISION_RADIUS + 1;
-    for(current_row_start=ENEMY_VISION_RADIUS; current_row_start<GRID_SPAN - width; current_row_start+=MAP_SECTOR_SIZE) {
-        for(current_col_start=ENEMY_VISION_RADIUS; current_col_start<GRID_SPAN - width; current_col_start+=MAP_SECTOR_SIZE) {
-            int central_x = current_row_start + width;
-            int central_y = current_col_start + width;
+
+    int enemy_spacing = 4;
+    int map_sector_size = 10;
+    int width = map_sector_size / 2;
+    for(current_row_start=2; current_row_start<GRID_SPAN - width; current_row_start+=map_sector_size) {
+        for(current_col_start=2; current_col_start<GRID_SPAN - width; current_col_start+=map_sector_size) {
+            int central_x = current_row_start + (map_sector_size / 2);
+            int central_y = current_col_start + (map_sector_size / 2);
             if(grid[central_x][central_y] == 0) {
                 grid[central_x][central_y] = startId;
-                auto e = enemy(grid, central_x, central_y, startId, startId % 2 == 1);
+                auto e = enemy(grid, central_x, central_y, startId);
                 enemies.push_back(e);
-                startId += 2;
-                startId = startId == PLAYER_ID ? startId + 2: startId;
+                startId += 1;
+                startId = startId == PLAYER_ID ? startId + 1: startId;
             } else {
                 bool done = false;
+                int retryAttempt = 100;
                 while(not done) {
                     int x_diff, y_diff;
-                    x_diff = trainingMaps::selectRandomNumberInRange(-width, width, seedX);
-                    y_diff = trainingMaps::selectRandomNumberInRange(-width, width, seedY);
-                    bool isXOnBorder = (central_x - x_diff) < ENEMY_VISION_RADIUS or (GRID_SPAN - 1 - (central_x - x_diff)) < ENEMY_VISION_RADIUS;
-                    bool isYOnBorder = (central_y - y_diff) < ENEMY_VISION_RADIUS or (GRID_SPAN - 1 - (central_y - y_diff)) < ENEMY_VISION_RADIUS;
+                    x_diff = trainingMaps::selectRandomNumberInRange(-enemy_spacing, enemy_spacing, seedX);
+                    y_diff = trainingMaps::selectRandomNumberInRange(-enemy_spacing, enemy_spacing, seedY);
+                    bool isXOnBorder = (central_x - x_diff) <= ENEMY_VISION_RADIUS or (GRID_SPAN - 1 - (central_x - x_diff)) <= ENEMY_VISION_RADIUS;
+                    bool isYOnBorder = (central_y - y_diff) <= ENEMY_VISION_RADIUS or (GRID_SPAN - 1 - (central_y - y_diff)) <= ENEMY_VISION_RADIUS;
                     if(not isXOnBorder and not isYOnBorder and grid[central_x - x_diff][central_y - y_diff] == 0) {
+                        int maxEnemiesInBoundary = 0;
+                        if(retryAttempt < 0) {
+                            maxEnemiesInBoundary = 1;
+                        }
+                        if(not areBoundariesClearOfEnemies(grid, central_x - x_diff, central_y - y_diff, maxEnemiesInBoundary)) {
+                            seedX *= 11;
+                            seedY *= 97;
+                            --retryAttempt;
+                            continue;
+                        }
                         done = true;
                         grid[central_x - x_diff][central_y - y_diff] = startId;
-                        auto e = enemy(grid, central_x - x_diff, central_y - y_diff, startId, startId % 2 == 1);
+                        auto e = enemy(grid, central_x - x_diff, central_y - y_diff, startId);
                         enemies.push_back(e);
-                        startId += 2;
-                        startId = startId == PLAYER_ID ? startId + 2: startId;
+                        startId += 1;
+                        startId = startId == PLAYER_ID ? startId + 1: startId;
                     }
-                    seedX *= 7;
-                    seedY *= 23;
+                    seedX *= 11;
+                    seedY *= 97;
                 }
             }
         }
@@ -632,20 +688,15 @@ int trainingMaps::placeEnemies(std::vector<std::vector<int>>& grid, std::vector<
     return startId;
 }
 
-bool trainingMaps::areBoundariesOfObstacleClear(vector<std::vector<int>> &grid, int x, int y, bool isHorizontal) {
-    if (isHorizontal) {
-        if(grid[x][y-1] < 0 or grid[x][y+2] < 0) return false;
-        for(int c=y-1; c<=y+2; c++) {
-            for(int r=x-1; r<=x+1; r+=2) {
-                if(grid[r][c] < 0) return false;
-            }
-        }
-    } else {
-        if(grid[x-1][y] < 0 or grid[x+2][y] < 0) return false;
-        for(int r=x-1; r<=x+2; r++) {
-            for(int c=y-1; c<=y+1; c+=2) {
-                if(grid[r][c] < 0) return false;
-            }
+bool trainingMaps::areBoundariesClearOfEnemies(vector<std::vector<int>> &grid, int x, int y, int maxEnemiesInBoundaryAllowed) {
+    int count = 0;
+    for(int r = x-2; r<= x+2; r++) {
+        for(int c = y-2; c<= y+2; c++) {
+            if(r == x and c == y) continue;
+            if(r<0 or r>=GRID_SPAN or c<0 or c>=GRID_SPAN) continue;
+            if(grid[r][c] <= 0) continue;
+            count++;
+            if(count > maxEnemiesInBoundaryAllowed) return false;
         }
     }
     return true;
@@ -686,7 +737,7 @@ void trainingMaps::createMapUnitTesting1(vector<std::vector<int>> &grid, vector<
 
     };
     for(int enemy_id=0; enemy_id < TOTAL_FIXED_ENEMIES; enemy_id++) {
-        auto fe = enemy(grid, enemyLocations[enemy_id][0], enemyLocations[enemy_id][1], enemy_id + 1, true);
+        auto fe = enemy(grid, enemyLocations[enemy_id][0], enemyLocations[enemy_id][1], enemy_id + 1);
         enemies.push_back(fe);
     }
 }
@@ -700,6 +751,31 @@ void trainingMaps::createMapUnitTesting2(vector<std::vector<int>> &grid, vector<
             {0, 1, 0, 1},
             {4, 4, 2, 3},
             {1, 1, 4, 4}
+
+    };
+
+    FixedObstacles fixedObstacles;
+    for(int obstacle=0; obstacle<TOTAL_FIXED_OBSTACLES; obstacle++) {
+        int x_s = blockObstacles[obstacle][0];
+        int x_e = blockObstacles[obstacle][1];
+        int y_s = blockObstacles[obstacle][2];
+        int y_e = blockObstacles[obstacle][3];
+        fixedObstacles.createBlockObstacle(x_s, x_e, y_s, y_e, grid);
+    }
+}
+
+void trainingMaps::createMapUnitTesting3(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+    /// 10X10
+
+    const int TOTAL_FIXED_OBSTACLES = 6;
+    int blockObstacles[TOTAL_FIXED_OBSTACLES][4] = {
+            //x_s, x_e, y_s, y_e
+            {3, 4, 2, 4},
+            {3, 4, 7, 8},
+            {6, 6, 1, 3},
+            {6, 6, 6, 8},
+            {5, 5, 4, 7},
+            {5, 5, 0, 2}
 
     };
 

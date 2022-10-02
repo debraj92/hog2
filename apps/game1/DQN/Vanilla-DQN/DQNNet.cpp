@@ -12,7 +12,7 @@
 using namespace std;
 
 DQNNet::DQNNet(double learning_rate, const std::string& module_name) :
-        m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 25, /*kernel_size=*/3)))
+        m_conv1(nn::Conv2d(torch::nn::Conv2dOptions(MAX_CHANNELS_CNN, 16, /*kernel_size=*/3)))
 
 {
     logger = std::make_unique<Logger>(LogLevel);

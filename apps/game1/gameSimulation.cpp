@@ -3,8 +3,8 @@
 //
 
 #include "gameSimulation.h"
+#include <unordered_set>
 #include <chrono>
-
 
 using namespace std;
 using std::chrono::high_resolution_clock;
@@ -12,11 +12,11 @@ using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 
-void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+void gameSimulation::play(vector<std::vector<int>> &grid) {
     logger->logDebug("gameSimulation::play")->endLineDebug();
-    populateEnemies(grid, enemies);
+    populateEnemies(grid, false);
     if (not player1->isSimpleAstarPlayer) {
-        bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+        bool isPathFound = player1->findPathToDestination(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
         if (not isPathFound) {
             logger->logInfo("No path found, ignoring navigation")->endLineInfo();
             return;
@@ -30,30 +30,35 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
     int previousAction = action;
     int previousActionError = actionError;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, action, actionError, false, 0);
+    player1->observe(currentObservation, grid, action, actionError, false, 0);
     double cumulativeExecutionTime = 0;
+    bool firstMove = true;
+    vector<enemyUIData> enemiesInThisRound;
+    populateEnemiesForUI(enemiesInThisRound);
+    player1->publishOnUI(enemiesInThisRound);
     while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
         auto t1 = high_resolution_clock::now();
         logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
+
         // Next Action
         actionError = 0;
-        action = movePlayer(grid, enemies, currentObservation, &actionError);
+        action = movePlayer(grid, currentObservation, &actionError);
         bool isPathFound;
         if (actionError == NEXT_Q_TOO_LOW_ERROR) {
             // unit in really tough situation according to Q values of next states, re-try with re-route
             // block all available actions and re-route
             player1->addTemporaryObstaclesToAidReroute(currentObservation.direction, (const int[]){1, 1, 1, 1, 1});
-            isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            isPathFound = player1->findPathToKnownPointOnTrack(player1->current_x, player1->current_y);
             player1->removeTemporaryObstacles();
             if (not isPathFound) {
                 // block only straight action and re-route
                 player1->addTemporaryObstaclesToAidReroute(currentObservation.direction, (const int[]){0, 0, 1, 0, 0});
-                isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                isPathFound = player1->findPathToKnownPointOnTrack(player1->current_x, player1->current_y);
                 player1->removeTemporaryObstacles();
                 if (not isPathFound) {
                     logger->logInfo("No path found, re-routing will be unsuccessful")->endLineInfo();
-                    player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                    player1->findPathToKnownPointOnTrack(player1->current_x, player1->current_y);
                 }
             }
             logger->logDebug("Attempting to re-route")->endLineDebug();
@@ -62,105 +67,137 @@ void gameSimulation::play(vector<std::vector<int>> &grid, vector<enemy> &enemies
             int isPlayerInHotPursuit = currentObservation.isPlayerInHotPursuit;
             currentObservation = observation();
             // ignore the last action. Observe with previous to last action.
-            player1->observe(currentObservation, grid, enemies, previousAction, previousActionError, isPlayerInHotPursuit, direction);
-            action = movePlayer(grid, enemies, currentObservation, &actionError);
+            player1->observe(currentObservation, grid, previousAction, previousActionError, isPlayerInHotPursuit, direction);
+            action = movePlayer(grid, currentObservation, &actionError);
         }
+
         previousAction = action;
         previousActionError = actionError;
 
-        fight(enemies, grid);
+        fight(grid);
         // Enemy operations
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation, player1->timeStep);
-            fight(enemies, grid);
+            moveEnemies(grid, currentObservation, player1->timeStep);
+            enemiesInThisRound.clear();
+            populateEnemiesForUI(enemiesInThisRound);
+            fight(grid);
+            markDeadEnemies(enemiesInThisRound);
         }
         logger->printBoardDebug(grid);
+        player1->publishOnUI(enemiesInThisRound);
         ++player1->timeStep;
+
+        // Recover from bad stuck state if possible
+        if(player1->markVisited() >= MAX_VISITED_FOR_STUCK or isStuckAtBorder()) {
+            if (player1->isSimpleAstarPlayer) {
+                player1->isSimplePlayerStuckDontReroute = true;
+            } else {
+                if (not player1->findPathToKnownPointOnTrack(player1->current_x, player1->current_y)) {
+                    logger->logInfo("ERROR: Player stuck and recovery not possible")->endLineInfo();
+                    break;
+                }
+            }
+        } else {
+            if (player1->isSimpleAstarPlayer) {
+                player1->isSimplePlayerStuckDontReroute = false;
+            }
+        }
+
         // Observe next State
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
+        player1->observe(nextObservation, grid, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
+
         if (not player1->isSimpleAstarPlayer and nextObservation.trajectory_off_track) {
             // if unit is off-track, re-route and rescue unit.
-            isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+            isPathFound = player1->findPathToKnownPointOnTrack(player1->current_x, player1->current_y);
             if (not isPathFound) {
                 logger->logInfo("No path found, ignoring navigation")->endLineInfo();
                 return;
             }
             nextObservation = observation();
-            player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
+            player1->observe(nextObservation, grid, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
         }
-        // Next state reward
+        currentObservation = nextObservation;
+
         auto reward = calculateReward(nextObservation, action, actionError);
         logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
-        currentObservation = nextObservation;
-        player1->total_rewards += reward;
+
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
-            headStraightToDestination(grid, enemies);
+            headStraightToDestination(grid, enemiesInThisRound);
         }
         auto t2 = high_resolution_clock::now();
         duration<double, std::milli> ms_double = t2 - t1;
-        cumulativeExecutionTime += ms_double.count();
+        if (not firstMove) {
+            cumulativeExecutionTime += ms_double.count();
+        } else {
+            firstMove = false;
+        }
     }
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
-    logger->logInfo("Average Execution Time ")->logInfo(cumulativeExecutionTime / player1->timeStep)->endLineInfo();
+    logger->logInfo("Average Execution Time ")->logInfo(cumulativeExecutionTime / (player1->timeStep-1))->endLineInfo();
+    logger->logInfo("Total time steps ")->logInfo(player1->timeStep)->endLineInfo();
 }
 
-void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies) {
+
+
+void gameSimulation::learnToPlay(std::vector<std::vector<int>> &grid) {
     logger->logDebug("gameSimulation::learnToPlay")->endLineDebug();
-    populateEnemies(grid, enemies);
-    bool isPathFound = player1->findPathToDestination(grid, enemies, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+    populateEnemies(grid, true);
+    bool isPathFound = player1->findPathToDestination(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     if (not isPathFound) {
-        logger->logInfo("No path found, ignoring training");
+        logger->logInfo("ERROR: No path to destination found, ignoring training");
         return;
     }
     grid[player1->current_x][player1->current_y] = 9;
     logger->printBoardDebug(grid);
     player1->timeStep = 1;
     observation currentObservation;
-    player1->observe(currentObservation, grid, enemies, ACTION_STRAIGHT, 0, false, 0);
+    player1->observe(currentObservation, grid, ACTION_STRAIGHT, 0, false, 0);
+    //dummy
+    vector<enemyUIData> enemiesInThisRound;
     while((not isEpisodeComplete()) && player1->timeStep <= SESSION_TIMEOUT) {
         logger->logDebug("Time ")->logDebug(player1->timeStep)->endLineDebug();
         logger->logDebug("player (" + to_string(player1->current_x) + ", "+to_string(player1->current_y)+")")->endLineDebug();
         int actionError = 0;
         // Next Action
-        int action = movePlayer(grid, enemies, currentObservation, &actionError);
-        fight(enemies, grid);
+        int action = movePlayer(grid, currentObservation, &actionError);
+        fight(grid);
         if (player1->life_left > 0 and not isDestinationReached()) {
-            moveEnemies(enemies, grid, currentObservation, player1->timeStep);
-            fight(enemies, grid);
+            moveEnemies(grid, currentObservation, player1->timeStep);
+            fight(grid);
         }
         logger->printBoardDebug(grid);
         ++player1->timeStep;
         // Observe after action
         observation nextObservation;
-        player1->observe(nextObservation, grid, enemies, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
-        if (nextObservation.trajectory_off_track) {
+        player1->observe(nextObservation, grid, action, actionError, currentObservation.isPlayerInHotPursuit, currentObservation.direction);
+        auto reward = calculateReward(nextObservation, action, actionError);
+        logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
+        player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
+        currentObservation = nextObservation;
+        if(currentObservation.trajectory_off_track) {
             // poisoned if off track
             player1->life_left = 0;
             logger->logDebug("Player poisoned at (")->logDebug(player1->current_x)->logDebug(",")->logDebug(player1->current_y)
                     ->logDebug(")")->endLineDebug();
         }
-        auto reward = calculateReward(nextObservation, action, actionError);
-        logger->logDebug("Reward received ")->logDebug(reward)->endLineDebug();
-        player1->memorizeExperienceForReplay(currentObservation, nextObservation, action, reward, isMDPDone(nextObservation));
-        currentObservation = nextObservation;
         player1->total_rewards += reward;
         if (currentObservation.isGoalInSight and player1->life_left > 0) {
             logger->logDebug("Marching towards destination")->endLineDebug();
-            headStraightToDestination(grid, enemies);
+            headStraightToDestination(grid, enemiesInThisRound);
         }
     }
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
     if (player1->life_left <= 0 and not player1->stopLearning) {
-        player1->playerDiedInPreviousEpisode = player1->recordRestoreLocation(enemies);
+        player1->playerDiedInPreviousEpisode = player1->recordRestoreLocation();
     } else {
         player1->playerDiedInPreviousEpisode = false;
     }
 }
 
 
-int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, const observation &currentObservation, int* error) {
+int gameSimulation::movePlayer(vector<vector<int>> &grid, const observation &currentObservation, int* error) {
 
     auto savedLocationPlayerX = player1->current_x;
     auto savedLocationPlayerY = player1->current_y;
@@ -169,12 +206,14 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
         nextAction = ACTION_STRAIGHT;
     } else {
         nextAction = player1->selectAction(currentObservation);
+
         if ((*error != NEXT_Q_TOO_LOW_ERROR) and player1->isInference() and (not player1->isNextStateSafeEnough())) {
             // no point in proceeding. Need to re-route
             *error = NEXT_Q_TOO_LOW_ERROR;
             // this action will be ignored
             return -1;
         }
+
     }
 
     switch(nextAction) {
@@ -203,17 +242,46 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, std::vector<enemy>& en
     return nextAction;
 }
 
-void gameSimulation::moveEnemies(std::vector<enemy>& enemies, vector<std::vector<int>> &grid, observation &ob, int time) {
-    for(enemy &e: enemies){
-        // ignore dead enemies
-        e.doNextMove(time, grid, {ob.playerX, ob.playerY, 0});
+void gameSimulation::moveEnemies(vector<std::vector<int>> &grid, observation &ob, int time) {
+    unordered_set<int> enemiesToMoveId;
+    for(int i = (ob.playerX - VISION_RADIUS); i<=(ob.playerX + VISION_RADIUS); i++) {
+        for(int j = (ob.playerY - VISION_RADIUS); j<=(ob.playerY + VISION_RADIUS); j++) {
+            if(i < 0 or i >= GRID_SPAN or j < 0 or j >= GRID_SPAN) continue;
+            if(grid[i][j] > 0 and grid[i][j] != PLAYER_ID) {
+                enemiesToMoveId.insert(grid[i][j]);
+            }
+        }
+    }
+
+    for (auto& enemyId : enemiesToMoveId) {
+        if(player1->hashMapEnemies.find(enemyId)->second.doNextMove(time, grid, {ob.playerX, ob.playerY, 0})) {
+            if(not player1->isTrainingMode) enemiesAwayFromBase.insert(enemyId);
+        }
+    }
+
+    // Move to base is applicable only during inference
+    if(not player1->isTrainingMode) {
+        for (auto enemiesAwayFromBaseIterator = enemiesAwayFromBase.begin(); enemiesAwayFromBaseIterator != enemiesAwayFromBase.end();) {
+            auto enemyId = *enemiesAwayFromBaseIterator;
+            if(enemiesToMoveId.find(enemyId) == enemiesToMoveId.end()) {
+                // call move to base
+                if(player1->hashMapEnemies.find(enemyId) == player1->hashMapEnemies.end()
+                   or player1->hashMapEnemies.find(enemyId)->second.moveToBase(grid)) {
+                    ++enemiesAwayFromBaseIterator;
+                    enemiesAwayFromBase.erase(enemyId);
+                    continue;
+                }
+            }
+            ++enemiesAwayFromBaseIterator;
+        }
     }
 }
 
-void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>> &grid) {
+void gameSimulation::fight(vector<std::vector<int>> &grid) {
     std::unordered_map<node_, int, node_::node_Hash> enemyLocations;
     // damage player
-    for(enemy &e: enemies) {
+    for (auto& enemyIterator : player1->hashMapEnemies) {
+        enemy& e = enemyIterator.second;
         // ignore dead enemies
         if (e.getLifeLeft() > 0) {
             if (e.current_x == player1->current_x && e.current_y == player1->current_y) {
@@ -233,27 +301,33 @@ void gameSimulation::fight(std::vector<enemy> &enemies, vector<std::vector<int>>
     }
 
     // damage enemies
-    for(auto enemy_iterator = enemies.begin(); enemy_iterator != enemies.end();) {
-        if (enemy_iterator->getLifeLeft() > 0) {
-            if (enemyLocations.find(node_(enemy_iterator->current_x, enemy_iterator->current_y))->second >= 2) {
-                logger->logDebug("Enemy killed, id: ")->logDebug(enemy_iterator->id)->endLineDebug();
-                enemy_iterator->takeDamage(enemy_iterator->getAttackPoints());
-                grid[enemy_iterator->current_x][enemy_iterator->current_y] = 0;
+    for(auto enemy_iterator = player1->hashMapEnemies.begin(); enemy_iterator != player1->hashMapEnemies.end();) {
+        if (enemy_iterator->second.getLifeLeft() > 0) {
+            if (enemyLocations.find(node_(enemy_iterator->second.current_x, enemy_iterator->second.current_y))->second >= 2) {
+                logger->logDebug("Enemy killed, id: ")->logDebug(enemy_iterator->second.id)->endLineDebug();
+                enemy_iterator->second.takeDamage(enemy_iterator->second.getAttackPoints());
+                grid[enemy_iterator->second.current_x][enemy_iterator->second.current_y] = 0;
             }
         }
-        if (enemy_iterator->getLifeLeft() <= 0 or enemy_iterator->max_moves <= 0) {
+        if (enemy_iterator->second.getLifeLeft() <= 0 or enemy_iterator->second.max_moves <= 0) {
             // clean up dead enemies
-            grid[enemy_iterator->current_x][enemy_iterator->current_y] = 0;
-            enemies.erase(enemy_iterator);
+            grid[enemy_iterator->second.current_x][enemy_iterator->second.current_y] = 0;
+            int enemyIdDelete = enemy_iterator->first;
+            enemy_iterator++;
+            player1->hashMapEnemies.erase(enemyIdDelete);
         } else {
             ++enemy_iterator;
         }
     }
+
 }
 
 float gameSimulation::calculateReward(const observation &nextObservation, int action, int action_error) {
     if(player1->life_left <= 0) {
         return REWARD_DEATH;
+    }
+    if (nextObservation.trajectory_off_track) {
+        return REWARD_OFFTRACK;
     }
     if(action_error == -1) {
         return REWARD_ACTION_UNAVAILABLE;
@@ -262,7 +336,7 @@ float gameSimulation::calculateReward(const observation &nextObservation, int ac
         return REWARD_ACTION_LR;
     }
     if (nextObservation.isPlayerInHotPursuit) {
-        return REWARD_TRACK_THREE_DIV;
+        return REWARD_TRACK_FOUR_DIV;
     }
     if(nextObservation.trajectory == on_track) {
         return REWARD_REACH;
@@ -295,12 +369,15 @@ void gameSimulation::removeCharacters(std::vector<std::vector<int>> &grid) {
     }
 }
 
-void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
-    for(enemy e: enemies) {
+void gameSimulation::populateEnemies(vector<std::vector<int>> &grid, bool isTrainingMode) {
+    for (auto& enemyIterator : player1->hashMapEnemies) {
+        auto& e = enemyIterator.second;
+        if(isTrainingMode) e.unitTraining();
         if (e.getLifeLeft() > 0) {
-            grid[e.start_x][e.start_y] = e.id;
+            grid[e.current_x][e.current_y] = e.id;
         }
     }
+    enemiesAwayFromBase.clear();
 }
 
 bool gameSimulation::isDestinationReached() {
@@ -311,7 +388,7 @@ bool gameSimulation::isEpisodeComplete() {
     return isDestinationReached() or player1->life_left <= 0;
 }
 
-void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, std::vector<enemy>& enemies) {
+void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, vector<enemyUIData> &enemiesInThisRound) {
     /// No enemies at interface or locations within goal radius
     findPath fp(grid, player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     bool pathFound = fp.findPathToDestination();
@@ -330,6 +407,7 @@ void gameSimulation::headStraightToDestination(vector<vector<int>> &grid, std::v
         player1->current_y = fp.getNext_y();
         grid[player1->current_x][player1->current_y] = 9;
         logger->printBoardDebug(grid);
+        player1->publishOnUI(enemiesInThisRound);
         fp.visited_x_onpath = player1->current_x;
         fp.visited_y_onpath = player1->current_y;
     }
@@ -341,4 +419,35 @@ bool gameSimulation::isMDPDone(observation &nextObservation) {
             or player1->life_left <= 0;
     logger->logDebug("MDPDone ")->logDebug(mdpDone)->endLineDebug();
     return mdpDone;
+}
+
+void gameSimulation::populateEnemiesForUI(vector<enemyUIData> &enemiesUI) {
+    for (const auto& enemyIterator : player1->hashMapEnemies) {
+        auto e = enemyIterator.second;
+        enemiesUI.push_back({
+            enemyIterator.first,
+           e.current_x,
+           e.current_y,
+           e.hasChangedOrientation,
+           e.isOrientationLeft,
+           false
+        });
+    }
+}
+
+void gameSimulation::markDeadEnemies(vector<enemyUIData> &enemiesUI) {
+    for(enemyUIData &eUi : enemiesUI) {
+        if(player1->hashMapEnemies.find(eUi.id) == player1->hashMapEnemies.end()) {
+            // enemy died in last step
+            eUi.isDead = true;
+        }
+    }
+}
+
+bool gameSimulation::isStuckAtBorder() {
+    return (player1->destination_x == 0 and player1->current_x == 0)
+    or (player1->destination_y == 0 and player1->current_y == 0)
+    or (player1->destination_x == GRID_SPAN - 1 and player1->current_x == GRID_SPAN - 1)
+    or (player1->destination_y == GRID_SPAN - 1 and player1->current_y == GRID_SPAN - 1);
+
 }

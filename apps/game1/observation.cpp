@@ -14,6 +14,7 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xio.hpp>
 
+
 using namespace std;
 using namespace xt;
 
@@ -262,11 +263,18 @@ void observation::locateTrajectoryAndDirection(const shared_ptr<findPath>& fp) {
     countNodeNumbersInDirection = 0;
 }
 
-void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vector<enemy> &enemies, int time) {
+
+void observation::locateEnemies(std::vector <std::vector<int>> &grid, CNN_controller& cnn,
+                                const unordered_map<int, enemy>& hashSetEnemies, int time) {
+
     objectLocator ol;
     vector<enemy_attributes> enemy_properties;
     int totalEnemiesTracked = 0;
-    for(const enemy& e: enemies) {
+    for(int enemyId: cnn.enemyIds) {
+        if(hashSetEnemies.find(enemyId) == hashSetEnemies.end()) {
+            logger->logInfo("ERROR: Cannot find enemy, id: ")->logInfo(enemyId)->endLineInfo();
+        }
+        enemy e = hashSetEnemies.find(enemyId)->second;
         if (e.life_left > 0) {
             ol.locateObject(playerX, playerY, direction, e.current_x, e.current_y);
             double distance = ol.getObjectDistance();
@@ -280,7 +288,7 @@ void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vecto
                                             e.current_x,
                                             e.current_y,
                                             e.isPlayerTracked(time)
-                                            });
+                                           });
                 if (not isPlayerInHotPursuit and distance <= ENEMY_VISION_RADIUS) {
                     isPlayerInHotPursuit = e.max_moves > 0;
                 }
@@ -306,7 +314,23 @@ void observation::locateEnemies(std::vector <std::vector<int>> &grid, std::vecto
 }
 
 void observation::updateEnemyDistanceAndAngles(vector<enemy_attributes>& enemy_properties) {
-    // Ignoring enemy count above 4
+    // Ignoring enemy count above 8
+    if(enemy_properties.size() >= 5) {
+        enemy_distance_5 = enemy_properties[4].distance;
+        enemy_angle_5 = enemy_properties[4].angle;
+        enemy_risk_5 = enemy_properties[4].risk_measure;
+        enemy_id_5 = enemy_properties[4].id;
+        isLastMove5 = enemy_properties[4].moves_left == 1 ? 1 : 0;
+        isTracking5 = enemy_properties[4].isPlayerTracked ? 1 : 0;
+    } else {
+        enemy_distance_5 = MAX_DISTANCE;
+        enemy_angle_5 = 0;
+        enemy_risk_5 = 0;
+        enemy_id_5 = -1;
+        isLastMove5 = -1;
+        isTracking5 = -1;
+    }
+
     if(enemy_properties.size() >= 4) {
         enemy_distance_4 = enemy_properties[3].distance;
         enemy_angle_4 = enemy_properties[3].angle;
@@ -422,6 +446,13 @@ void observation::flattenObservationToVector (float (&observation_vector)[MAX_AB
     observation_vector[nextPosOffset++] = isLastMove4;
     observation_vector[nextPosOffset++] = isTracking4;
 
+    observation_vector[nextPosOffset++] = enemy_distance_5;
+    offset = enemy_angle_5 > 0;
+    observation_vector[nextPosOffset + offset] = abs(enemy_angle_5) * 10;
+    nextPosOffset += 2;
+    observation_vector[nextPosOffset++] = isLastMove5;
+    observation_vector[nextPosOffset++] = isTracking5;
+
     observation_vector[nextPosOffset++] = static_cast< float >(isPlayerInHotPursuit? 1:0);
     if(actionInPreviousState > -1) {
         observation_vector[nextPosOffset + actionInPreviousState] = 1;
@@ -497,7 +528,7 @@ void observation::setGoalInSight(int probeX, int probeY) {
 
 void observation::findDestination(bool isTraining) {
 
-    int goalDistance = isTraining ? GOAL_RADIUS : GOAL_RADIUS + 1;
+    int goalDistance = GOAL_RADIUS;//isTraining ? GOAL_RADIUS : GOAL_RADIUS + 1;
     for(int i = playerX - goalDistance; i<=playerX + goalDistance; i++) {
         for(int j = playerY - goalDistance; j<=playerY + goalDistance; j++) {
             if(i >= 0 and i < GRID_SPAN and j >= 0 and j < GRID_SPAN) {
@@ -634,6 +665,7 @@ void observation::markRiskyActions(std::vector <std::vector<int>> &grid, vector<
 int observation::getShortestDistanceBetweenPoints(int x1, int y1, int x2, int y2) {
     return max(abs(x1 - x2), abs(y1 - y2));
 }
+
 
 
 

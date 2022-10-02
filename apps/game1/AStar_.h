@@ -39,6 +39,8 @@ class AStar_ {
 
     int destinationDirection_;
 
+    bool initialized = false;
+
     void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
 
     bool isDestinationFound(node_ node);
@@ -47,13 +49,11 @@ class AStar_ {
 
     int reverseNodeLinks(node_& current);
 
-    void addEdge(int src, int dest, vector<pair<int, int>> &nodes);
+    void addEdge(int nextX, int nextY, vector<pair<int, int>> &nodes);
 
     double computeDistance(int x, int y);
 
     void reset();
-
-    void orderNodeLinks(node_ root);
 
     float computeGCost(node_ first, node_ second);
 
@@ -71,6 +71,7 @@ public:
         std::copy(grid.begin(), grid.end(), back_inserter(this->grid));
         source = make_pair(startX, startY);
         destination = make_pair(endX, endY);
+        initialized = true;
     }
 
     AStar_(vector<vector<int>> &grid) : GRID_SPAN_(grid.size()) {
@@ -84,7 +85,7 @@ public:
 
     float findShortestTime(pair<int, int> src, pair<int, int> dst);
 
-    bool findPathToDestination(int destinationDirection=0);
+    bool findPathToDestination();
 
     node_ getNextNode(node_& current);
 
@@ -111,6 +112,16 @@ public:
     int getNodeOrder(node_ n);
 
     int getTotalDistanceToDestination();
+
+    void blockedDestinationCoordinateAllowed();
+
+    void unblockDestinationCoordinate();
+
+    void orderNodeLinks(node_ root);
+
+    bool isInitialized();
+
+    friend class findPath;
 };
 
 

@@ -12,6 +12,8 @@
 #include "player.h"
 #include "findPath.h"
 #include "coordinatesUtil.h"
+#include "enemy/enemyUIData.h"
+
 
 using namespace std;
 
@@ -21,17 +23,25 @@ class gameSimulation : public coordinatesUtil {
 
     std::unique_ptr<Logger> logger;
 
-    int movePlayer(vector<vector<int>> &grid, std::vector<enemy>& enemies, const observation &currentObservation, int* error);
-    void moveEnemies(std::vector<enemy>& enemies, vector<std::vector<int>> &grid, observation &ob, int time);
-    void fight(std::vector<enemy>& enemies, vector<std::vector<int>> &grid);
+    unordered_set<int> enemiesAwayFromBase;
+
+    int movePlayer(vector<vector<int>> &grid, const observation &currentObservation, int* error);
+    void moveEnemies(vector<std::vector<int>> &grid, observation &ob, int time);
+    void fight(vector<std::vector<int>> &grid);
     float calculateReward(const observation &nextObservation, int action, int action_error);
-    void populateEnemies(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
+    void populateEnemies(std::vector<std::vector<int>> &grid, bool isTrainingMode);
 
     bool isEpisodeComplete();
 
-    void headStraightToDestination(vector<vector<int>> &grid, std::vector<enemy>& enemies);
+    void headStraightToDestination(vector<vector<int>> &grid, vector<enemyUIData> &enemiesInThisRound);
 
     bool isMDPDone(observation &nextObservation);
+
+    void populateEnemiesForUI(vector<enemyUIData> &enemiesUI);
+
+    void markDeadEnemies(vector<enemyUIData> &enemiesUI);
+
+    bool isStuckAtBorder();
 
 public:
 
@@ -41,9 +51,9 @@ public:
 
     player* player1;
 
-    void learnToPlay(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
+    void learnToPlay(std::vector<std::vector<int>> &grid);
 
-    void play(std::vector<std::vector<int>> &grid, std::vector<enemy> &enemies);
+    void play(std::vector<std::vector<int>> &grid);
 
     float getTotalRewardsCollected();
 

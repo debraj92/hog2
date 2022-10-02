@@ -8,10 +8,17 @@
 #include "../gameConstants.h"
 #include "../fixedobstacles.h"
 #include "../enemy/enemy.h"
-//#include "../trainingMaps.h"
+#include "../trainingMaps.h"
 #include "../JsonParser.h"
 
 using namespace std;
+
+void populateEnemiesAstar_test(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
+    for(enemy e: enemies) {
+        grid[e.start_x][e.start_y] = e.id;
+    }
+}
+
 
 // Diagonal path
 TEST(AStarFindPathDiagonal, BasicAssertions) {
@@ -215,27 +222,27 @@ TEST(AStarFindPathSmoothening, BasicAssertions) {
         std::vector<int> row(GRID_SPAN, 0);
         grid.push_back(row);
     }
-    JsonParser jp("map12");
-    jp.readFromFileObstacles(grid);
-    //logger.printBoardDebug(grid);
-    int startX = 12;
-    int startY = 0;
-    int destX = 3 * (GRID_SPAN - 1)/4;
-    int destY = GRID_SPAN - 1;
-    cout<<startX<<","<<startY<<"|"<<destX<<","<<destY<<endl;
-    AStar_ aStar(grid, startX, startY, destX, destY);
-    bool found = aStar.findPathToDestination();
-    ASSERT_TRUE(found);
+    vector<enemy> enemies;
 
-    node_ current(startX, startY);
-    int pathLen = 0;
-    while(current.x != destX or current.y != destY) {
-        grid[current.x][current.y] = 9;
-        current = aStar.getNextNode(current);
-        pathLen++;
+    trainingMaps train(false);
+    train.unregisterAllCreateMapFunctions();
+    train.registerCreateMapFunction(&trainingMaps::createMapUnitTesting3);
+    train.generateNextMap(grid, enemies);
+    populateEnemiesAstar_test(grid, enemies);
+
+    int x = 0;
+    int y = 0;
+    std::shared_ptr<findPath> fp = make_shared<findPath>(grid, x, y, GRID_SPAN - 1, GRID_SPAN - 1);
+    fp->findPathToDestination();
+    grid[x][y] = 9;
+    while(x != GRID_SPAN - 1 or y != GRID_SPAN - 1) {
+        fp->isOnTrack(x, y);
+        fp->calculateNextPosition();
+        x = fp->getNext_x();
+        y = fp->getNext_y();
+        grid[x][y] = 9;
     }
-    grid[current.x][current.y] = 9;
-    pathLen++;
+    grid[x][y] = 9;
+
     logger.printBoardDebug(grid);
-    cout<<"Path Length "<<pathLen<<endl;
 }

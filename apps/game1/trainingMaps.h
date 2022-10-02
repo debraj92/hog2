@@ -37,7 +37,7 @@ class trainingMaps {
 
     int placeEnemies(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies, int startId, long randomNumber);
 
-    bool areBoundariesOfObstacleClear(std::vector<std::vector<int>>& grid, int x, int y, bool isHorizontal);
+    bool areBoundariesClearOfEnemies(std::vector<std::vector<int>>& grid, int x, int y, int maxEnemiesInBoundaryAllowed);
 
 public:
 
@@ -140,6 +140,7 @@ public:
     /// For Unit testing
     void createMapUnitTesting1(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void createMapUnitTesting2(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
+    void createMapUnitTesting3(std::vector<std::vector<int>>& grid, std::vector<enemy>& enemies);
     void registerCreateMapFunction(const createMapFuncPtr createMapFunc);
     void unregisterAllCreateMapFunctions();
 

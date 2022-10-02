@@ -21,13 +21,13 @@ class RLNN_Agent : public DQN_interface {
     // Hyperparameters
     const double lr = 1e-3;
     // discount factor
-    const double gamma = 0.9;
+    const double gamma = 0.45;
     double epsilon = 1;
-    const double epsilon_min = 0.1;
+    const double epsilon_min = 0.25;
     const double epsilon_decay = 0.998;
     const double alpha = 1;
     const int epsilon_annealing_percent = EXPLOITATION_START_PERCENT;
-    int batchSize = 4500;
+    int batchSize = 4000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;

@@ -133,7 +133,7 @@ void RLNN_Agent::decayEpsilon(int currentEpisode) {
     if (not startEpsilonDecay) {
         return;
     }
-    if (currentEpisode % (MAX_EPISODES * (100 - EXPLOITATION_START_PERCENT)) / (100 * 2500) == 0) {
+    if (currentEpisode % ((MAX_EPISODES * (100 - EXPLOITATION_START_PERCENT)) / (100 * 1150)) == 0) {
         epsilon = max(epsilon_min, epsilon * epsilon_decay);
     }
 }

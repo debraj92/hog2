@@ -21,22 +21,32 @@ class enemy {
 
     int timeStep = 0;
 
+    bool isPathToBaseKnown = false;
+
+    void updateUIParams(int nextX, int nextY);
+
 public:
     int id;
 
     int start_x;
     int start_y;
 
-    int current_x;
-    int current_y;
-    // TODO: Remove
-    bool isFixed = false;
-    int life_left;
+    bool isTrainingInProgress = false;
 
     int lastKnownPlayerX = -1;
     int lastKnownPlayerY = -1;
 
     int max_moves = ENEMY_MAX_MOVES;
+    int enemyVisionRadius = ENEMY_VISION_RADIUS;
+
+    /**
+     * UI
+     */
+    int current_x;
+    int current_y;
+    int life_left;
+    bool hasChangedOrientation;
+    bool isOrientationLeft = true; // default
 
     struct playerInfo {
         int player_x;
@@ -44,27 +54,30 @@ public:
         int player_direction;
     };
 
-    enemy(vector<std::vector<int>> &grid, int start_x, int start_y, int id, bool fixed) {
+    enemy(vector<std::vector<int>> &grid, int start_x, int start_y, int id) {
         logger = std::make_shared<Logger>(LogLevel);
         this->start_x = start_x;
         this->start_y = start_y;
         this->current_x = start_x;
         this->current_y = start_y;
         this->id = id;
-        this->isFixed = fixed;
         this->life_left = 10;
-        this->max_moves = fixed? 0 : this->max_moves;
         fp = std::make_shared<findPath>(grid);
     }
 
-    void doNextMove(int time, vector<std::vector<int>> &grid, playerInfo pl_info = {});
+    // returns true if enemy actually moved
+    bool doNextMove(const int time, vector<std::vector<int>> &grid, playerInfo pl_info = {});
+    // returns true if base is reached
+    bool moveToBase(vector<std::vector<int>> &grid);
     int getAttackPoints();
     int getLifeLeft();
     void takeDamage(int points);
     bool isPlayerInSight(int player_x, int player_y);
     bool isPlayerTracked (int time) const;
+    double calculateDistance(int x1, int y1, int x2, int y2) const;
 
     void predictNextPlayerLocation(vector<std::vector<int>> &grid, playerInfo &pl_info);
+    void unitTraining();
 
 };
 

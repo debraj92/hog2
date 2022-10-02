@@ -36,7 +36,7 @@ void AStarChase_createGrid2_baseline(vector<std::vector<int>> &grid) {
             {2, 3, 3, 3},
             {5, 7, 1, 1},
             {7, 7, 1, 3},
-            {4, 6, 7, 7}
+            {5, 6, 7, 7}
     };
 
     baseline_createAllFixedObstacles(TOTAL_FIXED_OBSTACLES, blockObstacles, grid);
@@ -53,7 +53,8 @@ TEST(Baseline, dodge1) {
     int sy = 5;
     int dx = GRID_SPAN - 1;
     int dy = GRID_SPAN - 1;
-    enemy e1 = enemy(grid, 4, 7, 1, false);
+    enemy e1 = enemy(grid, 4, 7, 1);
+    grid[4][7] = 1;
     std::vector<enemy> enemies;
     enemies.push_back(e1);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
@@ -70,9 +71,19 @@ TEST(Baseline, dodge2) {
     int sy = 5;
     int dx = GRID_SPAN - 1;
     int dy = 5;
-    enemy e1 = enemy(grid, 4, 7, 1, false);
+    grid[4][7] = 1;
+    enemy e1 = enemy(grid, 4, 7, 1);
+    grid[2][9] = 2;
+    enemy e2 = enemy(grid, 2, 9, 2);
+    grid[5][4] = 3;
+    enemy e3 = enemy(grid, 5, 4, 3);
+    grid[1][1] = 4;
+    enemy e4 = enemy(grid, 1, 1, 4);
     std::vector<enemy> enemies;
     enemies.push_back(e1);
+    enemies.push_back(e2);
+    enemies.push_back(e3);
+    enemies.push_back(e4);
     player1.playGame(grid, enemies, sx, sy, dx, dy, t);
-    assert(player1.life_left == 0);
+    //assert(player1.life_left == 0);
 }

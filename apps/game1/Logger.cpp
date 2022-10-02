@@ -89,6 +89,7 @@ void Logger::printBoard_(std::vector<std::vector<int>> &grid) {
         for (int col=0; col<grid[row].size(); col++) {
             cout<<grid[row][col];
             if(grid[row][col] <= -10) cout<<" ";
+            else if (grid[row][col] >= 100) cout<<" ";
             else if(grid[row][col] < 0 or grid[row][col] >= 10) cout<<"  ";
             else cout<<"   ";
         }

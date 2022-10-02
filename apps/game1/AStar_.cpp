@@ -31,20 +31,12 @@ float AStar_::findShortestTime(pair<int, int> src, pair<int, int> dst) {
 }
 
 
-bool AStar_::findPathToDestination(int destinationDirection) {
+bool AStar_::findPathToDestination() {
     logger->logDebug("AStar_::findPathToDestination")->endLineDebug();
     logger->printBoardDebug(grid);
     reset();
     float (AStar_::* heuristicFunction)(pair<int, int> src, pair<int, int> dst);
-    destinationDirection_ = destinationDirection;
-    if (destinationDirection == 0) {
-        heuristicFunction = &AStar_::findShortestDistanceEuclidean;
-    } else {
-        //heuristicFunction = &AStar_::findShortestTime;
-        heuristicFunction = &AStar_::findShortestDistanceEuclidean;
-    }
-
-
+    heuristicFunction = &AStar_::findShortestDistanceEuclidean;
     node_ root(source.first, source.second);
     root.computeF(0, (this->*heuristicFunction)(source, destination));
     childParent.insert(make_pair(root, root));
@@ -60,6 +52,7 @@ bool AStar_::findPathToDestination(int destinationDirection) {
             orderNodeLinks(root);
             eraseDestinationNode();
             printTrack(root);
+            unblockDestinationCoordinate();
             return true;
         }
         vector<pair<int, int>> childNodes;
@@ -83,6 +76,7 @@ bool AStar_::findPathToDestination(int destinationDirection) {
         }
 
     }
+    unblockDestinationCoordinate();
     return false;
 
 }
@@ -174,9 +168,9 @@ int AStar_::reverseNodeLinks(node_& current) {
     return count+1;
 }
 
-void AStar_::addEdge(int src, int dest, vector<pair<int, int>> &nodes) {
-    if (grid[src][dest] >= 0) {
-        nodes.emplace_back(src, dest);
+void AStar_::addEdge(int nextX, int nextY, vector<pair<int, int>> &nodes) {
+    if (grid[nextX][nextY] >= 0 or grid[nextX][nextY] == -9) {
+        nodes.emplace_back(nextX, nextY);
     }
 }
 
@@ -212,6 +206,7 @@ void AStar_::reset() {
 void AStar_::changeSourceAndDestination(int startX, int startY, int endX, int endY) {
     source = make_pair(startX, startY);
     destination = make_pair(endX, endY);
+    initialized = true;
 }
 
 void AStar_::changeMap(vector<vector<int>> &grid) {
@@ -266,5 +261,22 @@ int AStar_::getTotalDistanceToDestination() {
 
 float AStar_::computeGCost(node_ first, node_ second) {
     int g_distance = abs(first.x - second.x) + abs(first.y - second.y);
-    return g_distance == 1 ? 1 : 1.4;
+    return g_distance == 1 ? 1 : 1.5;
+}
+
+void AStar_::blockedDestinationCoordinateAllowed() {
+    // special case ONLY for abstract A*
+    if(grid[destination.first][destination.second] < 0) {
+        grid[destination.first][destination.second] = -9;
+    }
+}
+
+void AStar_::unblockDestinationCoordinate() {
+    if(grid[destination.first][destination.second] == -9) {
+        grid[destination.first][destination.second] = -1;
+    }
+}
+
+bool AStar_::isInitialized() {
+    return initialized;
 }
