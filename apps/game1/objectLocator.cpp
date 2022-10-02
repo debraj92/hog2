@@ -156,3 +156,7 @@ void objectLocator::measureRiskAndObjectAngle() {
     calculateRiskFromDistance();
     calculateRiskFeatures();
 }
+
+float objectLocator::dotDirectionVector(int direction, float vector_x, float vector_y) {
+    return l1[direction] * vector_x + l2[direction] * vector_y;
+}

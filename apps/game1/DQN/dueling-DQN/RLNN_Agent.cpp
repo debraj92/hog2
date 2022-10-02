@@ -7,6 +7,7 @@
 #include <torch/torch.h>
 #include <utility>
 #include <vector>
+#include <testing.h>
 
 #include <iostream>
 
@@ -21,17 +22,33 @@ int RLNN_Agent::selectAction(observation &currentState, int episodeCount, bool *
         logger->logDebug("Selecting random action")->endLineDebug();
         std::uniform_int_distribution<> distri(0, ACTION_SPACE-1);
         std::default_random_engine re;
+#ifdef TESTING
+        re.seed(seedAction++);
+#else
         re.seed(std::chrono::system_clock::now().time_since_epoch().count());
+#endif
         action = distri(re);
     } else {
         logger->logDebug("Selecting max action")->endLineDebug();
+        auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
+
+        float obstaclesFOV[1][FOV_WIDTH][FOV_WIDTH];
+        float enemiesFOV[1][FOV_WIDTH][FOV_WIDTH];
+        float pathFOV[1][FOV_WIDTH][FOV_WIDTH];
+        //TODO: Current must be taken before observation actually changes when the environment is dynamic
+        cnn.populateFOVChannels(currentState.playerX, currentState.playerY, currentState.direction,
+                                obstaclesFOV[0], enemiesFOV[0], pathFOV[0]);
+        auto tensor_obstacles = torch::from_blob(obstaclesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
+        auto tensor_enemies = torch::from_blob(enemiesFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
+        auto tensor_path = torch::from_blob(pathFOV, {1, FOV_WIDTH, FOV_WIDTH}, options).unsqueeze(1);
+        auto tensor_fov_channels= torch::cat({tensor_path, tensor_obstacles, tensor_enemies}, 1);
+
         float observation_vector[MAX_ABSTRACT_OBSERVATIONS] = {0};
         currentState.flattenObservationToVector(observation_vector);
-        auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU);
         Tensor stateTensor = torch::from_blob(observation_vector, {MAX_ABSTRACT_OBSERVATIONS}, options);
         {
             torch::NoGradGuard no_grad;
-            auto fp1 = policyNet->forwardPass(stateTensor.unsqueeze(0));
+            auto fp1 = policyNet->forwardPass(tensor_fov_channels, stateTensor.unsqueeze(0));
             auto actions = policyNet->forwardPassAdvantage(fp1);
             action = torch::argmax(actions).detach().item<int>();
             //cout<<"Q values at ("<<currentState.playerX<<","<<currentState.playerY<<") : "<<actions<<endl;
@@ -57,15 +74,15 @@ double RLNN_Agent::learnWithDQN() {
 
     // states have dimension: batch_size X observation_feature_size
     // output would have dimensions: batch_size X action_space
-    auto fp1 = policyNet->forwardPass(memory.tensor_states);
+    auto fp1 = policyNet->forwardPass(memory.tensor_fov_channels_current, memory.tensor_states);
     auto s_v = policyNet->forwardPassValue(fp1);
     auto s_a = policyNet->forwardPassAdvantage(fp1);
 
-    auto fp2 = policyNet->forwardPass(memory.tensor_next_states);
+    auto fp2 = policyNet->forwardPass(memory.tensor_fov_channels_next, memory.tensor_next_states);
     auto ns_v = policyNet->forwardPassValue(fp2);
     auto ns_a = policyNet->forwardPassAdvantage(fp2);
 
-    auto fp3 = targetNet->forwardPass(memory.tensor_next_states);
+    auto fp3 = targetNet->forwardPass(memory.tensor_fov_channels_next, memory.tensor_next_states);
     auto nst_v = targetNet->forwardPassValue(fp3);
     auto nst_a = targetNet->forwardPassAdvantage(fp3);
 
@@ -100,7 +117,7 @@ void RLNN_Agent::saveModel(const string &file) {
 }
 
 void RLNN_Agent::updateTargetNet() {
-    std::stringstream stream1, stream2, stream3;
+    std::stringstream stream1, stream2, stream3, stream4, stream5;
 
     policyNet->saveModel(stream1, DQNNet::SEQUENTIAL);
     targetNet->loadModel(stream1, DQNNet::SEQUENTIAL);
@@ -108,6 +125,8 @@ void RLNN_Agent::updateTargetNet() {
     targetNet->loadModel(stream2, DQNNet::VALUE);
     policyNet->saveModel(stream3, DQNNet::ADVANTAGE);
     targetNet->loadModel(stream3, DQNNet::ADVANTAGE);
+    policyNet->saveModel(stream4, DQNNet::CNN1);
+    targetNet->loadModel(stream4, DQNNet::CNN1);
 }
 
 void RLNN_Agent::decayEpsilon() {
@@ -124,12 +143,6 @@ void RLNN_Agent::memorizeExperienceForReplay(observation &current, observation &
 void RLNN_Agent::printAction(int action) {
     logger->logDebug("RLNN_Agent::printAction ");
     switch(action) {
-        case ACTION_DODGE_LEFT:
-            logger->logDebug("ACTION_DODGE_LEFT")->endLineDebug();
-            break;
-        case ACTION_DODGE_RIGHT:
-            logger->logDebug("ACTION_DODGE_RIGHT")->endLineDebug();
-            break;
         case ACTION_DODGE_DIAGONAL_LEFT:
             logger->logDebug("ACTION_DODGE_DIAGONAL_LEFT")->endLineDebug();
             break;
@@ -138,15 +151,6 @@ void RLNN_Agent::printAction(int action) {
             break;
         case ACTION_STRAIGHT:
             logger->logDebug("ACTION_STRAIGHT")->endLineDebug();
-            break;
-        case ACTION_REROUTE:
-            logger->logDebug("ACTION_REROUTE")->endLineDebug();
-            break;
-        case ACTION_REDIRECT:
-            logger->logDebug("ACTION_REDIRECT")->endLineDebug();
-            break;
-        case ACTION_SWITCH:
-            logger->logDebug("ACTION_SWITCH")->endLineDebug();
             break;
         default:
             logger->logDebug("INVALID ACTION")->endLineDebug();
@@ -172,7 +176,12 @@ bool RLNN_Agent::isExplore(int episodeCount) {
     double upper_bound = 1;
     std::uniform_real_distribution<double> unif(lower_bound,upper_bound);
     std::default_random_engine re;
+#ifdef TESTING
+    re.seed(seedExplore++);
+#else
     re.seed(std::chrono::system_clock::now().time_since_epoch().count());
+#endif
+
     return unif(re) < epsilon;
 }
 

@@ -2205,17 +2205,17 @@ You can specify the `--gtest_shuffle` flag (or set the `GTEST_SHUFFLE`
 environment variable to `1`) to run the tests in a program in a random order.
 This helps to reveal bad dependencies between tests.
 
-By default, googletest uses a random seed calculated from the current time.
+By default, googletest uses a random seedAction calculated from the current time.
 Therefore you'll get a different order every time. The console output includes
-the random seed value, such that you can reproduce an order-related test failure
-later. To specify the random seed explicitly, use the `--gtest_random_seed=SEED`
+the random seedAction value, such that you can reproduce an order-related test failure
+later. To specify the random seedAction explicitly, use the `--gtest_random_seed=SEED`
 flag (or set the `GTEST_RANDOM_SEED` environment variable), where `SEED` is an
-integer in the range [0, 99999]. The seed value 0 is special: it tells
-googletest to do the default behavior of calculating the seed from the current
+integer in the range [0, 99999]. The seedAction value 0 is special: it tells
+googletest to do the default behavior of calculating the seedAction from the current
 time.
 
 If you combine this with `--gtest_repeat=N`, googletest will pick a different
-random seed and re-shuffle the tests in each iteration.
+random seedAction and re-shuffle the tests in each iteration.
 
 ### Controlling Test Output
 

@@ -14,6 +14,9 @@ using namespace std;
 LOG_LEVEL Logger::GLOBAL_LOG_LEVEL = INFO;
 
 Logger* Logger::logDebug(string output) {
+    if (turnLogOff) {
+        return this;
+    }
     switch (GLOBAL_LOG_LEVEL) {
         case DEBUG:
             if (level != OFF) {
@@ -36,6 +39,9 @@ Logger* Logger::logDebug(string output) {
 }
 
 Logger* Logger::logInfo(string output) {
+    if (turnLogOff) {
+        return this;
+    }
     switch (GLOBAL_LOG_LEVEL) {
         case DEBUG:
             if (level != OFF) {
@@ -81,11 +87,11 @@ void Logger::printBoard_(std::vector<std::vector<int>> &grid) {
     cout<<"print board"<<endl;
     for (int row=0; row<grid.size(); row++) {
         for (int col=0; col<grid[row].size(); col++) {
-            if(grid[row][col]<0) {
-                cout<<grid[row][col]<<" ";
-            } else {
-                cout<<" "<<grid[row][col]<<" ";
-            }
+            cout<<grid[row][col];
+            if(grid[row][col] <= -10) cout<<" ";
+            else if (grid[row][col] >= 100) cout<<" ";
+            else if(grid[row][col] < 0 or grid[row][col] >= 10) cout<<"  ";
+            else cout<<"   ";
         }
         cout<<"\n";
     }
@@ -135,4 +141,84 @@ Logger *Logger::printBoardInfo(vector<std::vector<int>> &grid) {
     }
 }
 
+Logger *Logger::logToFileInfo(string output) {
+    switch (GLOBAL_LOG_LEVEL) {
+        case DEBUG:
+            if (level != OFF) {
+                logfile<<output;
+                std::flush(logfile);
+            }
+            return this;
+        case INFO:
+            switch (level) {
+                case DEBUG:
+                case INFO:
+                    logfile<<output;
+                    std::flush(logfile);
+                    return this;
+                case OFF:
+                    return this;
+            }
+            return this;
+        case OFF:
+            return this;
+    }
+}
+
+Logger *Logger::logToFileInfo(double output) {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2) << output;
+    return logToFileInfo(ss.str());
+}
+
+Logger *Logger::endLineInfoFile() {
+    return logToFileInfo("\n");
+}
+
+void Logger::openLogFile() {
+    logfile.open(LOG_FILE);
+    logfileObstacles.open(LOG_FILE_OBSTACLES);
+    logfileEnemies.open(LOG_FILE_ENEMIES);
+    logfilePath.open(LOG_FILE_PATH);
+}
+
+void Logger::closeLogFile() {
+    logfile.close();
+    logfileObstacles.close();
+    logfileEnemies.close();
+    logfilePath.close();
+}
+
+void Logger::logObstaclesToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]) {
+    for (int row=0; row<FOV_WIDTH; row++) {
+        for (int col=0; col<FOV_WIDTH; col++) {
+            logfileObstacles<<fov[row][col]<<" ";
+        }
+        logfileObstacles<<"\n";
+    }
+    logfileObstacles<<"\n";
+    std::flush(logfileObstacles);
+}
+
+void Logger::logEnemiesToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]) {
+    for (int row=0; row<FOV_WIDTH; row++) {
+        for (int col=0; col<FOV_WIDTH; col++) {
+            logfileEnemies<<fov[row][col]<<" ";
+        }
+        logfileEnemies<<"\n";
+    }
+    logfileEnemies<<"\n";
+    std::flush(logfileEnemies);
+}
+
+void Logger::logPathToFile(float (&fov)[FOV_WIDTH][FOV_WIDTH]) {
+    for (int row=0; row<FOV_WIDTH; row++) {
+        for (int col=0; col<FOV_WIDTH; col++) {
+            logfilePath<<fov[row][col]<<" ";
+        }
+        logfilePath<<"\n";
+    }
+    logfilePath<<"\n";
+    std::flush(logfilePath);
+}
 

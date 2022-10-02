@@ -23,7 +23,7 @@ class AStarOpenList {
     void swim(int k);
 
 public:
-    void insert(node_& fvalue);
+    void insert(node_ fvalue);
     void exchange(int idx1, int idx2);
 
     node_ removeMinimum();

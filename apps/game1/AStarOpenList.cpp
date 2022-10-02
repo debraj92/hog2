@@ -55,7 +55,7 @@ void AStarOpenList::swim(int k) {
     }
 }
 
-void AStarOpenList::insert(node_& node) {
+void AStarOpenList::insert(node_ node) {
     node.heap_idx = size;
     fscoreHeap.push_back(node);
     openList.insert(node);
@@ -112,7 +112,7 @@ bool AStarOpenList::updateIfBetterPath(node_& n, float gvalue) {
         fscoreHeap[t->heap_idx] = n;
         openList.erase(n);
         openList.insert(n);
-        swim(t->heap_idx);
+        swim(n.heap_idx);
         return true;
     }
     return false;

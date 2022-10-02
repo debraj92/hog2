@@ -10,6 +10,7 @@
 #include "../DQN_interface.h"
 #include "../ReplayMemory.h"
 #include <string>
+#include <testing.h>
 
 using namespace std;
 
@@ -25,10 +26,10 @@ class RLNN_Agent : public DQN_interface {
     double epsilon = 1;
     const double epsilon_min = 0.01;
     const double epsilon_decay = 0.998;
-    const double alpha = 0.7;
+    const double alpha = 1;
     const int epsilon_annealing_percent = 60;
 
-    int batchSize = 2000;
+    int batchSize = 4000;
 
     unique_ptr<DQNNet> policyNet;
     unique_ptr<DQNNet> targetNet;
@@ -37,14 +38,15 @@ class RLNN_Agent : public DQN_interface {
     bool isTrainingMode;
     bool startEpsilonDecay;
 
+    CNN_controller& cnn;
+
     bool isExplore(int episodeCount);
 
 public:
 
-    RLNN_Agent() {
-        int sizeHiddenLayers = (2 * (MAX_ABSTRACT_OBSERVATIONS + ACTION_SPACE)) / 3;
-        policyNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "policyNet");
-        targetNet = std::make_unique<DQNNet>(MAX_ABSTRACT_OBSERVATIONS, ACTION_SPACE, sizeHiddenLayers, sizeHiddenLayers, lr, "targetNet");
+    RLNN_Agent(CNN_controller& cnn1) : memory(cnn1), cnn(cnn1) {
+        policyNet = std::make_unique<DQNNet>(lr, "policyNet");
+        targetNet = std::make_unique<DQNNet>(lr, "targetNet");
         // since no learning is performed on the target net
         targetNet->eval();
         startEpsilonDecay = false;
@@ -73,6 +75,18 @@ public:
     void printAction(int action);
 
     void plotLosses();
+
+#ifdef TESTING
+
+    /// For testing only
+    int seedAction = 1;
+    int seedExplore = 2;
+
+    virtual ReplayMemory* getAccessToReplayMemory() {
+        return &memory;
+    }
+
+#endif
 };
 
 

@@ -20,6 +20,8 @@ public:
 
     int heap_idx;
 
+    int order = 0;
+
     struct node_Hash
     {
         size_t operator()(const node_& point) const
@@ -43,6 +45,7 @@ public:
     }
 
     node_(int x, int y) : x(x), y(y), heap_idx(-1) {}
+    node_(){}
 
     void computeF(float g=0, float h=0, float r=0);
 

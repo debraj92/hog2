@@ -6,7 +6,6 @@
 #include <vector>
 #include "../AStar_.h"
 #include "../gameConstants.h"
-#include "../gameEnv.h"
 #include "../fixedobstacles.h"
 #include "../TestResult.h"
 

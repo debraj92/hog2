@@ -8,240 +8,272 @@
 #include "gameSimulation.h"
 #include "plot/pbPlots.hpp"
 #include "plot/supportLib.hpp"
+#include "trainingMaps.h"
 
 #include <random>
 #include <iostream>
 
+using namespace std;
+
 void player::takeDamage(int points) {
-    life_left -= points;
+    if (life_left > 0) life_left -= points;
 }
 
-void player::learnGame(vector<std::vector<int>> &grid, vector<enemy> &enemies) {
-    vector<double> rewards;
+void player::learnGame() {
+    vector<enemy> enemies;
+    trainingMaps train(false);
+
     gameSimulation game(grid);
     game.player1 = this;
-
-
-    int sources[14][2] = {
-            {0, 0},
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {0, GRID_SPAN-1},
-            {(GRID_SPAN-1)/2, 0},
-            {(GRID_SPAN-1)/2, 0},
-            {0, (GRID_SPAN-1)/2},
-            {(GRID_SPAN-1)/2, 0},
-            {0, 0},
-            {GRID_SPAN-1, 0},
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, GRID_SPAN-1}
-    };
-    int destinations[14][2] = {
-            {GRID_SPAN-1, GRID_SPAN-1},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {GRID_SPAN-1, (GRID_SPAN-1)/2},
-            {GRID_SPAN-1, 0},
-            {0, GRID_SPAN-1},
-            {(GRID_SPAN-1)/2, GRID_SPAN-1},
-            {GRID_SPAN-1, (GRID_SPAN-1)/2},
-            {0, (GRID_SPAN-1)/2},
-            {GRID_SPAN/2, GRID_SPAN/2},
-            {GRID_SPAN/2, GRID_SPAN/2},
-            {GRID_SPAN/2, GRID_SPAN/2},
-            {GRID_SPAN/2, GRID_SPAN/2}
-    };
-
-
-    /*
-     * TODO: Will work only when dodge is perfectly implemented - no getting lost
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> randomGen(0,GRID_SPAN-1);
-     */
-
-    train_step = 0;
-    vector<enemy> tempEnemies;
     int src_x, src_y, dest_x, dest_y;
-    int storyIndex = 0;
+    bool resumed;
+    float destinationCount = 0;
+    float deathCount = 0;
+    float inferenceCount = 0;
 
-    for(episodeCount = 1; episodeCount < MAX_EPISODES; episodeCount++) {
+    /// Start training async
+    stopLearning = false;
+    epoch = 1;
+    thread trainingRunner([this]{runTrainingAsync();});
+
+    while (epoch <= MAX_EPISODES) {
         // pick a random source and destination
-
-        if (not isResuming()) {
-            /// If resumed, then do not change previous episode's source and destination.
-            src_x = sources[storyIndex][0];
-            src_y = sources[storyIndex][1];
-            dest_x = destinations[storyIndex][0];
-            dest_y = destinations[storyIndex][1];
-            /// Rotate stories when a fresh episode starts with no resume.
-            //storyIndex++;
-        }
-
-        //game.player1->initialize(sources[i%14][0], sources[i%14][1], destinations[i%14][0], destinations[i%14][1]);
-        game.player1->initialize(src_x, src_y, dest_x, dest_y);
-        //selectRandomSourceAndDestinationCoordinates(rng, randomGen, grid, src_x, src_y, dest_x, dest_y);
-        //game.player1->initialize(src_x, src_y, dest_x, dest_y);
-
-        logger->logInfo("Episode ")->logInfo(episodeCount)->endLineInfo();
-
-        if (train_step % dqnTargetUpdateNextEpisode == 0) {
-            updateTargetNet();
-        }
+        resumed = isResuming();
         if (not resumed) {
+            /// If resumed, then do not change previous episode's source and destination.
+            train.generateNextMap(grid, enemies);
+            train.setSourceAndDestination(grid, src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestinationRotating( src_x, src_y, dest_x, dest_y);
+            //train.setSourceAndDestinationFixed( src_x, src_y, dest_x, dest_y);
+
             /// If resumed, then do not change enemy positions from last episode
             /// else reset enemy positions to start of game
-            tempEnemies = enemies;
+            prepareEnemiesHashMap(enemies);
         }
+        game.player1->initialize(src_x, src_y, dest_x, dest_y);
 
-        game.learnToPlay(grid, tempEnemies);
-        train_step++;
+        game.learnToPlay(grid);
+        if (stopLearning) {
+            inferenceCount++;
+        }
+        if(stopLearning and game.isDestinationReached()) {
+            destinationCount++;
+        }
+        if(stopLearning and life_left <= 0) {
+            deathCount++;
+        }
         logger->printBoardDebug(grid);
-        logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
-        if (not resumed) {
-            rewards.push_back(game.getTotalRewardsCollected());
-            game.reset(grid);
-        }
 
-        decayEpsilon();
+        game.removeCharacters(grid);
+        decayEpsilon(epoch);
+
+        /// Wake up the reader to run training
+        {
+            // critical
+            std::unique_lock<mutex> locker(safeTrainingExploration);
+            if (stopLearning) {
+                logger->logInfo("Total rewards collected ")->logInfo(game.getTotalRewardsCollected())->endLineInfo();
+                rewards.push_back(game.getTotalRewardsCollected());
+                epoch++;
+                logger->logInfo("Epoch: ")->logInfo(epoch)->endLineInfo();
+                locker.unlock();
+                explorationOpportunity.notify_one();
+            } else {
+                if (not resumed) {
+                    aggregated_rewards += game.getTotalRewardsCollected();
+                    count_aggregation++;
+                }
+                if (explorationCount >= MIN_EXPLORATION_BEFORE_TRAINING) {
+                    locker.unlock();
+                    explorationOpportunity.notify_one();
+                }
+                explorationCount++;
+            }
+        }
     }
 
+    trainingRunner.join();
     // Save Model
     saveModel(DQN_MODEL_PATH);
 
     plotLosses();
     plotRewards(rewards);
 
+    logger->logInfo("Destination reach %")->logInfo(destinationCount * 100 / inferenceCount)->endLineInfo();
+    logger->logInfo("Death %")->logInfo(deathCount * 100 / inferenceCount)->endLineInfo();
+
 }
 
-void player::playGame(vector<std::vector<int>> &grid, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
+void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemies, int src_x, int src_y, int dest_x, int dest_y, TestResult &result) {
+    copyGrid(gridSource);
+    clearVisited();
+    prepareEnemiesHashMap(enemies);
     gameSimulation game(grid);
     game.player1 = this;
-    logger->logInfo("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
-            ->endLineInfo();
+    logger->logDebug("Source (" + to_string(src_x) +", " + to_string(src_y) + ") Destination (" + to_string(dest_x) +", " + to_string(dest_y) +")\n")
+            ->endLineDebug();
     this->initialize(src_x, src_y, dest_x, dest_y);
-    game.play(grid, enemies);
-    logger->printBoardInfo(grid);
+    game.play(grid);
     result.final_x = game.player1->current_x;
     result.final_y = game.player1->current_y;
     result.destination_x = game.player1->destination_x;
     result.destination_y = game.player1->destination_y;
     result.total_rewards = game.player1->total_rewards;
-    game.reset(grid);
+    game.removeCharacters(grid);
+    logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
 
-void player::observe(observation &ob, std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, bool isRedirect) {
+
+void player::observe(observation &ob, std::vector<std::vector<int>> &grid, const int lastAction, const int actionError,
+                     const bool wasPreviousStateHotPursuit, const int previousStateDirection) {
+
     logger->logDebug("player::observe")->endLineDebug();
     ob.playerX = this->current_x;
     ob.playerY = this->current_y;
-    // TODO: Add to input state tensor
-    ob.playerLifeLeft = static_cast<float>(this->life_left);
+    ob.destinationX = this->destination_x;
+    ob.destinationY = this->destination_y;
 
-    if (!isRedirect) {
-        ob.locateTrajectoryAndDirection(fp, destination_x, destination_y);
+    if (isSimpleAstarPlayer and (not isSimplePlayerStuckDontReroute) and (current_x != destination_x or current_y != destination_y)) {
+        if (not findPathToDestination(current_x, current_y, destination_x, destination_y, true)) {
+            if (not findPathToDestination(current_x, current_y, destination_x, destination_y, false)) {
+                logger->logInfo("ERROR: Player could not find path to destination")->endLineInfo();
+            }
+        }
     }
 
-    if (ob.direction > 0) {
-        ob.locateEnemies(enemies);
-        ob.updateObstacleDistances(grid);
+    ob.findDestination(isTrainingMode and not stopLearning);
+    ob.locateTrajectoryAndDirection(fp);
+    ob.locateRelativeTrajectory();
+
+    if (not isSimpleAstarPlayer) {
+
+        ob.isTrueLastActionLeftOrRight = (lastAction == ACTION_DODGE_LEFT or lastAction == ACTION_DODGE_RIGHT) ? 1 : 0;
+        ob.recordFOVForCNN(cnnController, fp);
+
+        if (ob.direction > 0) {
+            ob.locateEnemies(grid, cnnController, hashMapEnemies, timeStep);
+            ob.updateObstacleDistances(grid);
+
+            // Hot Pursuit states need previous action to predict enemy movement
+            if (wasPreviousStateHotPursuit and ob.isPlayerInHotPursuit and (actionError != -1)) {
+                if (previousStateDirection != ob.direction) {
+                    // unit has changed direction
+                    ob.actionInPreviousState = rotatePreviousAction(previousStateDirection, ob.direction, lastAction);
+                } else {
+                    ob.actionInPreviousState = lastAction;
+                }
+            } else {
+                ob.actionInPreviousState = -1;
+            }
+        }
     }
 }
 
-int player::getDirection() {
-    return fp->pathDirection(current_x, current_y);
-}
-
-void player::findPathToDestination(std::vector<std::vector<int>> &grid, std::vector<enemy>& enemies, int src_x, int src_y, int dst_x, int dst_y) {
-    logger->logDebug("Find path to destination")->endLineDebug();
+bool player::findPathToDestination(int src_x, int src_y, int dst_x, int dst_y, bool dontGoCloseToEnemies) {
+    logger->logDebug("findPathToDestination")->endLineDebug();
+    if (isSimpleAstarPlayer) {
+        std::vector<std::vector<int>> gridTemporary;
+        std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
+        populateEnemyObstacles(gridTemporary, dontGoCloseToEnemies);
+        fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
+        return fp->findPathToDestinationDeferred();
+    }
     fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    // TODO: Enable when enemy handling is perfect
-    //fp->populateEnemyObstacles(enemies);
-    fp->findPathToDestination();
+    return fp->findPathToDestination();
 }
 
-void player::follow() {
-    fp->calculateNextPosition(current_x, current_y);
-    current_x = fp->getNext_x();
-    current_y = fp->getNext_y();
-}
+bool player::findPathToKnownPointOnTrack(int src_x, int src_y) {
+    logger->logDebug("findPathToKnownPointOnTrack")->endLineDebug();
 
-bool player::isOnTrack() {
-    return fp->isOnTrack(current_x, current_y);
+    std::vector<std::vector<int>> gridTemporary;
+    std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
+    populateEnemyObstacles(gridTemporary, false);
+
+    //find next free location in the existing path
+    int x = fp->knownOnTrackX;
+    int y = fp->knownOnTrackY;
+    if(x != destination_x or y != destination_y) {
+        fp->getNextPositionAfterGivenLocation(x, y, x, y);
+        while(grid[x][y] != 0) {
+            fp->getNextPositionAfterGivenLocation(x, y, x, y);
+        }
+    }
+    findPath fpTemp(gridTemporary, src_x, src_y, x, y);
+    if (not fpTemp.findPathToDestination()) {
+        logger->logInfo("ERROR: Path to point on track not found")->endLineInfo();
+        return false;
+    }
+    fp->stitchNewPathIntoExistingAtNode(fpTemp, x, y, src_x, src_y);
+    return true;
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
 
     if (isResuming()) {
-        current_x = deathCellX;
-        current_y = deathCellY;
-        source_x = deathCellX;
-        source_y = deathCellY;
+        current_x = restoreCellX;
+        current_y = restoreCellY;
+        source_x = restoreCellX;
+        source_y = restoreCellY;
         resumeCount++;
-        resumed = true;
     } else {
         source_x = src_x;
         source_y = src_y;
         current_x = source_x;
         current_y = source_y;
         resumeCount = resumeCount == MAX_RESUME? 0 : resumeCount;
-        resumed = false;
     }
-
     destination_x = dest_x;
     destination_y = dest_y;
     life_left = MAX_LIFE;
+    isSimplePlayerStuckDontReroute = false;
     total_rewards = 0;
 
 }
 
-void player::findNewRoute(vector<std::vector<int>> &grid, observation &ob, vector<enemy> &enemies, int src_x, int src_y, int dst_x,
-                          int dst_y) {
-    logger->logDebug("Find new temporary route to destination")->endLineDebug();
-    fp_temp_reroute = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    fp_temp_reroute->populateEnemyObstacles(enemies);
-    fp_temp_reroute->findPathToDestination();
-    ob.rerouteDistance = fp_temp_reroute->getDistanceToDestination();
-}
-
-int player::switchToNewRoute(observation &ob) {
-    logger->logDebug("switchToNewRoute")->endLineDebug();
-    if (ob.rerouteDistance < 1000) {
-        logger->logDebug("New distance ")->logDebug(ob.rerouteDistance)->endLineDebug();
-        // implies last action was re-route
-        fp = fp_temp_reroute;
-        return 0;
-    }
-    return -1;
-}
-
-int player::selectAction(observation& currentState) {
-    return RLNN_Agent::selectAction(currentState, episodeCount, &isExploring);
+int player::selectAction(const observation& currentState) {
+    return RLNN_Agent::selectAction(currentState, epoch, &isExploring);
 }
 
 void player::memorizeExperienceForReplay(observation &current, observation &next, int action, float reward, bool done) {
-    if (playerDiedInPreviousEpisode and deathCellX == current.playerX and deathCellY == current.playerY) {
-        return;
+    // Do not avoid transition into pursuit by any strategy. Otherwise player would want to loop
+    auto transitionIntoHotPursuit = (not current.isPlayerInHotPursuit) and next.isPlayerInHotPursuit;
+    if ((not stopLearning) and (not next.isGoalInSight) and (not transitionIntoHotPursuit)) {
+        RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
     }
-    RLNN_Agent::memorizeExperienceForReplay(current, next, action, reward, done, isExploring);
 }
 
-double player::learnWithDQN() {
-    return RLNN_Agent::learnWithDQN();
-}
+bool player::recordRestoreLocation() {
+    bool isRestoreLocationSet = false;
+    restoreCellX = fp->visited_x_onpath;
+    restoreCellY = fp->visited_y_onpath;
+    int nextCellX = -1, nextCellY = -1;
+    while(not isRestoreLocationSet) {
+        fp->getNextPositionAfterGivenLocation(restoreCellX, restoreCellY, nextCellX, nextCellY);
+        restoreCellX = nextCellX;
+        restoreCellY = nextCellY;
+        if (restoreCellX == destination_x and restoreCellY == destination_y) {
+            // cannot be restored
+            return false;
+        }
+        isRestoreLocationSet = true;
+        for (const auto& enemyIterator : hashMapEnemies) {
+            auto e = enemyIterator.second;
+            if (e.current_x == restoreCellX and e.current_y == restoreCellY) {
+                isRestoreLocationSet = false;
+                break;
+            }
+        }
+    }
 
-void player::recordDeathLocation() {
-    deathCellX = current_x;
-    deathCellY = current_y;
+    // restored
+    return true;
 }
 
 void player::plotRewards(vector<double> &rewards) {
 
     vector<double> rewards_averaged;
     vector<double> episodes;
-    int avg_window_size = rewards.size() / MAX_REWARD_POINTS_IN_PLOT;
+    int avg_window_size = max(static_cast<int>(rewards.size() / MAX_REWARD_POINTS_IN_PLOT), 1);
     for(int i=0; i<rewards.size(); i+=avg_window_size) {
         double sum = 0;
         for(int j=i; j<i+avg_window_size and j<rewards.size(); j++) {
@@ -257,7 +289,7 @@ void player::plotRewards(vector<double> &rewards) {
     auto success = DrawScatterPlot(imageReference, 1000, 1000, &episodes, &rewards_averaged, errorMessage);
     if(success){
         vector<double> *pngdata = ConvertToPNG(imageReference->image);
-        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot/episode_rewards.png");
+        WriteToFile(pngdata, "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/plot2/episode_rewards.png");
         DeleteImage(imageReference->image);
     }else{
         cerr << "Error: ";
@@ -271,6 +303,203 @@ void player::plotRewards(vector<double> &rewards) {
 bool player::isResuming() {
     return (not stopLearning) and playerDiedInPreviousEpisode and resumeCount < MAX_RESUME;
 }
+
+void player::createEmptyGrid(vector<std::vector<int>> &grid) {
+
+    // initialize an empty grid
+    for (int i=0; i<GRID_SPAN; i++) {
+        std::vector<int> row(GRID_SPAN, 0);
+        grid.push_back(row);
+    }
+}
+
+void player::loadExistingModel() {
+    RLNN_Agent::loadModel(DQN_MODEL_PATH);
+}
+
+void player::copyGrid(std::vector<std::vector<int>> &gridSource) {
+    for (int i=0; i<GRID_SPAN; i++) {
+        for (int j=0; j<GRID_SPAN; j++) {
+            grid[i][j] = gridSource[i][j];
+        }
+    }
+}
+
+
+void player::runTrainingAsync() {
+
+    for(; epoch <= MAX_EPISODES and not stopLearning; epoch++) {
+
+        /// Let the writer thread run a few times before executing a training pass
+        {
+            // critical
+            std::unique_lock<mutex> locker(safeTrainingExploration);
+            explorationOpportunity.wait(locker);
+            if (stopLearning) {
+                break;
+            }
+            rewards.push_back(aggregated_rewards/count_aggregation);
+            explorationCount = 0;
+            aggregated_rewards = 0;
+            count_aggregation = 0;
+        }
+        if (epoch % dqnTargetUpdateNextEpisode == 0) {
+            float percent_complete = (static_cast <float>(epoch) * 100) / static_cast <float>(MAX_EPISODES);
+            if (percent_complete < 80) {
+                logger->logInfo("Target net updated at episode ")->logInfo(epoch)->endLineInfo();
+                updateTargetNet();
+            }
+        }
+        logger->logInfo("Epoch: ")->logInfo(epoch)->endLineInfo();
+        auto loss = RLNN_Agent::learnWithDQN();
+        logger->logInfo("Network Loss: ")->logInfo(loss)->endLineInfo();
+    }
+}
+
+void player::enableBaseLinePlayer() {
+    isSimpleAstarPlayer = true;
+}
+
+void player::populateEnemyObstacles(vector<std::vector<int>> &gridTemp, bool dontGoClose) {
+    logger->logDebug("populateEnemyObstacles")->endLineDebug();
+    for (const auto& enemyIterator : hashMapEnemies) {
+        auto e = enemyIterator.second;
+        if (max(abs(current_x - e.current_x), abs(current_y - e.current_y)) <= VISION_RADIUS) {
+            if (dontGoClose) {
+                // surround enemy with obstacles
+                for(int i=e.current_x - 1; i<=e.current_x + 1; i++) {
+                    for(int j=e.current_y - 1; j<=e.current_y + 1; j++) {
+                        if(i>=0 and i<GRID_SPAN and j >=0 and j<GRID_SPAN and gridTemp[i][j] != PLAYER_ID) {
+                            gridTemp[i][j] = -e.id;
+                        }
+                    }
+                }
+            } else {
+                gridTemp[e.current_x][e.current_y] = -e.id;
+            }
+        }
+    }
+}
+
+int player::rotatePreviousAction(int oldDirection, int newDirection, int previousAction) {
+    int action = previousAction;
+    /// Match action in anticlockwise direction
+    for (int d = oldDirection; d != newDirection and action <= ACTION_DODGE_RIGHT; ++action) {
+        d++;
+        d = d == 9 ? 1 : d;
+    }
+    if (action <= ACTION_DODGE_RIGHT) {
+        return action;
+    }
+
+    action = previousAction;
+    /// Match action in clockwise direction
+    for (int d = oldDirection; d != newDirection and action >= 0; --action) {
+        d--;
+        d = d == 0 ? 8 : d;
+    }
+    if (action >= 0) {
+        return action;
+    }
+
+    /// hypothetical back actions
+    /// Search new direction in backside of old direction
+    int count = 0;
+    action = previousAction;
+    for (int d = oldDirection; d != newDirection; action++) {
+        count++;
+        d++;
+        d = d == 9 ? 1 : d;
+    }
+
+    return action;
+}
+
+bool player::isNextStateSafeEnough() {
+    return RLNN_Agent::getBestActionQ() > Q_REROUTE_THRESHOLD;
+}
+
+bool player::isInference() {
+    return not RLNN_Agent::isTrainingMode;
+}
+
+void player::addTemporaryObstaclesToAidReroute(int direction, const int actionMask[ACTION_SPACE]) {
+    coordinatesUtil coordinates(grid);
+    int x = current_x;
+    int y = current_y;
+    if (actionMask[ACTION_STRAIGHT] and coordinates.setStraightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_DIAGONAL_LEFT] and coordinates.setDodgeDiagonalLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_DIAGONAL_RIGHT] and coordinates.setDodgeDiagonalRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_LEFT] and coordinates.setDodgeLeftActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+
+    x = current_x;
+    y = current_y;
+    if (actionMask[ACTION_DODGE_RIGHT] and coordinates.setDodgeRightActionCoordinates(x, y, direction) == 0 and grid[x][y] == 0) {
+        grid[x][y] = NEXT_Q_TOO_LOW_ERROR;
+    }
+}
+
+void player::removeTemporaryObstacles() {
+    for(int r=current_x - 1; r<=current_x + 1; r++) {
+        if(r < 0 or r >= GRID_SPAN) continue;
+        for(int c=current_y - 1; c<=current_y + 1; c++) {
+            if(c < 0 or c >= GRID_SPAN) continue;
+            if(grid[r][c] == NEXT_Q_TOO_LOW_ERROR) grid[r][c] = 0;
+        }
+    }
+}
+
+void player::prepareEnemiesHashMap(vector<enemy> &enemies) {
+    hashMapEnemies.clear();
+    for(const enemy e: enemies) {
+        hashMapEnemies.insert(std::make_pair(e.id, e));
+    }
+}
+
+int player::markVisited() {
+    visited[current_x][current_y]++;
+    return visited[current_x][current_y];
+}
+
+void player::clearVisited() {
+    for (int i=0; i<GRID_SPAN; i++) {
+        for (int j=0; j<GRID_SPAN; j++) {
+            visited[i][j] = 0;
+        }
+    }
+}
+
+void player::registerUIComponent(SimpleUIView &ui) {
+    uiView = &ui;
+}
+
+void player::publishOnUI(vector<enemyUIData> &enemiesInThisRound) {
+    if(not isTrainingMode and UIEnabled) {
+        uiView->populateInfo(current_x, current_y, destination_x, destination_y, source_x, source_y, life_left, enemiesInThisRound);
+    }
+}
+
+void player::enableUI() {
+    UIEnabled = true;
+}
+
 
 
 

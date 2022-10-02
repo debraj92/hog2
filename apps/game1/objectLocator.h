@@ -8,6 +8,7 @@
 #include <map>
 #include "gameConstants.h"
 #include "Logger.h"
+#include <cmath>
 
 
 using namespace RTS;
@@ -16,6 +17,7 @@ using namespace std;
 class objectLocator {
 
     const LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
+    const bool SET_COMPONENT_LOG_OFF = true;
 
     std::unique_ptr<Logger> logger;
 
@@ -59,6 +61,7 @@ public:
     objectLocator() {
         init();
         logger = std::make_unique<Logger>(LogLevel);
+        logger->turnLogOff = SET_COMPONENT_LOG_OFF;
     }
 
     void locateObject(int player_x, int player_y, int direction, int object_x, int object_y);
@@ -70,6 +73,8 @@ public:
     float getObjectAngle();
 
     float getObjectRiskFeature();
+
+    float dotDirectionVector(int direction, float vector_x, float vector_y);
 };
 
 
