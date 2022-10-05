@@ -16,6 +16,10 @@
 using namespace std;
 
 void player::takeDamage(int points) {
+    if(infiniteLife) {
+        damage++;
+        return;
+    }
     if (life_left > 0) life_left -= points;
 }
 
@@ -119,6 +123,9 @@ void player::playGame(vector<std::vector<int>> &gridSource, vector<enemy> &enemi
     result.destination_x = game.player1->destination_x;
     result.destination_y = game.player1->destination_y;
     result.total_rewards = game.player1->total_rewards;
+    result.damage = game.player1->damage;
+    result.pathRatio = (double)game.player1->distanceTravelled / (double)game.player1->pathLength;
+    result.maxMemoryUsed = game.player1->maxMemoryUsed;
     game.removeCharacters(grid);
     logger->logDebug("Total rewards collected ")->logDebug(game.getTotalRewardsCollected())->endLineDebug();
 }
@@ -171,15 +178,28 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, const
 
 bool player::findPathToDestination(int src_x, int src_y, int dst_x, int dst_y, bool dontGoCloseToEnemies) {
     logger->logDebug("findPathToDestination")->endLineDebug();
+    bool isPathFound;
     if (isSimpleAstarPlayer) {
         std::vector<std::vector<int>> gridTemporary;
         std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
         populateEnemyObstacles(gridTemporary, dontGoCloseToEnemies);
         fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
-        return fp->findPathToDestinationDeferred();
+        isPathFound = fp->findPathToDestinationDeferred();
+    } else {
+        fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
+        isPathFound = fp->findPathToDestination();
     }
-    fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    return fp->findPathToDestination();
+    int memoryUsed = fp->getMaxMemoryUsed();
+    maxMemoryUsed = memoryUsed > maxMemoryUsed ? memoryUsed : maxMemoryUsed;
+    return isPathFound;
+}
+
+void player::countPathLengthToDestination(int src_x, int src_y, int dst_x, int dst_y) {
+    std::vector<std::vector<int>> gridTemporary;
+    std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
+    findPath fp_(gridTemporary, src_x, src_y, dst_x, dst_y);
+    fp_.findPathToDestination();
+    pathLength = fp_.getCountOfNodesToDestination();
 }
 
 bool player::findPathToKnownPointOnTrack(int src_x, int src_y) {
@@ -200,10 +220,18 @@ bool player::findPathToKnownPointOnTrack(int src_x, int src_y) {
     }
     findPath fpTemp(gridTemporary, src_x, src_y, x, y);
     if (not fpTemp.findPathToDestination()) {
-        logger->logInfo("ERROR: Path to point on track not found")->endLineInfo();
-        return false;
+        gridTemporary.clear();
+        std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
+        findPath fpTemp2(gridTemporary, src_x, src_y, x, y);
+        if (not fpTemp2.findPathToDestination()) {
+            logger->logInfo("ERROR: Path to point on track not found")->endLineInfo();
+            return false;
+        }
+        fp->stitchNewPathIntoExistingAtNode(fpTemp2, x, y, src_x, src_y);
+        return true;
     }
     fp->stitchNewPathIntoExistingAtNode(fpTemp, x, y, src_x, src_y);
+
     return true;
 }
 
@@ -227,6 +255,10 @@ void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
     life_left = MAX_LIFE;
     isSimplePlayerStuckDontReroute = false;
     total_rewards = 0;
+    pathLength = 0;
+    distanceTravelled = 0;
+    damage = 0;
+    maxMemoryUsed = 0;
 
 }
 
@@ -498,6 +530,10 @@ void player::publishOnUI(vector<enemyUIData> &enemiesInThisRound) {
 
 void player::enableUI() {
     UIEnabled = true;
+}
+
+void player::enableInfiniteLife() {
+    infiniteLife = true;
 }
 
 

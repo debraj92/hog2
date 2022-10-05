@@ -41,10 +41,15 @@ void runTesting(player &player1) {
     int sy=0;
     int dx=0;
     int dy=0;
+    int totalDamage = 0;
+    double totalPathRatio = 0;
+    int maxMemoryUsed = 0;
     trainingMaps tm(true);
     float countDestinationReach = 0;
     float death = 0;
-    float max_ep = 1000;
+    float max_ep = 1;
+    player1.enableInfiniteLife();
+    auto t1 = high_resolution_clock::now();
     for (int i=1; i<= max_ep; i++) {
         cout<<"Episode: "<<i<<endl;
         vector<vector<int>> grid;
@@ -58,27 +63,40 @@ void runTesting(player &player1) {
         tm.setSourceAndDestination(grid, sx, sy, dx, dy);
         //tm.setSourceAndDestinationFixed(sx, sy, dx, dy);
         cout<<"("<<sx<<","<<sy<<") -> ("<<dx<<","<<dy<<")"<<endl;
-        auto t1 = high_resolution_clock::now();
 
         player1.playGame(grid, enemies, sx, sy, dx, dy, t);
 
-        auto t2 = high_resolution_clock::now();
-        duration<double, std::milli> ms_double = t2 - t1;
-
-        cout<<"Total execution time of episode "<<ms_double.count()<<endl;
-
+        /*
         if(t.final_x == t.destination_x and t.final_y == t.destination_y) {
             countDestinationReach++;
         }
         if(player1.life_left == 0) {
             death++;
         }
+         */
+        totalDamage += t.damage;
+        totalPathRatio += t.pathRatio;
+        maxMemoryUsed += t.maxMemoryUsed;
     }
 
+    auto t2 = high_resolution_clock::now();
+    duration<double, std::milli> ms_double = t2 - t1;
+    double averageExecTime = ms_double.count() / (double)max_ep;
+    double averageDamage = (double)totalDamage / (double)max_ep;
+    double averagePathRatio = (double)totalPathRatio / (double)max_ep;
+    double averageMaxMemoryUsed = (double)maxMemoryUsed / (double)max_ep;
+
+    cout<<"Average execution time "<<averageExecTime<<endl;
+    cout<<"Average damage "<< averageDamage<<endl;
+    cout<<"Average path ratio "<< averagePathRatio<<endl;
+    cout<<"Average max memory used "<< averageMaxMemoryUsed<<endl;
+
+    /*
     float reach_percent = countDestinationReach * 100 / max_ep;
     float death_percent = death * 100 / max_ep;
     cout<<"% reach "<<reach_percent<<endl;
     cout<<"% death "<<death_percent<<endl;
+     */
 }
 
 void generateMaps() {
@@ -139,6 +157,7 @@ int main() {
 
     //generateMaps();
 
+    /// UI works only for training-maps1
     GameController control;
     control.startGame();
 

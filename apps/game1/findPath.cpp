@@ -346,3 +346,14 @@ void findPath::printTrack(int startX, int startY) {
     node_ src(startX, startY);
     aStar.printTrack(src);
 }
+
+int findPath::getCountOfNodesToDestination() {
+    return aStar.getCountOfNodesToDestination();
+}
+
+int findPath::getMaxMemoryUsed() {
+    if (isAbstractSearchInUse) {
+        return aStar.getMaxMemoryUsed() + aStarAbs->getMaxMemoryUsed();
+    }
+    return aStar.getMaxMemoryUsed();
+}
