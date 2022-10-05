@@ -94,6 +94,8 @@ public:
 
     void stitchNewPathIntoExistingAtNode(findPath &fp_, int xOnTrack, int yOnTrack, int newSourceX, int newSourceY);
 
+    int getShortestDistance(int x1, int y1, int x2, int y2);
+
     /**
      * Abstract A*
      */
@@ -102,6 +104,8 @@ public:
     int getNodeOrder(int &x, int &y);
 
     void printTrack(int startX, int startY);
+
+    void getCurrentStartOfPath(int &x, int &y);
 
 };
 

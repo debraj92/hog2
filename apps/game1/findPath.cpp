@@ -346,3 +346,12 @@ void findPath::printTrack(int startX, int startY) {
     node_ src(startX, startY);
     aStar.printTrack(src);
 }
+
+void findPath::getCurrentStartOfPath(int &x, int &y) {
+    x = aStar.source.first;
+    y = aStar.source.second;
+}
+
+int findPath::getShortestDistance(int x1, int y1, int x2, int y2) {
+    return aStar.findShortestDistance(make_pair(x1, y1), make_pair(x2, y2));
+}

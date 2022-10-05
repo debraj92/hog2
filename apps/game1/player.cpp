@@ -171,40 +171,11 @@ void player::observe(observation &ob, std::vector<std::vector<int>> &grid, const
 
 bool player::findPathToDestination(int src_x, int src_y, int dst_x, int dst_y, bool dontGoCloseToEnemies) {
     logger->logDebug("findPathToDestination")->endLineDebug();
-    if (isSimpleAstarPlayer) {
-        std::vector<std::vector<int>> gridTemporary;
-        std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
-        populateEnemyObstacles(gridTemporary, dontGoCloseToEnemies);
-        fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
-        return fp->findPathToDestinationDeferred();
-    }
-    fp = std::make_shared<findPath>(grid, src_x, src_y, dst_x, dst_y);
-    return fp->findPathToDestination();
-}
-
-bool player::findPathToKnownPointOnTrack(int src_x, int src_y) {
-    logger->logDebug("findPathToKnownPointOnTrack")->endLineDebug();
-
     std::vector<std::vector<int>> gridTemporary;
     std::copy(grid.begin(), grid.end(), back_inserter(gridTemporary));
-    populateEnemyObstacles(gridTemporary, false);
-
-    //find next free location in the existing path
-    int x = fp->knownOnTrackX;
-    int y = fp->knownOnTrackY;
-    if(x != destination_x or y != destination_y) {
-        fp->getNextPositionAfterGivenLocation(x, y, x, y);
-        while(grid[x][y] != 0) {
-            fp->getNextPositionAfterGivenLocation(x, y, x, y);
-        }
-    }
-    findPath fpTemp(gridTemporary, src_x, src_y, x, y);
-    if (not fpTemp.findPathToDestination()) {
-        logger->logInfo("ERROR: Path to point on track not found")->endLineInfo();
-        return false;
-    }
-    fp->stitchNewPathIntoExistingAtNode(fpTemp, x, y, src_x, src_y);
-    return true;
+    populateEnemyObstacles(gridTemporary, dontGoCloseToEnemies);
+    fp = std::make_shared<findPath>(gridTemporary, src_x, src_y, dst_x, dst_y);
+    return fp->findPathToDestinationDeferred();
 }
 
 void player::initialize(int src_x, int src_y, int dest_x, int dest_y) {
@@ -244,14 +215,19 @@ void player::memorizeExperienceForReplay(observation &current, observation &next
 
 bool player::recordRestoreLocation() {
     bool isRestoreLocationSet = false;
-    restoreCellX = fp->visited_x_onpath;
-    restoreCellY = fp->visited_y_onpath;
+    if (fp->visited_x_onpath != -1) {
+        restoreCellX = fp->visited_x_onpath;
+        restoreCellY = fp->visited_y_onpath;
+    } else {
+        fp->getCurrentStartOfPath(restoreCellX, restoreCellY);
+    }
+
     int nextCellX = -1, nextCellY = -1;
     while(not isRestoreLocationSet) {
         fp->getNextPositionAfterGivenLocation(restoreCellX, restoreCellY, nextCellX, nextCellY);
         restoreCellX = nextCellX;
         restoreCellY = nextCellY;
-        if (restoreCellX == destination_x and restoreCellY == destination_y) {
+        if ((restoreCellX == destination_x and restoreCellY == destination_y) or fp->getShortestDistance(restoreCellX, restoreCellY, destination_x, destination_y) <= GOAL_RADIUS) {
             // cannot be restored
             return false;
         }
@@ -264,7 +240,6 @@ bool player::recordRestoreLocation() {
             }
         }
     }
-
     // restored
     return true;
 }
