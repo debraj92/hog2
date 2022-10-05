@@ -60,6 +60,7 @@ void AStarOpenList::insert(node_ node) {
     fscoreHeap.push_back(node);
     openList.insert(node);
     size++;
+    maxSize = size > maxSize ? size : maxSize;
     swim(size-1);
 }
 
@@ -116,4 +117,8 @@ bool AStarOpenList::updateIfBetterPath(node_& n, float gvalue) {
         return true;
     }
     return false;
+}
+
+int AStarOpenList::getMaxSize() {
+    return maxSize;
 }

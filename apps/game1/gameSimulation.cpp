@@ -14,6 +14,7 @@ using std::chrono::milliseconds;
 
 void gameSimulation::play(vector<std::vector<int>> &grid) {
     logger->logDebug("gameSimulation::play")->endLineDebug();
+    player1->countPathLengthToDestination(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
     populateEnemies(grid, false);
     if (not player1->isSimpleAstarPlayer) {
         bool isPathFound = player1->findPathToDestination(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
@@ -235,7 +236,9 @@ int gameSimulation::movePlayer(vector<vector<int>> &grid, const observation &cur
         default:
             logger->logInfo("ERROR: Wrong next action")->endLineInfo();
     }
-
+    if(*error != -1) {
+        player1->distanceTravelled++;
+    }
     grid[savedLocationPlayerX][savedLocationPlayerY] = 0;
     grid[player1->current_x][player1->current_y] = 9;
 

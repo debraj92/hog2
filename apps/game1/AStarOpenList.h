@@ -15,6 +15,7 @@ class AStarOpenList {
     vector<node_> fscoreHeap;
     unordered_set<node_, node_::node_Hash> openList;
     int size = 0;
+    int maxSize = 0;
 
     float leftChild(int parentIndex);
     float rightChild(int parentIndex);
@@ -34,6 +35,8 @@ public:
     bool isPresent(node_& n);
 
     bool updateIfBetterPath(node_& n, float gvalue);
+
+    int getMaxSize();
 };
 
 

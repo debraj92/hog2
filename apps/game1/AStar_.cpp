@@ -53,6 +53,7 @@ bool AStar_::findPathToDestination() {
             eraseDestinationNode();
             printTrack(root);
             unblockDestinationCoordinate();
+            maxSizeOfOpenList = openList.getMaxSize() > maxSizeOfOpenList ? openList.getMaxSize() : maxSizeOfOpenList;
             return true;
         }
         vector<pair<int, int>> childNodes;
@@ -77,6 +78,7 @@ bool AStar_::findPathToDestination() {
 
     }
     unblockDestinationCoordinate();
+    maxSizeOfOpenList = openList.getMaxSize() > maxSizeOfOpenList ? openList.getMaxSize() : maxSizeOfOpenList;
     return false;
 
 }
@@ -279,4 +281,8 @@ void AStar_::unblockDestinationCoordinate() {
 
 bool AStar_::isInitialized() {
     return initialized;
+}
+
+int AStar_::getMaxMemoryUsed() {
+    return maxSizeOfOpenList;
 }
