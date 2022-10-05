@@ -41,6 +41,8 @@ class AStar_ {
 
     bool initialized = false;
 
+    int maxSizeOfOpenList = 0;
+
     void calculateAdjacentNodes(vector<pair<int, int>>& childNodes, node_& nextNode);
 
     bool isDestinationFound(node_ node);
@@ -120,6 +122,8 @@ public:
     void orderNodeLinks(node_ root);
 
     bool isInitialized();
+
+    int getMaxMemoryUsed();
 
     friend class findPath;
 };

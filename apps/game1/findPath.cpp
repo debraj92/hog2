@@ -355,3 +355,14 @@ void findPath::getCurrentStartOfPath(int &x, int &y) {
 int findPath::getShortestDistance(int x1, int y1, int x2, int y2) {
     return aStar.findShortestDistance(make_pair(x1, y1), make_pair(x2, y2));
 }
+
+int findPath::getCountOfNodesToDestination() {
+    return aStar.getCountOfNodesToDestination();
+}
+
+int findPath::getMaxMemoryUsed() {
+    if (isAbstractSearchInUse) {
+        return aStar.getMaxMemoryUsed() + aStarAbs->getMaxMemoryUsed();
+    }
+    return aStar.getMaxMemoryUsed();
+}

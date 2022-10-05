@@ -13,6 +13,9 @@ public:
     int final_y;
     int destination_x;
     int destination_y;
+    int damage;
+    double pathRatio;
+    int maxMemoryUsed;
 };
 
 #endif //EXAMPLE_TESTS_TESTRESULT_H

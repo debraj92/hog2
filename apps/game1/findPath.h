@@ -91,6 +91,7 @@ public:
     int inferDirection(int x, int y, int next_x, int next_y);
     void changeSourceAndDestination(int startX, int startY, int endX, int endY);
     void changeMap(vector<vector<int>> &grid);
+    int getCountOfNodesToDestination();
 
     void stitchNewPathIntoExistingAtNode(findPath &fp_, int xOnTrack, int yOnTrack, int newSourceX, int newSourceY);
 
@@ -106,6 +107,8 @@ public:
     void printTrack(int startX, int startY);
 
     void getCurrentStartOfPath(int &x, int &y);
+
+    int getMaxMemoryUsed();
 
 };
 

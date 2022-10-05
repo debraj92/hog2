@@ -58,6 +58,8 @@ class player : public RLNN_Agent {
 
     bool UIEnabled = false;
 
+    bool infiniteLife = false;
+
     void createEmptyGrid(vector<std::vector<int>> &grid);
 
     void runTrainingAsync();
@@ -87,6 +89,9 @@ public:
 
     float aggregated_rewards = 0;
     float count_aggregation = 0;
+    int distanceTravelled = 0;
+    int pathLength = 0;
+    int maxMemoryUsed = 0;
     vector<double> rewards;
 
     vector<std::vector<int>> visited;
@@ -94,6 +99,8 @@ public:
     bool isSimpleAstarPlayer = false;
     bool isSimplePlayerStuckDontReroute = false;
     int timeStep;
+
+    int damage = 0;
 
     unordered_map<int, enemy> hashMapEnemies;
 
@@ -120,6 +127,9 @@ public:
     void observe(observation &ob, std::vector<std::vector<int>> &grid, int lastAction, int actionError, bool wasPreviousStateHotPursuit, int previousStateDirection);
 
     bool findPathToDestination(int src_x, int src_y, int dst_x, int dst_y, bool dontGoCloseToEnemies=false);
+
+    // ONLY FOR STATS
+    void countPathLengthToDestination(int src_x, int src_y, int dst_x, int dst_y);
 
     bool findPathToKnownPointOnTrack(int src_x, int src_y);
 
@@ -156,6 +166,8 @@ public:
     void publishOnUI(vector<enemyUIData> &enemiesInThisRound);
 
     void enableUI();
+
+    void enableInfiniteLife();
 
     /// Testing
 #ifdef TESTING
