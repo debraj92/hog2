@@ -17,33 +17,33 @@ void SimpleUIView::startGameLoop(bool &isGameStopped) {
 
     int gameMap[] =
             {
-                    14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14,
-                    14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14, 1, 1, 1, 14, 14, 14,
+                    12, 12, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 12, 12, 12,
+                    12, 12, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 12, 12, 12,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    12, 12, 13, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 14, 1, 1, 1, 13, 12, 12, 1, 1, 1, 0, 0, 0,
-                    12, 12, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 14, 14, 1, 1, 1, 13, 12, 12, 1, 1, 1, 0, 0, 0,
+                    10, 10, 11, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 12, 1, 1, 1, 11, 10, 10, 1, 1, 1, 0, 0, 0,
+                    10, 10, 10, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 12, 12, 1, 1, 1, 11, 10, 10, 1, 1, 1, 0, 0, 0,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 14, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 14, 13, 12,
-                    0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 0, 0, 14, 1, 1, 1, 0, 0, 0, 1, 1, 1, 13, 12, 12,
+                    0, 0, 0, 1, 1, 1, 10, 10, 10, 1, 1, 1, 0, 12, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 12, 11, 10,
+                    0, 0, 0, 1, 1, 1, 10, 10, 10, 1, 1, 1, 0, 0, 12, 1, 1, 1, 0, 0, 0, 1, 1, 1, 11, 10, 10,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 13, 12, 13,
-                    16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 0, 0, 0, 1, 1, 1, 12, 12, 12, 1, 1, 1, 13, 12, 13,
+                    13, 13, 13, 1, 1, 1, 13, 13, 13, 1, 1, 1, 0, 0, 0, 1, 1, 1, 10, 10, 10, 1, 1, 1, 11, 10, 11,
+                    13, 13, 13, 1, 1, 1, 13, 13, 13, 1, 1, 1, 0, 0, 0, 1, 1, 1, 10, 10, 10, 1, 1, 1, 11, 10, 11,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 16, 0, 0, 1, 1, 1, 16, 16, 16, 1, 1, 1, 13, 12, 13,
-                    16, 12, 16, 1, 1, 1, 12, 12, 12, 1, 1, 1, 16, 16, 0, 1, 1, 1, 16, 16, 16, 1, 1, 1, 12, 12, 12,
-                    16, 16, 12, 1, 1, 1, 12, 12, 12, 1, 1, 1, 16, 16, 16, 1, 1, 1, 16, 16, 16, 1, 1, 1, 13, 12, 12
+                    11, 11, 11, 1, 1, 1, 11, 11, 11, 1, 1, 1, 13, 13, 13, 1, 1, 1, 13, 13, 13, 1, 1, 1, 11, 10, 11,
+                    11, 10, 11, 1, 1, 1, 10, 10, 10, 1, 1, 1, 13, 13, 13, 1, 1, 1, 13, 13, 13, 1, 1, 1, 10, 10, 10,
+                    11, 11, 10, 1, 1, 1, 10, 10, 10, 1, 1, 1, 13, 13, 13, 1, 1, 1, 13, 13, 13, 1, 1, 1, 11, 10, 10
             };
 
 
@@ -66,7 +66,7 @@ void SimpleUIView::startGameLoop(bool &isGameStopped) {
                 isClosed = true;
                 uiConditions.notify_one();
                 isGameStopped = true;
-            } else if (event.type == sf::Event::KeyPressed) {
+            } else if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::P) {
                 paused = not paused;
             }
 
@@ -138,33 +138,33 @@ void SimpleUIView::drawOnCanvas(TileMap &map, vector<int> &tiles) {
 
 void SimpleUIView::updateMapWithCurrentState(vector<int> &tiles) {
     if (isPlayerDead) {
-        tiles[convert2DIndexTo1D(playerX, playerY)] = 8;
-        tiles[convert2DIndexTo1D(destinationX, destinationY)] = 6;
+        tiles[convert2DIndexTo1D(playerX, playerY)] = 6;
+        tiles[convert2DIndexTo1D(destinationX, destinationY)] = 4;
     } else if (playerReached) {
-        tiles[convert2DIndexTo1D(destinationX, destinationY)] = 7;
+        tiles[convert2DIndexTo1D(destinationX, destinationY)] = 5;
     } else {
-        tiles[convert2DIndexTo1D(destinationX, destinationY)] = 6;
+        tiles[convert2DIndexTo1D(destinationX, destinationY)] = 4;
         if (playerOrientationLeft) {
-            tiles[convert2DIndexTo1D(playerX, playerY)] = 5;
+            tiles[convert2DIndexTo1D(playerX, playerY)] = 3;
         } else {
-            tiles[convert2DIndexTo1D(playerX, playerY)] = 4;
+            tiles[convert2DIndexTo1D(playerX, playerY)] = 2;
         }
     }
 
     if(playerEnRoute) {
-        tiles[convert2DIndexTo1D(sourceX, sourceY)] = 17;
+        tiles[convert2DIndexTo1D(sourceX, sourceY)] = 14;
     }
 
     for(enemyUIData enemy: enemiesInThisRound) {
         if(enemy.isDead) {
             if(enemy.x != playerX or enemy.y != playerY) {
-                tiles[convert2DIndexTo1D(enemy.x, enemy.y)] = 9;
+                tiles[convert2DIndexTo1D(enemy.x, enemy.y)] = 7;
             }
         } else {
             if(enemy.isOrientationLeft) {
-                tiles[convert2DIndexTo1D(enemy.x, enemy.y)] = 10;
+                tiles[convert2DIndexTo1D(enemy.x, enemy.y)] = 8;
             } else {
-                tiles[convert2DIndexTo1D(enemy.x, enemy.y)] = 11;
+                tiles[convert2DIndexTo1D(enemy.x, enemy.y)] = 9;
             }
         }
     }

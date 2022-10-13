@@ -59,7 +59,9 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
                 player1->removeTemporaryObstacles();
                 if (not isPathFound) {
                     logger->logInfo("No path found, re-routing will be unsuccessful")->endLineInfo();
-                    player1->findPathToDestination(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y);
+                    if (not player1->findPathToDestination(player1->current_x, player1->current_y, player1->destination_x, player1->destination_y)) {
+                        logger->logInfo("ERROR: NO PATH FOUND. USE CASE FAILED")->endLineInfo();
+                    }
                 }
             }
             logger->logDebug("Attempting to re-route")->endLineDebug();
@@ -136,8 +138,8 @@ void gameSimulation::play(vector<std::vector<int>> &grid) {
         }
     }
     logger->logDebug("Player 1 life left ")->logDebug(player1->life_left)->endLineDebug();
-    logger->logInfo("Average Execution Time ")->logInfo(cumulativeExecutionTime / (player1->timeStep-1))->endLineInfo();
-    logger->logInfo("Total time steps ")->logInfo(player1->timeStep)->endLineInfo();
+    //logger->logInfo("Average Execution Time ")->logInfo(cumulativeExecutionTime / (player1->timeStep-1))->endLineInfo();
+    //logger->logInfo("Total time steps ")->logInfo(player1->timeStep)->endLineInfo();
 }
 
 
@@ -448,9 +450,9 @@ void gameSimulation::markDeadEnemies(vector<enemyUIData> &enemiesUI) {
 }
 
 bool gameSimulation::isStuckAtBorder() {
-    return (player1->destination_x == 0 and player1->current_x == 0)
-    or (player1->destination_y == 0 and player1->current_y == 0)
-    or (player1->destination_x == GRID_SPAN - 1 and player1->current_x == GRID_SPAN - 1)
-    or (player1->destination_y == GRID_SPAN - 1 and player1->current_y == GRID_SPAN - 1);
+    return player1->current_x == 0
+    or player1->current_y == 0
+    or player1->current_x == GRID_SPAN - 1
+    or player1->current_y == GRID_SPAN - 1;
 
 }

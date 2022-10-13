@@ -13,6 +13,7 @@ using namespace std;
 
 void JsonParser::serializeObstacles(const int TOTAL_FIXED_OBSTACLES, int (*blockObstacles)[4]) {
     Json::Value allObstacles(Json::arrayValue);
+
     for(int i = 0; i < TOTAL_FIXED_OBSTACLES; ++i)
     {
         Json::Value obstacle;
@@ -65,6 +66,7 @@ void JsonParser::readFromFileObstacles(std::vector<std::vector<int>>& grid) {
     Json::Value obstacles(Json::arrayValue);
     std::ifstream obstacles_file(TRAINING_MAP_DIR_OBSTACLES + trainingMapId + ".json");
     obstacles_file >> obstacles;
+    //cout<<"Number of obstacles "<<obstacles.size()<<endl;
     int blockObstacles[obstacles.size()][4];
     for(int i=0; i < obstacles.size(); ++i) {
         blockObstacles[i][0] = obstacles.get(i, Json::Value("X"))["obstacle"]
@@ -85,6 +87,7 @@ void JsonParser::readFromFileEnemies(std::vector<std::vector<int>>& grid, std::v
     enemy_file >> enemies_;
     const int TOTAL_ENEMIES = enemies_.size();
     int enemyLocations[TOTAL_ENEMIES][3];
+    //cout<<"Number of enemies "<<TOTAL_ENEMIES<<endl;
     for(int i=0; i < TOTAL_ENEMIES; ++i) {
         enemyLocations[i][0] = enemies_.get(i, Json::Value("X"))["enemy"]
                 .get(Json::ArrayIndex(0), Json::Value("X")).asInt();

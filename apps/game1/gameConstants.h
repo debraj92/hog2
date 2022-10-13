@@ -13,9 +13,9 @@
  * Debug Params
  */
 const int MAX_EPISODES = 300000;   /// Must be greater than 8
-const int SESSION_TIMEOUT = 100; /// not more than GRID_SPAN * 2 during test
 
 const int GRID_SPAN = 27; /// >= 10 when running unit tests [7 for gameSimulation test]
+const int SESSION_TIMEOUT = GRID_SPAN * 5;
 
 const int MIN_EXPLORATION_BEFORE_TRAINING = 4;
 
@@ -134,7 +134,7 @@ const int MAP_SECTOR_SIZE = 2 * FOV_WIDTH;
 
 const int MAX_ENEMIES_TO_TRACK = 6; /// CHANGE WOULD REQUIRE ADDITIONAL CHANGES IN OBSERVATION
 
-const int ABSTRACT_SECTOR_SIZE = GRID_SPAN / 3; /// must be integer
+const int ABSTRACT_SECTOR_SIZE = 9; /// must be integer
 
 const int LENGTH_UI_FRAME = 32 * GRID_SPAN;
 
