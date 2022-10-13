@@ -379,6 +379,7 @@ trainingMaps::trainingMaps(bool isTesting) {
     } else {
 
         gameMaps.emplace_back(&trainingMaps::createMap1);
+        /*
         gameMaps.emplace_back(&trainingMaps::createMap2);
         gameMaps.emplace_back(&trainingMaps::createMap3);
         gameMaps.emplace_back(&trainingMaps::createMap4);
@@ -394,6 +395,8 @@ trainingMaps::trainingMaps(bool isTesting) {
         gameMaps.emplace_back(&trainingMaps::createMap14);
         gameMaps.emplace_back(&trainingMaps::createMap15);
         gameMaps.emplace_back(&trainingMaps::createMap16);
+         */
+
 
 
         isMap1Cached = false;
@@ -558,7 +561,7 @@ void trainingMaps::serializeRandomMap(string mapId, long randomNumber) {
     }
     JsonParser jp(std::move(mapId));
 
-    const int TOTAL_FIXED_OBSTACLES  = ceil((GRID_SPAN + 3) / 6) * floor((GRID_SPAN + 3) / 6);
+    const int TOTAL_FIXED_OBSTACLES  = ceil((GRID_SPAN + 3) / 6) * floor((GRID_SPAN + 3) / 6) - 1;
     int blockObstacles[TOTAL_FIXED_OBSTACLES][4];
 
     int i=0;
@@ -610,8 +613,8 @@ void trainingMaps::serializeRandomMap(string mapId, long randomNumber) {
     lastId = placeEnemies(grid, enemies, lastId, randomNumber * 59);
     /// For small maps < 50
     lastId = placeEnemies(grid, enemies, lastId, randomNumber * 71);
-    lastId = placeEnemies(grid, enemies, lastId, randomNumber * 97);
-    lastId = placeEnemies(grid, enemies, lastId, randomNumber * 173);
+    //lastId = placeEnemies(grid, enemies, lastId, randomNumber * 97);
+    //lastId = placeEnemies(grid, enemies, lastId, randomNumber * 173);
 
 
     const int TOTAL_ENEMIES = enemies.size();
@@ -664,7 +667,7 @@ int trainingMaps::placeEnemies(std::vector<std::vector<int>>& grid, std::vector<
                     if(not isXOnBorder and not isYOnBorder and grid[central_x - x_diff][central_y - y_diff] == 0) {
                         int maxEnemiesInBoundary = 0;
                         if(retryAttempt < 0) {
-                            maxEnemiesInBoundary = 1;
+                            maxEnemiesInBoundary = 4;
                         }
                         if(not areBoundariesClearOfEnemies(grid, central_x - x_diff, central_y - y_diff, maxEnemiesInBoundary)) {
                             seedX *= 11;

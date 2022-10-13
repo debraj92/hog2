@@ -5,8 +5,6 @@
 #include "trainingMaps.h"
 #include <sys/resource.h>
 #include "GameController.h"
-#include <SFML/Graphics.hpp>
-#include "UI/TileMap.h"
 
 #include <chrono>
 
@@ -47,7 +45,7 @@ void runTesting(player &player1) {
     trainingMaps tm(true);
     float countDestinationReach = 0;
     float death = 0;
-    float max_ep = 1;
+    float max_ep = 500;
     player1.enableInfiniteLife();
     auto t1 = high_resolution_clock::now();
     for (int i=1; i<= max_ep; i++) {
@@ -66,14 +64,15 @@ void runTesting(player &player1) {
 
         player1.playGame(grid, enemies, sx, sy, dx, dy, t);
 
-        /*
+
         if(t.final_x == t.destination_x and t.final_y == t.destination_y) {
             countDestinationReach++;
         }
+        /*
         if(player1.life_left == 0) {
             death++;
-        }
-         */
+        }*/
+
         totalDamage += t.damage;
         totalPathRatio += t.pathRatio;
         maxMemoryUsed += t.maxMemoryUsed;
@@ -91,12 +90,15 @@ void runTesting(player &player1) {
     cout<<"Average path ratio "<< averagePathRatio<<endl;
     cout<<"Average max memory used "<< averageMaxMemoryUsed<<endl;
 
-    /*
+
     float reach_percent = countDestinationReach * 100 / max_ep;
-    float death_percent = death * 100 / max_ep;
     cout<<"% reach "<<reach_percent<<endl;
+
+    /*
+    float death_percent = death * 100 / max_ep;
     cout<<"% death "<<death_percent<<endl;
      */
+
 }
 
 void generateMaps() {

@@ -18,7 +18,7 @@ class SimpleUIView {
     LOG_LEVEL LogLevel = LOG_LEVEL::INFO;
     std::unique_ptr<Logger> logger;
 
-    const string TILES_RESOURCES = "/Users/debrajray/MyComputer/RL-A-STAR-THESIS/eureka/hog2/apps/game1/resources/game_tiles.png";
+    const string TILES_RESOURCES = "../resources/game_tiles.png";
 
     /// critical resource. Needs protection
     vector<std::vector<int>> grid;
